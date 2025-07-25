@@ -1,0 +1,6 @@
+*.docx
+*.csv
+.idea
+*.log
+logs
+migrations

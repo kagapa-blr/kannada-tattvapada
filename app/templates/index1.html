@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Main layout - side by side */
+        .main-layout {
+            display: flex;
+            min-height: 400px;
+        }
+
+        /* Left side - Dropdowns (70% width) */
+        .dropdown-section {
+            flex: 0 0 70%;
+            padding: 30px;
+            background: #fafafa;
+            border-right: 2px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropdown-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dropdown {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .dropdown:disabled {
+            background: #f8f9fa;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .dropdown:hover:not(:disabled) {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        /* Poem display area - now in dropdown section */
+        .poem-display-area {
+            flex: 1;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .poem-display {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .poem-title {
+            color: #667eea;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .poem-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            white-space: pre-line;
+            text-align: center;
+            font-weight: 500;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .poem-author {
+            text-align: right;
+            margin-top: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .poem-placeholder {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+        }
+
+        /* Right side - Buttons (30% width) */
+        .button-section {
+            flex: 0 0 30%;
+            padding: 30px 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-button {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-button.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-icon {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        /* Content area - now for navigation content only */
+        .content-area {
+            padding: 30px;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #666;
+        }
+
+        .welcome-message h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        /* Custom scrollbar for scrollable areas */
+        .content-area::-webkit-scrollbar,
+        .poem-content::-webkit-scrollbar,
+        .poem-display-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content-area::-webkit-scrollbar-track,
+        .poem-content::-webkit-scrollbar-track,
+        .poem-display-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb,
+        .poem-content::-webkit-scrollbar-thumb,
+        .poem-display-area::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb:hover,
+        .poem-content::-webkit-scrollbar-thumb:hover,
+        .poem-display-area::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+
+            .dropdown-section,
+            .button-section {
+                flex: none;
+            }
+
+            .dropdown-container {
+                flex-direction: column;
+            }
+
+            .dropdown {
+                min-width: 100%;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .poem-display-area {
+                max-height: 300px;
+            }
+        }
+
+        /* Message styles */
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</h1>
+            <p>ಸಂತ ಮಹಾಕವಿ ಕನಕದಾಸ ಅಧ್ಯಯನ ಮತ್ತು ಸಂಶೋಧನಾ ಕೇಂದ್ರ, ಬೆಂಗಳೂರು</p>
+        </div>
+
+        <!-- Main Layout: Left dropdowns (70%) + Right buttons (30%) -->
+        <div class="main-layout">
+            <!-- Left Side: Dropdowns + Poem Display -->
+            <div class="dropdown-section">
+                <!-- Dropdowns Container -->
+                <div class="dropdown-container">
+                    <select id="samputa" class="dropdown">
+                        <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+                        <option value="samputa1">ಸಂಪುಟ ೧</option>
+                        <option value="samputa2">ಸಂಪುಟ ೨</option>
+                        <option value="samputa3">ಸಂಪುಟ ೩</option>
+                    </select>
+
+                    <select id="kosha" class="dropdown" disabled>
+                        <option value="">ತತ್ವಪದಕೋಶದ ಹೆಸರು</option>
+                    </select>
+
+                    <select id="author" class="dropdown" disabled>
+                        <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+                    </select>
+
+                    <select id="number" class="dropdown" disabled>
+                        <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ಶೀರ್ಷಿಕೆ</option>
+                    </select>
+
+                    <select id="tatvapada" class="dropdown" disabled>
+                        <option value="">ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</option>
+                    </select>
+                </div>
+
+                <!-- Poem Display Area - Right below dropdowns -->
+                <div class="poem-display-area" id="poem-display-area">
+                    <div class="poem-placeholder">
+                        <h4>📜 ತತ್ವಪದ ಪ್ರದರ್ಶನ ಪ್ರದೇಶ</h4>
+                        <p>ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Buttons -->
+            <div class="button-section">
+                <button class="nav-button primary" onclick="searchContent()">
+                    <span class="btn-icon">🔍</span>
+                    ಶೋಧನೆ
+                </button>
+
+                <button class="nav-button" onclick="showIndex()">
+                    <span class="btn-icon">📋</span>
+                    ತತ್ತ್ವಪದ ಅಕಾರಾದಿ ಸೂಚಿ
+                </button>
+
+                <button class="nav-button" onclick="showDictionary()">
+                    <span class="btn-icon">📖</span>
+                    ಅರ್ಥಕೋಶ
+                </button>
+
+                <button class="nav-button" onclick="showNotes()">
+                    <span class="btn-icon">📝</span>
+                    ಟಿಪ್ಪಣಿ
+                </button>
+
+                <button class="nav-button" onclick="showBiography()">
+                    <span class="btn-icon">👤</span>
+                    ತತ್ವಪದಕಾರರ ಜೀವನ ವಿವರ
+                </button>
+
+                <button class="nav-button" onclick="showEditorNote()">
+                    <span class="btn-icon">✍️</span>
+                    ಪ್ರಧಾನ ಸಂಪಾದಕರ ನುಡಿ
+                </button>
+
+                <button class="nav-button" onclick="showVolumeEditor()">
+                    <span class="btn-icon">📚</span>
+                    ಸಂಪುಟ ಸಂಪಾದಕರ ನುಡಿ
+                </button>
+
+                <button class="nav-button" onclick="showReferences()">
+                    <span class="btn-icon">📄</span>
+                    ಪರಾಮರ್ಶನ ಸಾಹಿತ್ಯ
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Display Area - For navigation button content -->
+        <div id="content-area" class="content-area">
+            <div class="welcome-message">
+                <h3>🙏 ಸ್ವಾಗತ</h3>
+                <p>ಮೇಲಿನ ಆಯ್ಕೆಗಳನ್ನು ಬಳಸಿ ಅಥವಾ ನ್ಯಾವಿಗೇಶನ್ ಬಟನ್‌ಗಳನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data with Kannada poems
+        const appData = {
+            samputa1: {
+                kosha: [
+                    { value: 'kosha1', text: 'ಹರಿದಾಸ ಸಾಹಿತ್ಯ ಕೋಶ' },
+                    { value: 'kosha2', text: 'ವಚನ ಸಾಹಿತ್ಯ ಕೋಶ' },
+                    { value: 'kosha3', text: 'ಚಾಮರಾಜ ಸಾಹಿತ್ಯ ಕೋಶ' }
+                ],
+                authors: [
+                    { value: 'author1', text: 'ಕನಕದಾಸ' },
+                    { value: 'author2', text: 'ಪುರಂದರದಾಸ' },
+                    { value: 'author3', text: 'ವಿಜಯದಾಸ' }
+                ],
+                numbers: [
+                    { value: 'num1', text: '೧ - ಭಕ್ತಿ ತತ್ವ' },
+                    { value: 'num2', text: '೨ - ಜ್ಞಾನ ತತ್ವ' },
+                    { value: 'num3', text: '೩ - ಕರ್ಮ ತತ್ವ' }
+                ],
+                tatvapadas: [
+                    {
+                        value: 'pada1',
+                        text: 'ಹರಿ ಭಜನೆ ಮಾಡು',
+                        poem: `ಹರಿ ಭಜನೆ ಮಾಡು ಮನವೇ
+ಹರಿ ಭಜನೆ ಮಾಡು
+ಕರಿ ಕಾಲದಲ್ಲಿ ಕೇಶವನ ಸ್ಮರಣೆ
+ಮರೆಯದಿರು ಮನವೇ
+
+ಸುಖ ದುಃಖಗಳಲ್ಲಿ ಸಮ ಬುದ್ಧಿಯಿಂದ
+ಮುಖ್ಯ ಪ್ರಾಣನ ಧ್ಯಾನ ಮಾಡು
+ಅಖಿಲಾಂಡ ಕೋಟಿ ಬ್ರಹ್ಮಾಂಡ ನಾಯಕ
+ಮಹಿಮೆ ಅಪಾರ ಅನಂತ
+
+ಜನ್ಮ ಮರಣ ಚಕ್ರದಿಂದ ಮುಕ್ತಿ
+ಪಡೆಯಲು ಹರಿ ನಾಮ ಸ್ಮರಣೆ
+ಕನಕದಾಸನ ಪ್ರಭುವೇ ಕೇಶವ
+ಕೃಪೆ ಮಾಡು ಸದಾ ಕಾಲ`,
+                        author: 'ಕನಕದಾಸ'
+                    },
+                    {
+                        value: 'pada2',
+                        text: 'ಸತ್ಯ ಮಾರ್ಗ ಹಿಡಿ',
+                        poem: `ಸತ್ಯ ಮಾರ್ಗ ಹಿಡಿದು ನಡೆ
+ಸತ್ಯವೇ ಪರಮಾತ್ಮ
+ಮಿಥ್ಯೆ ಬಿಟ್ಟು ಸತ್ಯ ಹಿಡಿ
+ಮೋಕ್ಷ ಸಿಗುವುದು ನಿಶ್ಚಯ
+
+ಅಸತ್ಯದ ಮಾರ್ಗ ಬಿಟ್ಟು
+ಸತ್ಯದ ಮಾರ್ಗ ಹಿಡಿದವರು
+ಪರಮಾತ್ಮನ ಕೃಪೆಯಿಂದ
+ಮುಕ್ತಿ ಪಡೆಯುವರು ಖಂಡಿತ
+
+ಸತ್ಯ ಧರ್ಮ ಅಹಿಂಸೆ ದಯೆ
+ಇವೇ ಮೋಕ್ಷದ ಮಾರ್ಗ
+ಕನಕದಾಸನ ಪ್ರಭುವೇ ಕೇಶವ
+ಸತ್ಯ ಮಾರ್ಗ ತೋರು ಸದಾ`,
+                        author: 'ಕನಕದಾಸ'
+                    },
+                    {
+                        value: 'pada3',
+                        text: 'ದಯೆ ತೋರು',
+                        poem: `ದಯೆ ತೋರು ಜೀವರ ಮೇಲೆ
+ದಯೆಯೇ ಧರ್ಮದ ಮೂಲ
+ಪಯ್ಯ ಪಶುಗಳ ಮೇಲೆ ದಯೆ
+ಪಾಪ ಪರಿಹಾರವಾಗುವುದು
+
+ಅಹಿಂಸೆಯೇ ಪರಮ ಧರ್ಮ
+ಹಿಂಸೆ ಮಾಡದಿರು ಯಾರಿಗೂ
+ಸರ್ವ ಜೀವರಲ್ಲಿ ಪರಮಾತ್ಮ
+ಸನ್ನಿಧಿ ಇರುವುದು ನಿತ್ಯ
+
+ದಯೆ ಕರುಣೆ ಪ್ರೀತಿ ಸೇವೆ
+ಇವೇ ಭಗವಂತನ ಗುಣಗಳು
+ಪುರಂದರ ವಿಠಲನ ಭಕ್ತರೇ
+ದಯೆ ತೋರಿ ಜೀವಿಸಿರಿ`,
+                        author: 'ಪುರಂದರದಾಸ'
+                    },
+                    {
+                        value: 'pada4',
+                        text: 'ಭಕ್ತಿ ಮಾರ್ಗ',
+                        poem: `ಭಕ್ತಿ ಮಾರ್ಗದಲ್ಲಿ ನಡೆದವರು
+ಭವ ಸಾಗರ ದಾಟುವರು
+ಪ್ರೀತಿಯಿಂದ ಪ್ರಭುವನ್ನು ಸೇವಿಸಿ
+ಪರಮ ಪದ ಪಡೆಯುವರು
+
+ಮನಸ್ಸು ವಾಕ್ಕು ಕಾಯದಿಂದ
+ಮಾಧವನನ್ನು ಭಜಿಸಿದವರು
+ಜನ್ಮ ಜನ್ಮಾಂತರದ ಪಾಪ
+ಪರಿಹಾರವಾಗುವುದು ನಿಶ್ಚಯ`,
+                        author: 'ವಿಜಯದಾಸ'
+                    }
+                ]
+            },
+            samputa2: {
+                kosha: [
+                    { value: 'kosha4', text: 'ಶರಣ ಸಾಹಿತ್ಯ ಕೋಶ' },
+                    { value: 'kosha5', text: 'ಸೂಫಿ ಸಾಹಿತ್ಯ ಕೋಶ' }
+                ],
+                authors: [
+                    { value: 'author4', text: 'ಬಸವಣ್ಣ' },
+                    { value: 'author5', text: 'ಅಕ್ಕ ಮಹಾದೇವಿ' }
+                ],
+                numbers: [
+                    { value: 'num4', text: '೪ - ಶರಣ ತತ್ವ' },
+                    { value: 'num5', text: '೫ - ಲಿಂಗ ತತ್ವ' }
+                ],
+                tatvapadas: [
+                    {
+                        value: 'pada4',
+                        text: 'ಕಾಯಕವೇ ಕೈಲಾಸ',
+                        poem: `ಕಾಯಕವೇ ಕೈಲಾಸ
+ಕೈಲಾಸವೇ ಕಾಯಕ
+ಕೆಲಸವೇ ಪೂಜೆ
+ಪೂಜೆಯೇ ಕೆಲಸ
+
+ಕೈಯಿಂದ ಮಾಡುವ ಕೆಲಸವೇ
+ಕೈಲಾಸದ ಪೂಜೆ
+ಮನಸ್ಸಿನಿಂದ ಮಾಡುವ ಧ್ಯಾನವೇ
+ಮಹೇಶ್ವರನ ಸೇವೆ
+
+ಕಾಯಕ ಮಾಡದವನಿಗೆ
+ಕೈಲಾಸ ಎಲ್ಲಿ ಸಿಗುವುದು
+ಬಸವಣ್ಣನ ಕೂಡಲಸಂಗಮದೇವ
+ಕಾಯಕವೇ ಪರಮ ಧರ್ಮ`,
+                        author: 'ಬಸವಣ್ಣ'
+                    },
+                    {
+                        value: 'pada5',
+                        text: 'ಇಷ್ಟಲಿಂಗ ಪೂಜೆ',
+                        poem: `ಇಷ್ಟಲಿಂಗವನ್ನು ಪೂಜಿಸು
+ಇದೇ ಪರಮ ಧರ್ಮ
+ಲಿಂಗವೇ ಪರಬ್ರಹ್ಮ
+ಲಿಂಗವೇ ಪರಮಾತ್ಮ
+
+ಹೃದಯದಲ್ಲಿ ಇಷ್ಟಲಿಂಗ
+ಹಸ್ತದಲ್ಲಿ ಪ್ರಾಣಲಿಂಗ
+ಶಿರಸ್ಸಿನಲ್ಲಿ ಭಾವಲಿಂಗ
+ಶಿವನೇ ಸರ್ವಸ್ವ
+
+ಚೆನ್ನಮಲ್ಲಿಕಾರ್ಜುನನ
+ಮಲ್ಲಿಕಾರ್ಜುನ ಪ್ರಭುವೇ
+ಇಷ್ಟಲಿಂಗ ಪೂಜೆಯಿಂದ
+ಮುಕ್ತಿ ಸಿಗುವುದು ನಿಶ್ಚಯ`,
+                        author: 'ಅಕ್ಕ ಮಹಾದೇವಿ'
+                    }
+                ]
+            },
+            samputa3: {
+                kosha: [
+                    { value: 'kosha6', text: 'ಆಧುನಿಕ ಸಾಹಿತ್ಯ ಕೋಶ' }
+                ],
+                authors: [
+                    { value: 'author6', text: 'ಕುವೆಂಪು' }
+                ],
+                numbers: [
+                    { value: 'num6', text: '೬ - ಮಾನವೀಯ ತತ್ವ' }
+                ],
+                tatvapadas: [
+                    {
+                        value: 'pada6',
+                        text: 'ಮಾನವೀಯತೆ ಬೆಳೆಸು',
+                        poem: `ಮಾನವೀಯತೆ ಬೆಳೆಸು ಮನದಲ್ಲಿ
+ಮಾನವತೆಯೇ ದೇವತೆ
+ಜಾತಿ ಧರ್ಮ ಮರೆತು
+ಮಾನವನಾಗಿ ಬಾಳು
+
+ಸರ್ವ ಮಾನವರೂ ಸಮಾನರು
+ಸಮಾನತೆಯೇ ಸತ್ಯ
+ಪ್ರೀತಿಯಿಂದ ಸೇವೆ ಮಾಡು
+ಪರಮಾರ್ಥವೇ ಜೀವನ
+
+ಜಗದ್ಗುರು ಶ್ರೀ ಶಿವರಾತ್ರೀಶ್ವರ
+ಮಹಾಸ್ವಾಮಿಗಳ ಆಶೀರ್ವಾದದಿಂದ
+ಮಾನವೀಯತೆಯ ಮಾರ್ಗದಲ್ಲಿ
+ಮುನ್ನಡೆಯಲಿ ಮಾನವ ಸಮಾಜ`,
+                        author: 'ಕುವೆಂಪು'
+                    }
+                ]
+            }
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDropdownHandlers();
+        });
+
+        // Setup dropdown handlers
+        function setupDropdownHandlers() {
+            const samputa = document.getElementById('samputa');
+            const kosha = document.getElementById('kosha');
+            const author = document.getElementById('author');
+            const number = document.getElementById('number');
+            const tatvapada = document.getElementById('tatvapada');
+
+            samputa.addEventListener('change', function() {
+                const selectedSamputa = this.value;
+
+                if (selectedSamputa && appData[selectedSamputa]) {
+                    populateDropdown(kosha, appData[selectedSamputa].kosha, 'ತತ್ವಪದಕೋಶದ ಹೆಸರು');
+                    kosha.disabled = false;
+
+                    resetDropdown(author, 'ತತ್ವಪದಕಾರರ ಹೆಸರು');
+                    resetDropdown(number, 'ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ಶೀರ್ಷಿಕೆ');
+                    resetDropdown(tatvapada, 'ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ');
+                    resetPoemDisplay();
+                }
+            });
+
+            kosha.addEventListener('change', function() {
+                const selectedSamputa = samputa.value;
+
+                if (selectedSamputa && appData[selectedSamputa]) {
+                    populateDropdown(author, appData[selectedSamputa].authors, 'ತತ್ವಪದಕಾರರ ಹೆಸರು');
+                    author.disabled = false;
+
+                    resetDropdown(number, 'ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ಶೀರ್ಷಿಕೆ');
+                    resetDropdown(tatvapada, 'ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ');
+                    resetPoemDisplay();
+                }
+            });
+
+            author.addEventListener('change', function() {
+                const selectedSamputa = samputa.value;
+
+                if (selectedSamputa && appData[selectedSamputa]) {
+                    populateDropdown(number, appData[selectedSamputa].numbers, 'ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ಶೀರ್ಷಿಕೆ');
+                    number.disabled = false;
+
+                    resetDropdown(tatvapada, 'ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ');
+                    resetPoemDisplay();
+                }
+            });
+
+            number.addEventListener('change', function() {
+                const selectedSamputa = samputa.value;
+
+                if (selectedSamputa && appData[selectedSamputa]) {
+                    populateDropdown(tatvapada, appData[selectedSamputa].tatvapadas, 'ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ');
+                    tatvapada.disabled = false;
+                    resetPoemDisplay();
+                }
+            });
+
+            // Add event listener for poem selection
+            tatvapada.addEventListener('change', function() {
+                const selectedSamputa = samputa.value;
+                const selectedValue = this.value;
+
+                if (selectedSamputa && selectedValue && appData[selectedSamputa]) {
+                    const selectedPoem = appData[selectedSamputa].tatvapadas.find(poem => poem.value === selectedValue);
+                    if (selectedPoem) {
+                        displayPoem(selectedPoem);
+                    }
+                } else {
+                    resetPoemDisplay();
+                }
+            });
+        }
+
+        function populateDropdown(selectElement, options, placeholder) {
+            selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                selectElement.appendChild(optionElement);
+            });
+        }
+
+        function resetDropdown(selectElement, placeholder) {
+            selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+            selectElement.disabled = true;
+        }
+
+        function resetPoemDisplay() {
+            const poemDisplayArea = document.getElementById('poem-display-area');
+            poemDisplayArea.innerHTML = `
+                <div class="poem-placeholder">
+                    <h4>📜 ತತ್ವಪದ ಪ್ರದರ್ಶನ ಪ್ರದೇಶ</h4>
+                    <p>ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
+                </div>
+            `;
+        }
+
+        // Function to display selected poem in dropdown section
+        function displayPoem(poemData) {
+            const poemDisplayArea = document.getElementById('poem-display-area');
+            poemDisplayArea.innerHTML = `
+                <div class="poem-display">
+                    <div class="poem-title">${poemData.text}</div>
+                    <div class="poem-content">${poemData.poem}</div>
+                    <div class="poem-author">- ${poemData.author}</div>
+                </div>
+            `;
+        }
+
+        // Navigation functions
+        function searchContent() {
+            showContent(`
+                <h3>🔍 ಶೋಧನೆ ಫಲಿತಾಂಶಗಳು</h3>
+                <div class="message success">ಶೋಧನೆ ಯಶಸ್ವಿಯಾಗಿ ಪೂರ್ಣಗೊಂಡಿದೆ!</div>
+                <p>ನಿಮ್ಮ ಆಯ್ಕೆಗಳ ಆಧಾರದ ಮೇಲೆ ಫಲಿತಾಂಶಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ...</p>
+            `);
+        }
+
+        function showIndex() {
+            showContent(`
+                <h3>📋 ತತ್ತ್ವಪದ ಅಕಾರಾದಿ ಸೂಚಿ</h3>
+                <p><strong>ಅ:</strong> ಅಹಿಂಸೆ, ಆತ್ಮ, ಆನಂದ</p>
+                <p><strong>ಇ:</strong> ಇಷ್ಟಲಿಂಗ, ಈಶ್ವರ</p>
+                <p><strong>ಕ:</strong> ಕರ್ಮ, ಕೃಪೆ, ಕಾಯಕ</p>
+                <p><strong>ಭ:</strong> ಭಕ್ತಿ, ಭಗವಂತ</p>
+                <p><strong>ಮ:</strong> ಮಾನವೀಯತೆ, ಮೋಕ್ಷ</p>
+                <p><strong>ಸ:</strong> ಸತ್ಯ, ಸೇವೆ, ಸಮಾನತೆ</p>
+            `);
+        }
+
+        function showDictionary() {
+            showContent(`
+                <h3>📖 ಅರ್ಥಕೋಶ</h3>
+                <p><strong>ತತ್ವಪದ:</strong> ತತ್ವವನ್ನು ಸೂಚಿಸುವ ಪದ ಅಥವಾ ವಾಕ್ಯ</p>
+                <p><strong>ಸಂಪುಟ:</strong> ಗ್ರಂಥದ ಭಾಗ ಅಥವಾ ಸಂಪುಟ</p>
+                <p><strong>ಕಾಯಕ:</strong> ಕೈಯಿಂದ ಮಾಡುವ ಕೆಲಸ, ಶ್ರಮ</p>
+                <p><strong>ಇಷ್ಟಲಿಂಗ:</strong> ವೈಯಕ್ತಿಕ ಪೂಜೆಗಾಗಿ ಧರಿಸುವ ಲಿಂಗ</p>
+            `);
+        }
+
+        function showNotes() {
+            showContent(`
+                <h3>📝 ಟಿಪ್ಪಣಿ</h3>
+                <p>1. ಮೊದಲು ಸಂಪುಟವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
+                <p>2. ನಂತರ ಕ್ರಮವಾಗಿ ಇತರ ಆಯ್ಕೆಗಳನ್ನು ಮಾಡಿ</p>
+                <p>3. ತತ್ವಪದ ಆಯ್ಕೆ ಮಾಡಿದಾಗ ಕವಿತೆ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳ ಕೆಳಗೆ ಕಾಣಿಸುತ್ತದೆ</p>
+                <p>4. ಕವಿತೆಯ ಪ್ರದೇಶವು ಸ್ಕ್ರೋಲ್ ಮಾಡಬಹುದಾಗಿದೆ</p>
+            `);
+        }
+
+        function showBiography() {
+            showContent(`
+                <h3>👤 ತತ್ವಪದಕಾರರ ಜೀವನ ವಿವರ</h3>
+                <p><strong>ಕನಕದಾಸ (೧೫೦೯-೧೬೦೯):</strong> ಕರ್ನಾಟಕದ ಮಹಾನ್ ಸಂತ ಕವಿ</p>
+                <p><strong>ಬಸವಣ್ಣ (೧೧೩೪-೧೧೯೬):</strong> ಶರಣ ಸಾಹಿತ್ಯದ ಪ್ರವರ್ತಕ</p>
+                <p><strong>ಪುರಂದರದಾಸ (೧೪೮೪-೧೫೬೪):</strong> ಕರ್ನಾಟಕ ಸಂಗೀತದ ಪಿತಾಮಹ</p>
+                <p><strong>ಅಕ್ಕ ಮಹಾದೇವಿ (೧೧೩೦-೧೧೬೦):</strong> ಶರಣ ಸಾಹಿತ್ಯದ ಮಹಾನ್ ಕವಯಿತ್ರಿ</p>
+            `);
+        }
+
+        function showEditorNote() {
+            showContent(`
+                <h3>✍️ ಪ್ರಧಾನ ಸಂಪಾದಕರ ನುಡಿ</h3>
+                <p>ಪ್ರಿಯ ಓದುಗರೇ,</p>
+                <p>ಈ ಸಮಗ್ರ ಕನ್ನಡ ತತ್ವಪದ ಕೋಶವು ನಮ್ಮ ಸಂಸ್ಕೃತಿಯ ಅಮೂಲ್ಯ ಸಂಪತ್ತು. ಶತಮಾನಗಳ ಕಾಲ ನಮ್ಮ ಮಹಾನ್ ಸಂತರು ಮತ್ತು ಕವಿಗಳು ರಚಿಸಿದ ತತ್ವಪದಗಳನ್ನು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ಸಂಗ್ರಹಿಸುವ ಪ್ರಯತ್ನ ಇದು.</p>
+                <p>ಈ ಕೋಶದ ಮೂಲಕ ಹೊಸ ಪೀಳಿಗೆಯು ನಮ್ಮ ಸಂಸ್ಕೃತಿಯ ಮೌಲ್ಯಗಳನ್ನು ಅರಿತುಕೊಳ್ಳಲಿ ಎಂಬುದು ನಮ್ಮ ಆಶಯ.</p>
+            `);
+        }
+
+        function showVolumeEditor() {
+            showContent(`
+                <h3>📚 ಸಂಪುಟ ಸಂಪಾದಕರ ನುಡಿ</h3>
+                <p><strong>ಮೊದಲ ಸಂಪುಟ - ಹರಿದಾಸ ಸಾಹಿತ್ಯ:</strong></p>
+                <p>ಈ ಸಂಪುಟದಲ್ಲಿ ಕನಕದಾಸ, ಪುರಂದರದಾಸ, ವಿಜಯದಾಸರ ತತ್ವಪದಗಳನ್ನು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ.</p>
+                <p><strong>ಎರಡನೇ ಸಂಪುಟ - ಶರಣ ಸಾಹಿತ್ಯ:</strong></p>
+                <p>ಬಸವಣ್ಣ, ಅಕ್ಕ ಮಹಾದೇವಿ ಮತ್ತು ಇತರ ಶರಣರ ವಚನಗಳನ್ನು ಒಳಗೊಂಡಿದೆ.</p>
+                <p><strong>ಮೂರನೇ ಸಂಪುಟ - ಆಧುನಿಕ ಸಾಹಿತ್ಯ:</strong></p>
+                <p>ಕುವೆಂಪು ಮತ್ತು ಇತರ ಆಧುನಿಕ ಕವಿಗಳ ತತ್ವಪ್ರಧಾನ ಕೃತಿಗಳು.</p>
+            `);
+        }
+
+        function showReferences() {
+            showContent(`
+                <h3>📄 ಪರಾಮರ್ಶನ ಸಾಹಿತ್ಯ</h3>
+                <p><strong>ಮೂಲ ಗ್ರಂಥಗಳು:</strong></p>
+                <p>1. ಕನಕದಾಸ ಗ್ರಂಥಾವಳಿ - ಮೈಸೂರು ವಿಶ್ವವಿದ್ಯಾಲಯ</p>
+                <p>2. ವಚನ ಸಾಹಿತ್ಯ - ಕರ್ನಾಟಕ ವಿಶ್ವವಿದ್ಯಾಲಯ</p>
+                <p>3. ಹರಿದಾಸ ಸಾಹಿತ್ಯ ಸಂಶೋಧನೆ - ಬೆಂಗಳೂರು ವಿಶ್ವವಿದ್ಯಾಲಯ</p>
+                <p><strong>ಸಂಶೋಧನಾ ಪತ್ರಿಕೆಗಳು:</strong></p>
+                <p>• ಕನ್ನಡ ಸಾಹಿತ್ಯ ಪತ್ರಿಕೆ</p>
+                <p>• ವಚನ ಅಧ್ಯಯನ</p>
+                <p>• ಹರಿದಾಸ ಸಂಶೋಧನೆ</p>
+            `);
+        }
+
+        function showContent(content) {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = content;
+        }
+
+        console.log('ಕನ್ನಡ ತತ್ವಪದ ಕೋಶ ಆಪ್ ಸಿದ್ಧವಾಗಿದೆ! 🎉');
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+.container {
+    max-width: 960px;
+    margin: auto;
+    padding: 20px;
+    font-family: "Noto Sans Kannada", sans-serif;
+}
+
+form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+h1 {
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+.status {
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.status.success {
+    color: green;
+}
+
+.status.error {
+    color: red;
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+button {
+    grid-column: 1 / -1;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #006064;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #004d4d;
+}
