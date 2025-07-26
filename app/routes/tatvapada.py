@@ -89,6 +89,38 @@ def get_tatvapada_sankhye_by_samputa():
     return jsonify(sankhyes)
 
 
+
+@tatvapada_bp.route(
+    "/api/tatvapada/<int:samputa_sankhye>/<int:tatvapada_author_id>/<tatvapada_sankhye>",
+    methods=["GET"]
+)
+def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
+    if not (samputa_sankhye and tatvapada_author_id and tatvapada_sankhye):
+        return jsonify({"error": "Missing required path parameters"}), 400
+
+    tatvapada = tatvapada_service.get_specific_tatvapada(
+        samputa_sankhye, tatvapada_author_id, tatvapada_sankhye
+    )
+
+    if tatvapada:
+        return jsonify({
+            "id": tatvapada.id,
+            "tatvapadakosha": tatvapada.tatvapadakosha,
+            "samputa_sankhye": tatvapada.samputa_sankhye,
+            "tatvapadakosha_sheershike": tatvapada.tatvapadakosha_sheershike,
+            "mukhya_sheershike": tatvapada.mukhya_sheershike,
+            "tatvapada_author_id": tatvapada.tatvapada_author_id,
+            "tatvapadakarara_hesaru": tatvapada.tatvapadakarara_hesaru.hesaru,
+            "tatvapada_sankhye": tatvapada.tatvapada_sankhye,
+            "tatvapada_hesaru": tatvapada.tatvapada_hesaru,
+            "tatvapada": tatvapada.tatvapada,
+            "klishta_padagalu_artha": tatvapada.klishta_padagalu_artha,
+            "tippani": tatvapada.tippani,
+        })
+    else:
+        return jsonify({"error": "Tatvapada not found"}), 404
+
+
 @tatvapada_bp.route("/api/tatvapada/samputas", methods=["GET"])
 def get_all_samputas():
     samputas = tatvapada_service.get_all_samputa_sankhye()

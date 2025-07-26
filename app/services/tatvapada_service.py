@@ -248,3 +248,30 @@ class TatvapadaService:
         except SQLAlchemyError as e:
             self.logger.error(f"Error fetching sankhyes with author for samputa {samputa_sankhye}: {e}")
             return []
+
+    from typing import Optional
+    from sqlalchemy.exc import SQLAlchemyError
+    from app.models.tatvapada import Tatvapada
+
+    def get_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> \
+    Optional[Tatvapada]:
+        """
+        Fetches a specific Tatvapada entry based on the composite key:
+        samputa_sankhye, tatvapada_author_id, and tatvapada_sankhye.
+
+        Returns:
+            Tatvapada object if found, else None.
+        """
+        try:
+            return Tatvapada.query.filter_by(
+                samputa_sankhye=samputa_sankhye,
+                tatvapada_author_id=tatvapada_author_id,
+                tatvapada_sankhye=tatvapada_sankhye
+            ).first()
+        except SQLAlchemyError as e:
+            self.logger.error(
+                f"Error fetching specific tatvapada (samputa: {samputa_sankhye}, "
+                f"author_id: {tatvapada_author_id}, sankhye: {tatvapada_sankhye}): {e}"
+            )
+            return None
+
