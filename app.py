@@ -39,7 +39,7 @@ def create_app() -> Flask:
     app.register_blueprint(home_bp)
     app.register_blueprint(tatvapada_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_bp, url_prefix="/admin")
     logger.info("Blueprints registered: home_bp, tatvapada_bp")
 
     return app

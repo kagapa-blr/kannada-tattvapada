@@ -6,18 +6,36 @@ from app.models.user_management import User, Admin
 from app.utils.auth_decorator import login_required
 
 admin_bp = Blueprint("admin", __name__)
-# app/routes/admin_routes.py
+
+@admin_bp.route("/")
+@login_required
+def admin_dashboard():
+    """
+    Admin dashboard landing page.
+    URL: /admin/
+    """
+    return render_template("admin_panel.html")
+
 
 @admin_bp.route("/users", methods=["GET"])
 @login_required
 def user_management():
+    """
+    Display all users with option to promote/demote as admin.
+    URL: /admin/users
+    """
     users = User.query.all()
     admin_usernames = {admin.username for admin in Admin.query.all()}
     return render_template("user_management.html", users=users, admin_usernames=admin_usernames)
 
+
 @admin_bp.route("/users/save", methods=["POST"])
 @login_required
 def save_user_changes():
+    """
+    Save user updates (username, phone, email) and handle admin toggling.
+    URL: /admin/users/save
+    """
     users = User.query.all()
     current_admins = {admin.username: admin for admin in Admin.query.all()}
 
@@ -25,7 +43,7 @@ def save_user_changes():
         new_username = request.form.get(f"username_{user.id}", user.username)
         new_phone = request.form.get(f"phone_{user.id}", user.phone)
         new_email = request.form.get(f"email_{user.id}", user.email)
-        make_admin = request.form.get(f"is_admin_{user.id}") == "on"  # ✅ Updated key
+        make_admin = request.form.get(f"is_admin_{user.id}") == "on"
 
         # Update user fields
         user.username = new_username

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin_panel.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <h1>ನಿರ್ವಾಹಕ ಫಲಕ (Admin Panel)</h1>
+
+        <ul class="admin-tabs">
+            <a href="{{ url_for('admin.user_management') }}">Manage Users & Roles</a>
+            <li><a href="#">Add New Tatvapada</a></li>
+            <li><a href="{{ url_for('tatvapada.update_tatvapda') }}">Update Tatvapada</a></li>
+            <li><a href="#">Delete Tatvapada</a></li>
+            <li><a href="#">View Statistics</a></li>
+        </ul>
+
+        <div class="admin-content">
+            <p>Select an action from the tabs above to begin.</p>
+        </div>
+    </div>
+</body>
+</html>
