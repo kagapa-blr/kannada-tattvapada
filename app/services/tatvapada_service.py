@@ -249,9 +249,7 @@ class TatvapadaService:
             self.logger.error(f"Error fetching sankhyes with author for samputa {samputa_sankhye}: {e}")
             return []
 
-    from typing import Optional
-    from sqlalchemy.exc import SQLAlchemyError
-    from app.models.tatvapada import Tatvapada
+
 
     def get_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> \
     Optional[Tatvapada]:

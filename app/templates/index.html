@@ -1,119 +1,105 @@
 <!DOCTYPE html>
 <html lang="kn">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</title>
- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
- <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- JavaScript -->
+  <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
+
 <body>
+
+  <!-- ========== HEADER BAR ========== -->
+  <div class="header-bar">
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</h1>
-            <p>ಸಂತ ಮಹಾಕವಿ ಕನಕದಾಸ ಅಧ್ಯಯನ ಮತ್ತು ಸಂಶೋಧನಾ ಕೇಂದ್ರ, ಬೆಂಗಳೂರು</p>
-        </div>
-
-        <!-- Top Navigation Bar -->
-        <div class="top-navigation">
-            <button class="nav-btn primary" onclick="searchContent()">
-<!--                <span class="nav-icon">🔍</span>-->
-                <span>Home</span>
-            </button>
-            <button class="nav-btn" onclick="showIndex()">
-                <span class="nav-icon">📋</span>
-                <span>ತತ್ತ್ವಪದ ಅಕಾರಾದಿ ಸೂಚಿ</span>
-            </button>
-
-        </div>
-
-        <!-- Main Layout: Left dropdowns (70%) + Right buttons (30%) -->
-        <div class="main-layout">
-            <!-- Left Side: Dropdowns + Poem Display -->
-            <div class="dropdown-section">
-                <!-- Dropdowns Container -->
-                <div class="dropdown-container">
-                    <select id="samputa" class="dropdown">
-                        <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
-                        <option value="samputa1">ಸಂಪುಟ ೧</option>
-                        <option value="samputa2">ಸಂಪುಟ ೨</option>
-                        <option value="samputa3">ಸಂಪುಟ ೩</option>
-                    </select>
-
-                    <select id="tatvapadakarara_hesaru" class="dropdown" disabled>
-                        <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
-                    </select>
-
-                    <select id="tatvapada_sankhye" class="dropdown" disabled>
-                        <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
-                    </select>
-
-                </div>
-
-                <!-- Professional Poem Display Area -->
-                <div class="poem-display-area" id="poem-display-area">
-                    <div class="poem-placeholder">
-                        <div class="placeholder-icon">📜</div>
-                        <h4>ತತ್ವಪದ ಪ್ರದರ್ಶನ ಪ್ರದೇಶ</h4>
-                        <p>ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Side: Navigation Buttons -->
-            <div class="button-section">
-                <button class="nav-button primary" onclick="searchContent()">
-                    <span class="btn-icon">🔍</span>
-                    ಶೋಧನೆ
-                </button>
-
-                <button class="nav-button" onclick="showIndex()">
-                    <span class="btn-icon">📋</span>
-                    ತತ್ತ್ವಪದ ಅಕಾರಾದಿ ಸೂಚಿ
-                </button>
-
-                <button class="nav-button" onclick="showDictionary()">
-                    <span class="btn-icon">📖</span>
-                    ಅರ್ಥಕೋಶ
-                </button>
-
-                <button class="nav-button" onclick="showNotes()">
-                    <span class="btn-icon">📝</span>
-                    ಟಿಪ್ಪಣಿ
-                </button>
-
-                <button class="nav-button" onclick="showBiography()">
-                    <span class="btn-icon">👤</span>
-                    ತತ್ವಪದಕಾರರ ಜೀವನ ವಿವರ
-                </button>
-
-                <button class="nav-button" onclick="showEditorNote()">
-                    <span class="btn-icon">✍️</span>
-                    ಪ್ರಧಾನ ಸಂಪಾದಕರ ನುಡಿ
-                </button>
-
-                <button class="nav-button" onclick="showVolumeEditor()">
-                    <span class="btn-icon">📚</span>
-                    ಸಂಪುಟ ಸಂಪಾದಕರ ನುಡಿ
-                </button>
-
-                <button class="nav-button" onclick="showReferences()">
-                    <span class="btn-icon">📄</span>
-                    ಪರಾಮರ್ಶನ ಸಾಹಿತ್ಯ
-                </button>
-            </div>
-        </div>
-
-        <!-- Content Display Area - For navigation button content -->
-        <div id="content-area" class="content-area">
-            <div class="welcome-message">
-                <h3>🙏 ಸ್ವಾಗತ</h3>
-                <p>ಮೇಲಿನ ಆಯ್ಕೆಗಳನ್ನು ಬಳಸಿ ಅಥವಾ ನ್ಯಾವಿಗೇಶನ್ ಬಟನ್‌ಗಳನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ</p>
-            </div>
-        </div>
+      <h1>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</h1>
+      <p>ಸಂತ ಮಹಾಕವಿ ಕನಕದಾಸ ಅಧ್ಯಯನ ಮತ್ತು ಸಂಶೋಧನಾ ಕೇಂದ್ರ, ಬೆಂಗಳೂರು</p>
     </div>
+  </div>
+
+  <!-- ========== TOP NAVIGATION BAR ========== -->
+  <div class="top-navabar-bar">
+    <div class="nav-inner">
+      <button class="nav-btn active" onclick="selectTab(this); searchContent()">ಮುಖಪುಟ</button>
+      <button class="nav-btn" onclick="selectTab(this); showIndex()">ಬಗ್ಗೆ</button>
+      <button class="nav-btn" onclick="selectTab(this); showNotes()">ಸೇವೆಗಳು</button>
+      <button class="nav-btn" onclick="selectTab(this); showBiography()">ನಿರ್ವಾಹಕರು</button>
+      <button class="nav-btn" onclick="selectTab(this); showReferences()">ಸಂಪರ್ಕಿಸಿ</button>
+    </div>
+  </div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="container">
+    <div class="main-layout">
+
+      <!-- ========== LEFT SECTION ========== -->
+      <div class="dropdown-section">
+
+        <!-- Dropdowns -->
+        <div class="dropdown-container">
+          <select id="samputa" class="dropdown">
+            <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+          </select>
+
+          <select id="tatvapadakarara_hesaru" class="dropdown" disabled>
+            <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+          </select>
+
+          <select id="tatvapada_sankhye" class="dropdown" disabled>
+            <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
+          </select>
+
+          <div class="tatvapadakosha">
+
+          </div>
+          <div class="mukhya_sheershike">
+
+          </div>
+
+
+        </div>
+
+        <!-- Poem Display Area -->
+        <div class="poem-display-area" id="poem-display-area">
+          <div class="poem-placeholder">
+            <div class="placeholder-icon">📜</div>
+            <h4>ತತ್ವಪದ ಪ್ರದರ್ಶನ ಪ್ರದೇಶ</h4>
+            <p>ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
+          </div>
+        </div>
+
+
+        <div class="tippani">
+
+        </div>
+        <div class="klishta_padagalu_artha">
+
+        </div>
+
+      </div>
+
+      <!-- ========== RIGHT SECTION ========== -->
+      <div class="button-section">
+        <button class="nav-button primary" onclick="searchContent()">🔍 ಶೋಧನೆ</button>
+        <button class="nav-button" onclick="showIndex()">📋 ತತ್ತ್ವಪದ ಸೂಚಿ</button>
+        <button class="nav-button" onclick="showDictionary()">📖 ಅರ್ಥಕೋಶ</button>
+        <button class="nav-button" onclick="showNotes()">📝 ಟಿಪ್ಪಣಿ</button>
+        <button class="nav-button" onclick="showBiography()">👤 ತತ್ವಪದಕಾರರ ವಿವರ</button>
+        <button class="nav-button" onclick="showEditorNote()">✍️ ಪ್ರಧಾನ ಸಂಪಾದಕರ ನುಡಿ</button>
+        <button class="nav-button" onclick="showVolumeEditor()">📚 ಸಂಪುಟ ಸಂಪಾದಕರ ನುಡಿ</button>
+        <button class="nav-button" onclick="showReferences()">📄 ಪರಾಮರ್ಶನ ಸಾಹಿತ್ಯ</button>
+      </div>
+
+    </div>
+  </div>
 
 </body>
+
 </html>

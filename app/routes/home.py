@@ -66,3 +66,8 @@ def home_page():
     except Exception as e:
         logger.error(f"An error occurred while processing home page: {e}")
         return render_template("index.html", data=[])
+
+
+@home_bp.route('/old')
+def home_old():
+    return render_template("old.html")

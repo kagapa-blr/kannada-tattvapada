@@ -3,8 +3,16 @@ import apiClient from "./apiClient.js";
 let currentTatvapadaData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    function selectTab(element) {
+        document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+    }
+
     initializeDropdownHandlers();
     loadSamputas();
+
+
 });
 
 // ---------- Setup Event Listeners ----------
@@ -76,7 +84,7 @@ function loadSamputas() {
 
 // ---------- Fetch Authors + Sankhyes by Selected Samputa ----------
 function fetchAuthorsAndSankhyas(samputaSankhye) {
-    const endpoint = `/tatvapada/author-sankhyes-by-samputa?samputa_sankhye=${samputaSankhye}`;
+    const endpoint = `/tatvapada/author-sankhyes-by-samputa/${samputaSankhye}`;
 
     apiClient.get(endpoint)
         .then(data => {
@@ -130,7 +138,7 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
         .then(data => {
             console.log("Tatvapada Details:", data);
             // Optionally display this in the page
-             renderTatvapada(data);
+            renderTatvapada(data);
         })
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
@@ -157,12 +165,24 @@ function renderTatvapada(data) {
     });
 }
 
+
+
+
 function displayPoem(poemData) {
     const poemDisplayArea = document.getElementById('poem-display-area');
+
+    const cleanedPoem = poemData.poem
+        .trim()
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => `<p>${line}</p>`)
+        .join("");
+
     poemDisplayArea.innerHTML = `
-        <div class="poem-display">
-            <div class="poem-title">${poemData.text}</div>
-            <div class="poem-content">${poemData.poem}</div>
+        <div class="poem-display enhanced">
+            <h3 class="poem-title">${poemData.text}</h3>
+            <div class="poem-content">${cleanedPoem}</div>
             <div class="poem-author">- ${poemData.author}</div>
         </div>
     `;

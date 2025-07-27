@@ -126,13 +126,8 @@ def get_all_samputas():
     samputas = tatvapada_service.get_all_samputa_sankhye()
     return jsonify(samputas)
 
-@tatvapada_bp.route("/api/tatvapada/author-sankhyes-by-samputa", methods=["GET"])
-def get_authors_and_sankhyes_by_samputa():
-    try:
-        samputa_sankhye = int(request.args.get("samputa_sankhye", 0))
-    except (TypeError, ValueError):
-        return jsonify({"error": "Valid samputa_sankhye is required"}), 400
-
+@tatvapada_bp.route("/api/tatvapada/author-sankhyes-by-samputa/<int:samputa_sankhye>", methods=["GET"])
+def get_authors_and_sankhyes_by_samputa(samputa_sankhye):
     results = tatvapada_service.get_sankhyes_with_author_by_samputa(samputa_sankhye)
 
     if not results:
