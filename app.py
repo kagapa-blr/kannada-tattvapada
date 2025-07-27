@@ -4,6 +4,7 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 from app.config.database import db_instance, init_db
+from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
 from app.routes.home import home_bp
 from app.routes.tatvapada import tatvapada_bp
@@ -38,6 +39,7 @@ def create_app() -> Flask:
     app.register_blueprint(home_bp)
     app.register_blueprint(tatvapada_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
     logger.info("Blueprints registered: home_bp, tatvapada_bp")
 
     return app

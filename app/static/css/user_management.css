@@ -1,0 +1,85 @@
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #343a40;
+    margin: 2em;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 1em;
+    color: #212529;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+    border: 1px solid #dee2e6;
+    padding: 0.75em;
+    text-align: left;
+}
+
+th {
+    background-color: #f1f3f5;
+    font-weight: 600;
+    text-align: center;
+}
+
+td input[type="text"],
+td input[type="email"],
+td input[type="tel"] {
+    width: 100%;
+    padding: 0.4em;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #fefefe;
+}
+
+td input[type="checkbox"] {
+    transform: scale(1.2);
+    margin: 0;
+}
+
+.save-btn {
+    margin-top: 1.5em;
+    padding: 0.7em 1.4em;
+    background-color: #0d6efd;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+}
+
+.save-btn:hover {
+    background-color: #0b5ed7;
+}
+
+.flash-messages {
+    margin-bottom: 1em;
+    padding: 0.8em;
+    border-radius: 4px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.flash-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.flash-error {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}

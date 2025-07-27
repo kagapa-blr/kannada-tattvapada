@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_management.css') }}">
+</head>
+<body>
+    <h2>ಬಳಕೆದಾರರ ನಿರ್ವಹಣೆ (User Management)</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-messages flash-{{ 'success' if category == 'success' else 'error' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="user-management-form" method="POST" action="{{ url_for('admin.save_user_changes') }}">
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>User Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><input type="text" name="username_{{ user.id }}" value="{{ user.username }}"></td>
+                    <td><input type="tel" name="phone_{{ user.id }}" value="{{ user.phone }}"></td>
+                    <td><input type="email" name="email_{{ user.id }}" value="{{ user.email }}"></td>
+                    <td style="text-align: center;">
+                        <label>
+                            <input type="checkbox" name="is_admin_{{ user.id }}" {% if user.username in admin_usernames %}checked{% endif %}>
+                            Admin
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+</body>
+</html>
