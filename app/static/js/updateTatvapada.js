@@ -4,16 +4,23 @@ import apiEndpoints from "./apiEndpoints.js";
 let currentTatvapadaData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    function selectTab(element) {
-        document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-    }
-
+    setupNavigation();
     initializeDropdownHandlers();
     loadSamputas();
+    initializeFormSubmitHandler();
 });
 
-// ---------- Setup Event Listeners ----------
+// ---------- UI Tab Highlighting ----------
+function setupNavigation() {
+    document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+}
+
+// ---------- Initialize Dropdown Logic ----------
 function initializeDropdownHandlers() {
     const samputaDropdown = document.getElementById("samputa");
     const authorDropdown = document.getElementById("tatvapadakarara_hesaru");
@@ -50,7 +57,7 @@ function initializeDropdownHandlers() {
     });
 }
 
-// ---------- Load Samputas from API ----------
+// ---------- Load Samputa Dropdown ----------
 function loadSamputas() {
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
@@ -71,7 +78,7 @@ function loadSamputas() {
         });
 }
 
-// ---------- Fetch Authors + Sankhyes ----------
+// ---------- Fetch Authors & Sankhyas for Samputa ----------
 function fetchAuthorsAndSankhyas(samputaSankhye) {
     const endpoint = apiEndpoints.tatvapada.getAuthorSankhyasBySamputa(samputaSankhye);
 
@@ -101,7 +108,7 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
         });
 }
 
-// ---------- Populate Sankhyes ----------
+// ---------- Populate Sankhyes for Selected Author ----------
 function populateTatvapadaSankhyes(authorId) {
     const sankhyeDropdown = document.getElementById("tatvapada_sankhye");
     resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", false);
@@ -118,86 +125,71 @@ function populateTatvapadaSankhyes(authorId) {
     });
 }
 
-// ---------- Fetch Specific Tatvapada ----------
+// ---------- Fetch a Specific Tatvapada Entry ----------
 function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     const endpoint = apiEndpoints.tatvapada.getSpecificTatvapada(samputa, authorId, sankhye);
 
     apiClient.get(endpoint)
-        .then(data => {
-            renderTatvapada(data);
-            populateTatvapadaForm(data);
-        })
+        .then(data => populateTatvapadaForm(data))
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
         });
 }
 
-// ---------- Reset Any Dropdown ----------
-function resetDropdown(dropdown, placeholderText, disable = false) {
-    dropdown.innerHTML = `<option value="">${placeholderText}</option>`;
-    dropdown.disabled = disable;
-}
-
-// ---------- Render Tatvapada ----------
-function renderTatvapada(data) {
-    displayPoem({
-        text: data.tatvapada_hesaru,
-        poem: data.tatvapada,
-        author: data.tatvapadakarara_hesaru
-    });
-
-    displayOtherFields(data);
-}
-
-function displayOtherFields(data) {
-    document.getElementById('tatvapadakosha-value').textContent = data.tatvapadakosha || "";
-    document.getElementById('tatvapadakosha_sheershike-value').textContent = data.tatvapadakosha_sheershike || "";
-    document.getElementById('mukhya_sheershike-value').textContent = data.mukhya_sheershike || "";
-    document.getElementById('tatvapada_author_id-value').textContent = data.tatvapada_author_id || "";
-    document.getElementById('tatvapadakarara_hesaru-value').textContent = data.tatvapadakarara_hesaru || "";
-    document.getElementById('tatvapada_hesaru-value').textContent = data.tatvapada_hesaru || "";
-    document.getElementById('klishta_padagalu_artha-value').textContent = data.klishta_padagalu_artha || "";
-    document.getElementById('tippani-value').textContent = data.tippani || "";
-    document.getElementById('tatvapada_first_line-value').textContent = data.tatvapada_first_line || "";
-}
-
-function displayPoem(poemData) {
-    const poemDisplayArea = document.getElementById('poem-display-area');
-    if (!poemDisplayArea) {
-        console.error("Poem display area not found");
-        return;
-    }
-
-    const cleanedPoem = poemData.poem
-        .trim()
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => `<p>${line}</p>`)
-        .join("");
-
-    poemDisplayArea.innerHTML = `
-        <div class="poem-display enhanced">
-            <h3 class="poem-title">${poemData.text}</h3>
-            <div class="poem-content">${cleanedPoem}</div>
-            <div class="poem-author">- ${poemData.author}</div>
-        </div>
-    `;
-}
-
-// ---------- Populate Form ----------
+// ---------- Populate Form Fields ----------
 function populateTatvapadaForm(data) {
     if (!data) return;
 
-    document.getElementById('tatvapadakosha').value = data.tatvapadakosha || "";
-    document.getElementById('tatvapadakosha_sheershike').value = data.tatvapadakosha_sheershike || "";
-    document.getElementById('mukhya_sheershike').value = data.mukhya_sheershike || "";
+    document.getElementById("tatvapadakosha").value = data.tatvapadakosha || "";
+    document.getElementById("tatvapadakosha_sheershike").value = data.tatvapadakosha_sheershike || "";
+    document.getElementById("mukhya_sheershike").value = data.mukhya_sheershike || "";
 
-    document.getElementById('tatvapadakarara_hesaru-edit').value = data.tatvapadakarara_hesaru || "";
-    document.getElementById('tatvapada_hesaru').value = data.tatvapada_hesaru || "";
-    document.getElementById('tatvapada_first_line').value = data.tatvapada_first_line || "";
+    document.getElementById("tatvapadakarara_hesaru-edit").value = data.tatvapadakarara_hesaru || "";
+    document.getElementById("tatvapada_hesaru").value = data.tatvapada_hesaru || "";
+    document.getElementById("tatvapada_first_line").value = data.tatvapada_first_line || "";
 
-    document.getElementById('tatvapada').value = data.tatvapada || "";
-    document.getElementById('klishta_padagalu_artha').value = data.klishta_padagalu_artha || "";
-    document.getElementById('tippani').value = data.tippani || "";
+    document.getElementById("tatvapada").value = data.tatvapada || "";
+    document.getElementById("klishta_padagalu_artha").value = data.klishta_padagalu_artha || "";
+    document.getElementById("tippani").value = data.tippani || "";
+}
+
+// ---------- Submit Updated Tatvapada ----------
+function initializeFormSubmitHandler() {
+    const form = document.getElementById("tatvapada-update-form");
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const jsonData = Object.fromEntries(formData.entries());
+
+        const samputa_sankhye = document.getElementById("samputa").value;
+        const tatvapada_sankhye = document.getElementById("tatvapada_sankhye").value;
+        const tatvapada_author_id = document.getElementById("tatvapadakarara_hesaru").value;
+
+        if (!samputa_sankhye || !tatvapada_sankhye || !tatvapada_author_id) {
+            alert("ಸಂಪುಟ, ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ತತ್ವಪದಕಾರರ ಆಯ್ಕೆ ಅಗತ್ಯವಿದೆ");
+            return;
+        }
+
+        jsonData.samputa_sankhye = samputa_sankhye;
+        jsonData.tatvapada_sankhye = tatvapada_sankhye;
+        jsonData.tatvapada_author_id = tatvapada_author_id;
+
+        apiClient.put(apiEndpoints.tatvapada.updateTatvapada, jsonData)
+            .then(response => {
+                console.log("Update response:", response);
+                alert("ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ!");
+            })
+            .catch(error => {
+                console.error("PUT error:", error);
+                alert("ಅಪ್‌ಡೇಟ್ ವಿಫಲವಾಯಿತು. ದಯವಿಟ್ಟು ನಂತರ ಪ್ರಯತ್ನಿಸಿ.");
+            });
+    });
+}
+
+// ---------- Reset a Dropdown ----------
+function resetDropdown(dropdown, placeholderText, disable = false) {
+    dropdown.innerHTML = `<option value="">${placeholderText}</option>`;
+    dropdown.disabled = disable;
 }

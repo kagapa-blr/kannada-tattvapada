@@ -2,14 +2,17 @@
 
 import os
 from flask import Flask
+from dotenv import load_dotenv
 from app.config.database import db_instance, init_db
 from app.routes.home import home_bp
 from app.routes.tatvapada import tatvapada_bp
 from app.utils.logger import setup_logger
 
+# -------------------- Load Environment -------------------- #
+load_dotenv()
+
 # -------------------- Logger Setup -------------------- #
 logger = setup_logger("tatvapada", "extractor.log")
-
 
 # -------------------- Flask App Factory -------------------- #
 def create_app() -> Flask:
@@ -33,7 +36,7 @@ def create_app() -> Flask:
     # ----------------- Blueprint Registration ----------------- #
     app.register_blueprint(home_bp)
     app.register_blueprint(tatvapada_bp)
-    logger.info("Blueprints registered: home_bp")
+    logger.info("Blueprints registered: home_bp, tatvapada_bp")
 
     return app
 
@@ -50,4 +53,4 @@ if __name__ == "__main__":
         logger.info("Database tables created or already exist.")
 
     logger.info("Flask app is up and running.")
-    app.run(debug=True)
+    app.run(debug=False)

@@ -1,7 +1,6 @@
 """
 Tatvapada routes: expose endpoints for CRUD operations (API + Web Form).
 """
-
 from flask import (
     Blueprint,
     request,
@@ -9,6 +8,7 @@ from flask import (
     render_template
 )
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.inspection import inspect
 
 from app.services.tatvapada_service import TatvapadaService
 from app.utils.helper import kannada_to_english_digits
@@ -89,9 +89,52 @@ def get_tatvapada_sankhye_by_samputa():
     return jsonify(sankhyes)
 
 
+@tatvapada_bp.route("/api/tatvapada/update", methods=["PUT"])
+def update_tatvapada_by_composite_keys():
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
 
-from flask import jsonify
-from sqlalchemy.inspection import inspect
+        required_keys = ["samputa_sankhye", "tatvapada_sankhye", "tatvapada_author_id"]
+        for key in required_keys:
+            if key not in data:
+                return jsonify({"error": f"Missing required field: {key}"}), 400
+
+        samputa_sankhye = data["samputa_sankhye"]
+        tatvapada_sankhye = data["tatvapada_sankhye"]
+        tatvapada_author_id = data["tatvapada_author_id"]
+
+        updated_entry = tatvapada_service.update_by_composite_keys(
+            samputa_sankhye, tatvapada_sankhye, tatvapada_author_id, data
+        )
+
+        return jsonify({
+            "message": "Tatvapada updated successfully",
+            "updated_entry": {
+                "tatvapadakosha": updated_entry.tatvapadakosha,
+                "tatvapadakosha_sheershike": updated_entry.tatvapadakosha_sheershike,
+                "mukhya_sheershike": updated_entry.mukhya_sheershike,
+                "tatvapada_author_id": updated_entry.tatvapada_author_id,
+                "tatvapadakarara_hesaru": updated_entry.tatvapadakarara_hesaru.hesaru if updated_entry.tatvapadakarara_hesaru else None,
+                "tatvapada_sankhye": updated_entry.tatvapada_sankhye,
+                "tatvapada_hesaru": updated_entry.tatvapada_hesaru,
+                "tatvapada_first_line": updated_entry.tatvapada_first_line,
+                "tatvapada": updated_entry.tatvapada,
+                "klishta_padagalu_artha": updated_entry.klishta_padagalu_artha,
+                "tippani": updated_entry.tippani,
+            }
+        })
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except SQLAlchemyError as db_err:
+        return jsonify({"error": f"Database error: {str(db_err)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
+
 
 @tatvapada_bp.route(
     "/api/tatvapada/<int:samputa_sankhye>/<int:tatvapada_author_id>/<tatvapada_sankhye>",
@@ -204,3 +247,8 @@ def tatvapada_add_form():
             return jsonify({"error": "ದಾಖಲಾತಿ ವಿಫಲವಾಗಿದೆ."}), 500
 
     return render_template("insert.html")
+
+
+@tatvapada_bp.route("/tatvapada/update", methods=["GET", "POST"])
+def update_tatvapda():
+    return render_template("update_tatvapada.html")

@@ -1,38 +1,56 @@
-// ManageApi.js
+// static/js/apiClient.js
 
-const BASE_URL = "http://127.0.0.1:5000/api";
+const BASE_URL = "http://127.0.0.1:5000";
 
 const defaultHeaders = {
-    "Content-Type": "application/json",
-    // Add any auth headers here if needed
-    // "Authorization": "Bearer <token>"
+    "Content-Type": "application/json"
+};
+
+const buildUrlWithParams = (endpoint, params = {}) => {
+    const url = new URL(`${BASE_URL}${endpoint}`);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    return url.toString();
 };
 
 const apiClient = {
-    get: async (endpoint) => {
-        const response = await fetch(`${BASE_URL}${endpoint}`, {
-            method: "GET",
-            headers: defaultHeaders,
-        });
-        if (!response.ok) {
-            throw new Error(`GET ${endpoint} failed`);
+    request: async ({ method, endpoint, body = null, params = {}, headers = {} }) => {
+        const url = buildUrlWithParams(endpoint, params);
+        const options = {
+            method: method.toUpperCase(),
+            headers: { ...defaultHeaders, ...headers }
+        };
+
+        if (body && method.toUpperCase() !== "GET") {
+            options.body = JSON.stringify(body);
         }
-        return await response.json();
+
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`${method.toUpperCase()} ${endpoint} failed: ${errorText}`);
+        }
+
+        const contentType = response.headers.get("content-type");
+        return contentType && contentType.includes("application/json")
+            ? await response.json()
+            : await response.text();
     },
 
-    post: async (endpoint, body) => {
-        const response = await fetch(`${BASE_URL}${endpoint}`, {
-            method: "POST",
-            headers: defaultHeaders,
-            body: JSON.stringify(body),
-        });
-        if (!response.ok) {
-            throw new Error(`POST ${endpoint} failed`);
-        }
-        return await response.json();
-    },
+    get: (endpoint, params = {}, headers = {}) =>
+        apiClient.request({ method: "GET", endpoint, params, headers }),
 
-    // Add put/delete if needed later
+    post: (endpoint, body = {}, headers = {}) =>
+        apiClient.request({ method: "POST", endpoint, body, headers }),
+
+    put: (endpoint, body = {}, headers = {}) =>
+        apiClient.request({ method: "PUT", endpoint, body, headers }),
+
+    patch: (endpoint, body = {}, headers = {}) =>
+        apiClient.request({ method: "PATCH", endpoint, body, headers }),
+
+    delete: (endpoint, body = {}, headers = {}) =>
+        apiClient.request({ method: "DELETE", endpoint, body, headers })
 };
 
 export default apiClient;
