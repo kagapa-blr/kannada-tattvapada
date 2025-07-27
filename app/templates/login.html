@@ -1,0 +1,77 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="kn">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ಲಾಗಿನ್</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</head>
+
+<body>
+  <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
+    <div class="login-card shadow">
+      <h3 class="mb-4 text-center text-primary">ಲಾಗಿನ್ ಮಾಡಿ</h3>
+
+      <form id="loginForm" action="{{ url_for('home.login') }}" method="post" novalidate>
+        <div class="mb-3">
+          <label for="username" class="form-label">ಬಳಕೆದಾರಹೆಸರು</label>
+          <input type="text" class="form-control" id="username" name="username" required autofocus>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">ಗುಪ್ತಪದ</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">ಲಾಗಿನ್</button>
+
+        <div class="text-center mt-3">
+          <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#signupModal">ಸೈನ್ ಅಪ್ ಮಾಡಿ</a>
+        </div>
+      </form>
+
+      {% if error %}
+      <div class="alert alert-danger mt-3 text-center" role="alert">
+        {{ error }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4">
+        <h5 class="modal-title text-center mb-3">ಸೈನ್ ಅಪ್ ಮಾಡಿ</h5>
+        <form id="signupForm">
+          <div class="mb-3">
+            <label for="name" class="form-label">ಹೆಸರು</label>
+            <input type="text" class="form-control" id="name" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="phone" class="form-label">ದೂರವಾಣಿ ಸಂಖ್ಯೆ</label>
+            <input type="tel" class="form-control" id="phone" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">ಇಮೇಲ್ ವಿಳಾಸ</label>
+            <input type="email" class="form-control" id="email" required />
+          </div>
+
+          <button type="submit" class="btn btn-success w-100">ಸೈನ್ ಅಪ್</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module" src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+
+</html>

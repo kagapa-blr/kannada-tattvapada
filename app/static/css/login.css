@@ -1,0 +1,28 @@
+body {
+  font-family: 'Noto Sans Kannada', sans-serif;
+  background: linear-gradient(to right, #e3f2fd, #e8f5e9);
+  margin: 0;
+}
+
+.login-card {
+  background-color: #fff;
+  padding: 2.5rem 2rem;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+label {
+  font-weight: 600;
+  color: #333;
+}
+
+.alert {
+  font-size: 0.95rem;
+}
