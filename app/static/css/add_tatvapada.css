@@ -1,0 +1,19 @@
+body {
+  background-color: #fdfcf9;
+  font-family: "Noto Sans Kannada", sans-serif;
+}
+
+label.form-label {
+  color: #333;
+}
+
+textarea,
+input[type="text"] {
+  border-radius: 6px;
+}
+
+button.btn {
+  padding: 8px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+}

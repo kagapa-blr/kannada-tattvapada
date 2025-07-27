@@ -23,8 +23,10 @@ tatvapada_service = TatvapadaService()
 # JSON API ROUTES
 # =======================
 
-@tatvapada_bp.route("/api/tatvapada/add", methods=["POST"])
+@tatvapada_bp.route("/api/tatvapada/add", methods=['GET',"POST"])
 def add_tatvapada():
+    if request.method=='GET':
+        return render_template("add_tatvapada.html")
     data = request.get_json()
     logger.info(f"Received JSON request: {data}")
 

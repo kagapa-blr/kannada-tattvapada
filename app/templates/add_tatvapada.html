@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="kn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+
+  <script type="module" src="{{ url_for('static', filename='js/addTatvapada.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</head>
+
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</h2>
+
+    <!-- Mode Selection -->
+    <div class="mb-4">
+      <label class="fw-bold">ಆಯ್ಕೆಮಾಡಿ:</label>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="entryMode" id="modeNew" value="new" checked>
+        <label class="form-check-label" for="modeNew">
+          ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="entryMode" id="modeExisting" value="existing">
+        <label class="form-check-label" for="modeExisting">
+          ಹಳೆಯ ಸಂಪುಟದಲ್ಲಿ ತತ್ತ್ವಪದ ಸೇರಿಸಿ
+        </label>
+      </div>
+    </div>
+
+    <!-- Cascading Dropdowns -->
+    <div class="dropdown-container mb-4" id="cascading-section" style="display: none;">
+      <select id="samputa" class="form-select mb-2">
+        <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+      </select>
+
+      <select id="tatvapadakarara_hesaru" class="form-select mb-2" disabled>
+        <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+      </select>
+
+      <select id="tatvapada_sankhye" class="form-select" disabled>
+        <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
+      </select>
+    </div>
+
+    <form id="tatvapada-add-form">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ</label>
+          <input type="text" name="tatvapadakosha" class="form-control" required
+            placeholder="ಕರ್ನಾಟಕ ಸಮಗ್ರ ತತ್ವಪದಗಳ ಜನಪ್ರಿಯ ಸಂಪುಟ ಮಾಲೆ">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ</label>
+          <input type="text" name="samputa_sankhye" class="form-control" required placeholder="1">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</label>
+          <input type="text" name="tatvapada_sankhye" class="form-control" required placeholder="2">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದದ ಹೆಸರು</label>
+          <input type="text" name="tatvapada_hesaru" class="form-control" placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</label>
+          <input type="text" name="tatvapadakarara_hesaru" class="form-control" required placeholder="ಶಿಷುನಾಳ ಶರೀಫ಼">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ಮುಖ್ಯ ಶೀರ್ಷಿಕೆ</label>
+          <input type="text" name="mukhya_sheershike" class="form-control" placeholder="ದೇವಸ್ತುತಿ">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</label>
+          <input type="text" name="tatvapadakosha_sheershike" class="form-control"
+            placeholder="ಶಿಶುನಾಳ ಶರೀಫರ ತತ್ವಪದಗಳುಶಿಶುನಾಳ ಶರೀಫ">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">ಮೊದಲ ಸಾಲು</label>
+          <input type="text" name="tatvapada_first_line" class="form-control" placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ">
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಪದ್ಯ</label>
+          <textarea name="tatvapada" class="form-control" rows="6" required placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
+ತ್ರಿಲೋಕದೋಳ್ ವಿರತಿ	|| ಪ ||
+ಗಂಗಾಧರನ ಸ್ತುತಿ
+ಧ್ಯಾನಿಸುವ ಆತ್ಮಾಭಿರತಿ
+ಕರುಣಿ ಕೈಲಾಸಕಧಿಪತಿ	|| 1 ||
+ಗಿರಿಜಾ ರಮಣನ ಸ್ತುತಿ
+ಭಜಿಸಿ ಶಿವಯೋಗ ಸ್ಥಿತಿ
+ಸಿದ್ದ ಶಿವಯೋಗಿ ಸುಮತಿ	|| 2 ||
+ಬೇಗನೆ ಹೊಂದಿಸು ಸದ್ಗತಿ
+ಶಿಶುನಾಳಧೀಶನೇ ಗತಿ
+ಕೊಡು ಬೇಗನೆ ಮುಕುತಿ	|| 3 ||"></textarea>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</label>
+          <textarea name="klishta_padagalu_artha" class="form-control" rows="3"
+            placeholder="ಉದಾ: ವಿರತಿ = ತ್ಯಾಗ, ಸ್ತುತಿ = ಭಜನೆ"></textarea>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-bold">ಟಿಪ್ಪಣಿ</label>
+          <textarea name="tippani" class="form-control" rows="3"
+            placeholder="ಉದಾ: ಈ ತತ್ತ್ವಪದದ ರಚನೆ ಶಿಷ್ಟವಾದ ಧ್ವನಿಸಂಕೇತಗಳನ್ನು ಹೊಂದಿದೆ."></textarea>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-success">ಸೇರಿಸಿ</button>
+        <button type="reset" class="btn btn-secondary">ಕ್ಲಿಯರ್</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4 text-center">
+        <h5 class="mb-3 text-success">ಯಶಸ್ವಿ!</h5>
+        <p>ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ.</p>
+        <p id="successMessage" class="mt-2 text-muted"></p>
+        <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">ಸರಿ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4 text-center">
+        <h5 class="mb-3 text-danger">ದೋಷ!</h5>
+        <p>ತತ್ತ್ವಪದವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.</p>
+        <p id="errorMessage" class="mt-2 text-muted"></p>
+        <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

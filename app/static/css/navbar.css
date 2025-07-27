@@ -11,11 +11,13 @@
 .header-bar h1 {
     font-size: 2rem;
     margin: 0;
+    font-weight: 600;
 }
 
 .header-bar p {
     font-size: 1rem;
     margin: 5px 0 0;
+    opacity: 0.9;
 }
 
 /* ============ TOP NAVIGATION BAR ============ */
@@ -23,6 +25,7 @@
     width: 100%;
     background-color: #000000;
     padding: 12px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .top-navabar-bar .nav-inner {
@@ -32,7 +35,9 @@
     align-items: center;
 }
 
+/* Anchor tags styled as buttons */
 .top-navabar-bar .nav-btn {
+    text-decoration: none; /* 🚫 Remove underline */
     background-color: transparent;
     border: none;
     color: #ffffff;
@@ -41,10 +46,12 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 500;
 }
 
 .top-navabar-bar .nav-btn:hover,
 .top-navabar-bar .nav-btn.active {
     background-color: #ffffff;
     color: #000000;
+    text-decoration: none; /* just in case */
 }

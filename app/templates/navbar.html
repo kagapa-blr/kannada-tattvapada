@@ -9,10 +9,10 @@
 <!-- ========== TOP NAVIGATION BAR ========== -->
 <div class="top-navabar-bar">
     <div class="nav-inner">
-        <button class="nav-btn active" onclick="selectTab(this); searchContent()">ಮುಖಪುಟ</button>
-        <button class="nav-btn" onclick="selectTab(this); showIndex()">ಬಗ್ಗೆ</button>
-        <button class="nav-btn" onclick="selectTab(this); showNotes()">ಸೇವೆಗಳು</button>
-        <button class="nav-btn" onclick="selectTab(this); showBiography()">ನಿರ್ವಾಹಕರು</button>
-        <button class="nav-btn" onclick="selectTab(this); showReferences()">ಸಂಪರ್ಕಿಸಿ</button>
+        <a href="{{ url_for('home.home_page') }}" class="nav-btn active">ಮುಖಪುಟ</a>
+        <a href="#" class="nav-btn">ಬಗ್ಗೆ</a>
+        <a href="#" class="nav-btn">ಸೇವೆಗಳು</a>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-btn">ನಿರ್ವಾಹಕರು</a>
+        <a href="#" class="nav-btn">ಸಂಪರ್ಕಿಸಿ</a>
     </div>
 </div>
