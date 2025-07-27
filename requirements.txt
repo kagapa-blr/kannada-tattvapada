@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 python-dotenv
 PyMySQL
+flask-bcrypt
+PyJWT
