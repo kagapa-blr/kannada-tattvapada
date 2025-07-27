@@ -1,16 +1,4 @@
-/* Base Reset */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
 
-body {
-    font-family: "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(to right, #f2f7f8, #e0ebeb);
-    padding: 2em;
-    color: #333;
-}
 
 /* Container Styling */
 .admin-container {

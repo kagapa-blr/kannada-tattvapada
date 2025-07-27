@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>User Management</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user_management.css') }}">
 </head>
 <body>
+  {% include 'navbar.html' %}
     <h2>ಬಳಕೆದಾರರ ನಿರ್ವಹಣೆ (User Management)</h2>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
