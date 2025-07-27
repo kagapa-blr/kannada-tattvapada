@@ -7,7 +7,7 @@ from flask import (
     Blueprint, request, render_template, redirect,
     url_for, flash, make_response
 )
-from app.models.user_management import User
+from app.models.user_management import User, Admin
 from app.services.user_manage_service import create_user, create_admin, bcrypt
 
 load_dotenv()
@@ -52,33 +52,51 @@ def create_admin_route():
     except ValueError as e:
         return str(e), 400
 
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    # Handle POST method
     username = request.form.get("username")
     password = request.form.get("password")
 
-    user = User.query.filter_by(username=username).first()
-    if not user or not bcrypt.check_password_hash(user.password_hash, password):
-        error = "ತಪ್ಪು ಬಳಕೆದಾರಹೆಸರು ಅಥವಾ ಗುಪ್ತಪದ"
-        return render_template("login.html", error=error)
+    user_type = None
+    user_id = None
 
+    # Try admin first
+    admin = Admin.query.filter_by(username=username).first()
+    if admin:
+        user_type = "admin"
+        user_id = admin.id
+        # Admin login is password-less (adjust if needed)
+    else:
+        user = User.query.filter_by(username=username).first()
+        if not user or not bcrypt.check_password_hash(user.password_hash, password):
+            error = "ತಪ್ಪು ಬಳಕೆದಾರಹೆಸರು ಅಥವಾ ಗುಪ್ತಪದ"
+            return render_template("login.html", error=error)
+
+        user_type = "user"
+        user_id = user.id
+
+    # JWT payload with expiry and user_type
     payload = {
-        "user_id": user.id,
-        "username": user.username,
+        "user_id": user_id,
+        "username": username,
+        "user_type": user_type,
         "exp": int((datetime.now(timezone.utc) + timedelta(minutes=30)).timestamp())
     }
+
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
+    # Set cookie
     response = make_response(redirect(url_for("home.home_page")))
     response.set_cookie(
-        "access_token", token,
+        "access_token",
+        token,
         httponly=True,
         samesite="Lax",
-        secure=False  # Change to True if using HTTPS
+        secure=False  # ✅ Set to True if using HTTPS
     )
     return response
 
