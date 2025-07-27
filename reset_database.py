@@ -1,17 +1,16 @@
 import os
-import sys
-from flask import Flask
+
 from dotenv import load_dotenv
+from flask import Flask
+from flask_migrate import Migrate, upgrade, init, migrate
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-
-from flask_migrate import Migrate, upgrade, init, migrate
 
 from app.config.database import db_instance
 from app.utils.logger import setup_logger
 
 # Initialize logger
-logger = setup_logger(name="reset_database", log_file="reset_database")
+logger = setup_logger(name="reset_database", log_file="reset_database.log")
 
 # Load environment variables
 load_dotenv()
@@ -57,6 +56,8 @@ def init_app():
     return app
 
 
+import shutil  # Add this at the top
+
 def reset_database():
     print_db_config()
     print("\nWarning: Make sure the application is not running before continuing.")
@@ -72,13 +73,23 @@ def reset_database():
         logger.error(f"Database connection failed: {error}")
         return
 
-    confirm = input(f"\nConnection successful.\nDo you want to DROP and RECREATE the database '{DB_NAME}'? (yes/no): ").strip().lower()
+    confirm = input(f"\nConnection successful.\nDo you want to DROP and RECREATE the database '{DB_NAME}' and delete all migrations? (yes/no): ").strip().lower()
     logger.debug(f"User input for drop/create confirmation: {confirm}")
 
     if confirm not in ["yes", "y"]:
         print("Operation cancelled.")
         return
 
+    # Step 1: Delete migrations folder
+    if os.path.exists(MIGRATIONS_DIR):
+        try:
+            shutil.rmtree(MIGRATIONS_DIR)
+            logger.info(f"Deleted migrations directory: {MIGRATIONS_DIR}")
+        except Exception as e:
+            logger.error(f"Failed to delete migrations directory: {e}")
+            return
+
+    # Step 2: Drop and recreate database
     try:
         engine = create_engine(ROOT_URI)
         with engine.connect() as conn:
@@ -89,18 +100,18 @@ def reset_database():
         logger.error(f"Error during database reset: {e}")
         return
 
+    # Step 3: Re-initialize app and create tables
     app = init_app()
     with app.app_context():
         db_instance.create_all()
         logger.info("Tables created successfully from models.")
-
 
 def repair_database():
     print_db_config()
     logger.info("Applying Flask-Migrate migrations...")
 
     app = init_app()
-    migrate_obj = Migrate(app, db_instance, directory=MIGRATIONS_DIR)
+    Migrate(app, db_instance, directory=MIGRATIONS_DIR)
 
     with app.app_context():
         try:
@@ -109,17 +120,27 @@ def repair_database():
                 init(directory=MIGRATIONS_DIR)
                 logger.info("Migrations initialized.")
 
-            logger.info("Autogenerating migration script...")
-            migrate(message="Auto migration")
-            logger.info("Migration script generated.")
-
+            # Step 1: Upgrade DB to latest migration
+            logger.info("Upgrading to latest migration state...")
             upgrade()
-            logger.info("Database schema upgraded using migrations.")
+            logger.info("Database upgraded to latest schema.")
+
+            # Step 2: Allow user to generate new migration if needed
+            generate_new = input("Do you want to generate a new migration script? (yes/no): ").strip().lower()
+            if generate_new in ["yes", "y"]:
+                migration_msg = input("Enter a migration message (default: 'Auto migration'): ").strip()
+                if not migration_msg:
+                    migration_msg = "Auto migration"
+
+                logger.info(f"Autogenerating new migration script with message: {migration_msg}")
+                migrate(message=migration_msg)
+                logger.info("Migration script generated successfully.")
+            else:
+                print("Skipped migration generation.")
 
         except Exception as e:
-            logger.error("Flask-Migrate failed during migration.")
-            logger.error(str(e))
-
+            logger.error("Flask-Migrate failed during repair operation.")
+            logger.exception(e)
 
 def main():
     print("\nSelect an operation:")

@@ -158,19 +158,32 @@ function resetDropdown(dropdown, placeholderText, disable = false) {
 
 
 function renderTatvapada(data) {
+
     displayPoem({
         text: data.tatvapada_hesaru,
         poem: data.tatvapada,
         author: data.tatvapadakarara_hesaru
     });
+    displayOtherFields(data)
+
 }
 
 
+function displayOtherFields(data) {
+    document.getElementById('tatvapadakosha-value').textContent = data.tatvapadakosha || "";
+    document.getElementById('tatvapadakosha_sheershike-value').textContent = data.tatvapadakosha_sheershike || "";
+    document.getElementById('mukhya_sheershike-value').textContent = data.mukhya_sheershike || "";
+    document.getElementById('tatvapada_author_id-value').textContent = data.tatvapada_author_id || "";
+    document.getElementById('tatvapadakarara_hesaru-value').textContent = data.tatvapadakarara_hesaru || "";
+    document.getElementById('tatvapada_hesaru-value').textContent = data.tatvapada_hesaru || "";
+    document.getElementById('klishta_padagalu_artha-value').textContent = data.klishta_padagalu_artha || "";
+    document.getElementById('tippani-value').textContent = data.tippani || "";
+    document.getElementById('tatvapada_first_line-value').textContent = data.tatvapada_first_line || "";
+}
 
 
 function displayPoem(poemData) {
     const poemDisplayArea = document.getElementById('poem-display-area');
-
     const cleanedPoem = poemData.poem
         .trim()
         .split('\n')

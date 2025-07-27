@@ -31,6 +31,7 @@ class Tatvapada(db_instance.Model):
 
     # Verse information
     tatvapada_sankhye = Column(String(255), nullable=True)
+    tatvapada_first_line = Column(String(255), nullable=True)
     tatvapada_hesaru = Column(String(255), nullable=True)
     tatvapada = Column(Text, nullable=True)
 

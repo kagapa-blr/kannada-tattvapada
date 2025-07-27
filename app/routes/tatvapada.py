@@ -90,6 +90,9 @@ def get_tatvapada_sankhye_by_samputa():
 
 
 
+from flask import jsonify
+from sqlalchemy.inspection import inspect
+
 @tatvapada_bp.route(
     "/api/tatvapada/<int:samputa_sankhye>/<int:tatvapada_author_id>/<tatvapada_sankhye>",
     methods=["GET"]
@@ -102,23 +105,17 @@ def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankh
         samputa_sankhye, tatvapada_author_id, tatvapada_sankhye
     )
 
-    if tatvapada:
-        return jsonify({
-            "id": tatvapada.id,
-            "tatvapadakosha": tatvapada.tatvapadakosha,
-            "samputa_sankhye": tatvapada.samputa_sankhye,
-            "tatvapadakosha_sheershike": tatvapada.tatvapadakosha_sheershike,
-            "mukhya_sheershike": tatvapada.mukhya_sheershike,
-            "tatvapada_author_id": tatvapada.tatvapada_author_id,
-            "tatvapadakarara_hesaru": tatvapada.tatvapadakarara_hesaru.hesaru,
-            "tatvapada_sankhye": tatvapada.tatvapada_sankhye,
-            "tatvapada_hesaru": tatvapada.tatvapada_hesaru,
-            "tatvapada": tatvapada.tatvapada,
-            "klishta_padagalu_artha": tatvapada.klishta_padagalu_artha,
-            "tippani": tatvapada.tippani,
-        })
-    else:
+    if tatvapada is None:
         return jsonify({"error": "Tatvapada not found"}), 404
+
+    # Convert SQLAlchemy model to dict
+    data = {col.key: getattr(tatvapada, col.key) for col in inspect(tatvapada).mapper.column_attrs}
+
+    # Include related author name (if relationship is present)
+    if tatvapada.tatvapadakarara_hesaru:
+        data["tatvapadakarara_hesaru"] = tatvapada.tatvapadakarara_hesaru.hesaru
+
+    return jsonify(data)
 
 
 @tatvapada_bp.route("/api/tatvapada/samputas", methods=["GET"])
