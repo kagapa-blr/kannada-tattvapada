@@ -1,0 +1,91 @@
+/* ============ DROPDOWN SECTION ============ */
+.dropdown-section {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.dropdown-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+/* ============ CUSTOM DROPDOWNS ============ */
+.dropdown {
+    flex: 1 1 200px;
+    padding: 10px 14px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+}
+
+.dropdown:focus {
+    border-color: #4b49ac;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(75, 73, 172, 0.15);
+}
+
+/* ============ FORM ELEMENTS ============ */
+form label {
+    color: #333;
+}
+
+form input[type="text"],
+form textarea {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+form input[type="text"]:focus,
+form textarea:focus {
+    border-color: #4b49ac;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(75, 73, 172, 0.1);
+}
+
+/* ============ BUTTONS ============ */
+button.btn-primary {
+    background-color: #4b49ac;
+    border-color: #4b49ac;
+    font-weight: bold;
+}
+
+button.btn-primary:hover {
+    background-color: #3e3c9e;
+    border-color: #3e3c9e;
+}
+
+button.btn-secondary {
+    font-weight: bold;
+}
+
+button.btn-secondary:hover {
+    background-color: #6c757d;
+}
+
+/* ============ RESPONSIVE ADJUSTMENTS ============ */
+@media (max-width: 768px) {
+    .dropdown-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dropdown {
+        width: 100%;
+    }
+
+    .row.g-4>div {
+        flex: 1 1 100%;
+    }
+}

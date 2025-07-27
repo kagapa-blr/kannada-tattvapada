@@ -3,14 +3,26 @@ import apiEndpoints from "./apiEndpoints.js";
 
 let currentTatvapadaData = [];
 
+
+
+
+// --------------------- DOM Ready --------------------- //
 document.addEventListener("DOMContentLoaded", () => {
+    initializeFormSubmitHandler();
     setupNavigation();
     initializeDropdownHandlers();
     loadSamputas();
-    initializeFormSubmitHandler();
+
+
+    document.addEventListener('hide.bs.modal', function (event) {
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+    });
+
 });
 
-// ---------- UI Tab Highlighting ----------
+// --------------------- UI Navigation --------------------- //
 function setupNavigation() {
     document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(btn => {
         btn.addEventListener("click", () => {
@@ -20,7 +32,7 @@ function setupNavigation() {
     });
 }
 
-// ---------- Initialize Dropdown Logic ----------
+// --------------------- Dropdown Setup --------------------- //
 function initializeDropdownHandlers() {
     const samputaDropdown = document.getElementById("samputa");
     const authorDropdown = document.getElementById("tatvapadakarara_hesaru");
@@ -57,7 +69,7 @@ function initializeDropdownHandlers() {
     });
 }
 
-// ---------- Load Samputa Dropdown ----------
+// --------------------- Load Samputa --------------------- //
 function loadSamputas() {
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
@@ -78,7 +90,7 @@ function loadSamputas() {
         });
 }
 
-// ---------- Fetch Authors & Sankhyas for Samputa ----------
+// --------------------- Fetch Author & Sankhya --------------------- //
 function fetchAuthorsAndSankhyas(samputaSankhye) {
     const endpoint = apiEndpoints.tatvapada.getAuthorSankhyasBySamputa(samputaSankhye);
 
@@ -108,7 +120,7 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
         });
 }
 
-// ---------- Populate Sankhyes for Selected Author ----------
+// --------------------- Populate Sankhyes --------------------- //
 function populateTatvapadaSankhyes(authorId) {
     const sankhyeDropdown = document.getElementById("tatvapada_sankhye");
     resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", false);
@@ -125,18 +137,17 @@ function populateTatvapadaSankhyes(authorId) {
     });
 }
 
-// ---------- Fetch a Specific Tatvapada Entry ----------
+// --------------------- Fetch & Populate Form --------------------- //
 function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     const endpoint = apiEndpoints.tatvapada.getSpecificTatvapada(samputa, authorId, sankhye);
 
-    apiClient.get(endpoint)
+    return apiClient.get(endpoint)
         .then(data => populateTatvapadaForm(data))
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
         });
 }
 
-// ---------- Populate Form Fields ----------
 function populateTatvapadaForm(data) {
     if (!data) return;
 
@@ -153,7 +164,9 @@ function populateTatvapadaForm(data) {
     document.getElementById("tippani").value = data.tippani || "";
 }
 
-// ---------- Submit Updated Tatvapada ----------
+// --------------------- Submit Handler --------------------- //
+
+
 function initializeFormSubmitHandler() {
     const form = document.getElementById("tatvapada-update-form");
 
@@ -163,33 +176,72 @@ function initializeFormSubmitHandler() {
         const formData = new FormData(form);
         const jsonData = Object.fromEntries(formData.entries());
 
-        const samputa_sankhye = document.getElementById("samputa").value;
-        const tatvapada_sankhye = document.getElementById("tatvapada_sankhye").value;
-        const tatvapada_author_id = document.getElementById("tatvapadakarara_hesaru").value;
+        const samputa = document.getElementById("samputa").value;
+        const sankhye = document.getElementById("tatvapada_sankhye").value;
+        const authorId = document.getElementById("tatvapadakarara_hesaru").value;
 
-        if (!samputa_sankhye || !tatvapada_sankhye || !tatvapada_author_id) {
+        if (!samputa || !sankhye || !authorId) {
             alert("ಸಂಪುಟ, ತತ್ವಪದ ಸಂಖ್ಯೆ ಮತ್ತು ತತ್ವಪದಕಾರರ ಆಯ್ಕೆ ಅಗತ್ಯವಿದೆ");
             return;
         }
 
-        jsonData.samputa_sankhye = samputa_sankhye;
-        jsonData.tatvapada_sankhye = tatvapada_sankhye;
-        jsonData.tatvapada_author_id = tatvapada_author_id;
+        jsonData.samputa_sankhye = samputa;
+        jsonData.tatvapada_sankhye = sankhye;
+        jsonData.tatvapada_author_id = authorId;
 
         apiClient.put(apiEndpoints.tatvapada.updateTatvapada, jsonData)
-            .then(response => {
-                console.log("Update response:", response);
-                alert("ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ!");
+            .then((response) => {
+
+                populateTatvapadaForm(jsonData); // update immediately
+
+                // show modal with optional callback
+                showSuccessModal(null, response?.message || "ಅಪ್ಡೇಟ್ ಯಶಸ್ವಿಯಾಗಿದೆ.");
             })
             .catch(error => {
-                console.error("PUT error:", error);
-                alert("ಅಪ್‌ಡೇಟ್ ವಿಫಲವಾಯಿತು. ದಯವಿಟ್ಟು ನಂತರ ಪ್ರಯತ್ನಿಸಿ.");
+                handleErrorModal(error);
             });
     });
 }
 
-// ---------- Reset a Dropdown ----------
-function resetDropdown(dropdown, placeholderText, disable = false) {
-    dropdown.innerHTML = `<option value="">${placeholderText}</option>`;
+
+
+// --------------------- Modal Helpers --------------------- //
+
+
+
+function showSuccessModal(callback, message = "ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ.") {
+    const modalElement = document.getElementById("successModal");
+
+    if (!modalElement) return;
+
+    const serverMessageElement = modalElement.querySelector("#successMessage");
+    if (serverMessageElement) {
+        serverMessageElement.textContent = message;
+    }
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    modalElement.addEventListener("hidden.bs.modal", () => {
+        callback?.();
+    }, { once: true });
+}
+
+
+function handleErrorModal(error) {
+
+    const messageEl = document.getElementById("errorMessage");
+    const defaultText = "ತತ್ತ್ವಪದವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.";
+    if (messageEl) {
+        messageEl.textContent = error?.message || defaultText;
+    }
+    const modal = new bootstrap.Modal(document.getElementById("errorModal"));
+    modal.show();
+}
+
+
+
+function resetDropdown(dropdown, placeholder, disable = false) {
+    dropdown.innerHTML = `<option value="">${placeholder}</option>`;
     dropdown.disabled = disable;
 }

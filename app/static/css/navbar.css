@@ -1,0 +1,50 @@
+/* ============ HEADER BAR ============ */
+.header-bar {
+    width: 100%;
+    background-color: #4b49ac;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-bar h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.header-bar p {
+    font-size: 1rem;
+    margin: 5px 0 0;
+}
+
+/* ============ TOP NAVIGATION BAR ============ */
+.top-navabar-bar {
+    width: 100%;
+    background-color: #000000;
+    padding: 12px 0;
+}
+
+.top-navabar-bar .nav-inner {
+    display: flex;
+    gap: 24px;
+    padding-left: 24px;
+    align-items: center;
+}
+
+.top-navabar-bar .nav-btn {
+    background-color: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1rem;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.top-navabar-bar .nav-btn:hover,
+.top-navabar-bar .nav-btn.active {
+    background-color: #ffffff;
+    color: #000000;
+}
