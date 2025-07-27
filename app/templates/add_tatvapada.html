@@ -7,7 +7,7 @@
   <title>ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/add.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_tatvapada.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
 
   <script type="module" src="{{ url_for('static', filename='js/addTatvapada.js') }}"></script>
@@ -38,16 +38,16 @@
     </div>
 
     <!-- Cascading Dropdowns -->
-    <div class="dropdown-container mb-4" id="cascading-section" style="display: none;">
-      <select id="samputa" class="form-select mb-2">
+    <div class="dropdown-container" id="cascading-section" style="display: none;">
+      <select id="samputa" class="dropdown">
         <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
       </select>
 
-      <select id="tatvapadakarara_hesaru" class="form-select mb-2" disabled>
+      <select id="tatvapadakarara_hesaru" class="dropdown" disabled>
         <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
       </select>
 
-      <select id="tatvapada_sankhye" class="form-select" disabled>
+      <select id="tatvapada_sankhye" class="dropdown" disabled>
         <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
       </select>
     </div>
