@@ -1,6 +1,7 @@
 <!-- templates/login.html -->
 <!DOCTYPE html>
 <html lang="kn">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -35,19 +36,19 @@
       </form>
 
       {% if error %}
-        <div class="alert alert-danger mt-3 text-center" role="alert">
-          {{ error }}
-        </div>
+      <div class="alert alert-danger mt-3 text-center" role="alert">
+        {{ error }}
+      </div>
       {% endif %}
 
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{ category }} mt-3 text-center" role="alert">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
+      {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} mt-3 text-center" role="alert">
+        {{ message }}
+      </div>
+      {% endfor %}
+      {% endif %}
       {% endwith %}
     </div>
   </div>
@@ -91,4 +92,5 @@
 
   <script type="module" src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
+
 </html>
