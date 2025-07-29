@@ -5,61 +5,73 @@ import jwt
 from dotenv import load_dotenv
 from flask import (
     Blueprint, request, render_template, redirect,
-    url_for, flash, make_response
+    url_for, flash, make_response, jsonify
 )
+
 from app.models.user_management import User, Admin
 from app.services.user_manage_service import create_user, create_admin, bcrypt
+from app.utils.logger import setup_logger
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
+logger = setup_logger("auth", "auth.log")
 
 auth_bp = Blueprint("auth", __name__)
+
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
-        user_data = {
-            "name": request.form.get("name"),
-            "phone": request.form.get("phone"),
-            "email": request.form.get("email"),
-            "username": request.form.get("username"),
-            "password": request.form.get("password"),
-        }
+        logger.info("Signup request received")
+        user_data = request.get_json()
 
-        if not all(user_data.values()):
-            error = "ಎಲ್ಲಾ ಸ್ಥಳಗಳನ್ನು ಪೂರೈಸಿ."
-            return render_template("login.html", error=error)
+        logger.debug(f"Signup data extracted: {user_data}")
+
+        if not user_data or not all(user_data.values()):
+            logger.warning("Signup failed: Missing fields")
+            return jsonify({"error": "ಎಲ್ಲಾ ಸ್ಥಳಗಳನ್ನು ಪೂರೈಸಿ."}), 400
 
         create_user(**user_data)
-        flash("ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ.", "success")
-        return redirect(url_for("auth.login"))
+        logger.info(f"User '{user_data['username']}' created successfully")
+        return jsonify({"message": "ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ."}), 201
 
     except ValueError as e:
-        return render_template("login.html", error=str(e))
+        logger.error(f"Signup error: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+
 
 @auth_bp.route("/admin/create", methods=["POST"])
 def create_admin_route():
     try:
-        username = request.form.get("username")
-        email = request.form.get("email")
+        logger.info("Admin creation request received")
+        data = request.get_json()
+        username = data.get("username")
+        email = data.get("email")
 
         if not username or not email:
-            return "Username and Email are required.", 400
+            logger.warning("Admin creation failed: Missing username or email")
+            return jsonify({"error": "Username and Email are required."}), 400
 
         create_admin(username=username, email=email)
-        return "Admin created successfully.", 201
+        logger.info(f"Admin '{username}' created successfully")
+        return jsonify({"message": "Admin created successfully."}), 201
+
     except ValueError as e:
-        return str(e), 400
+        logger.error(f"Admin creation error: {str(e)}")
+        return jsonify({"error": str(e)}), 400
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
+        logger.info("Login page rendered")
         return render_template("login.html")
 
-    username = request.form.get("username")
-    password = request.form.get("password")
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+    logger.info(f"Login attempt for username: {username}")
 
     user_type = None
     user_id = None
@@ -69,15 +81,16 @@ def login():
     if admin:
         user_type = "admin"
         user_id = admin.id
-        # Admin login is password-less (adjust if needed)
+        logger.info(f"Admin '{username}' logged in successfully (password-less)")
     else:
         user = User.query.filter_by(username=username).first()
         if not user or not bcrypt.check_password_hash(user.password_hash, password):
-            error = "ತಪ್ಪು ಬಳಕೆದಾರಹೆಸರು ಅಥವಾ ಗುಪ್ತಪದ"
-            return render_template("login.html", error=error)
+            logger.warning(f"Failed login attempt for user: {username}")
+            return jsonify({"error": "ತಪ್ಪು ಬಳಕೆದಾರಹೆಸರು ಅಥವಾ ಗುಪ್ತಪದ"}), 401
 
         user_type = "user"
         user_id = user.id
+        logger.info(f"User '{username}' logged in successfully")
 
     # JWT payload with expiry and user_type
     payload = {
@@ -88,21 +101,28 @@ def login():
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    logger.debug(f"JWT issued for '{username}' with user_type '{user_type}'")
 
-    # Set cookie
-    response = make_response(redirect(url_for("home.home_page")))
+    # Set token in cookie and return user info as JSON
+    response = make_response(jsonify({
+        "message": "Login successful",
+        "token": token,
+        "username": username,
+        "user_type": user_type
+    }))
     response.set_cookie(
         "access_token",
         token,
         httponly=True,
         samesite="Lax",
-        secure=False  # ✅ Set to True if using HTTPS
+        secure=False  # ✅ Set to True in production
     )
     return response
 
+
 @auth_bp.route("/logout")
 def logout():
-    response = make_response(redirect(url_for("auth.login")))
+    response = make_response(jsonify({"message": "ಲಾಗ್ ಔಟ್ ಯಶಸ್ವಿಯಾಗಿ."}))
     response.set_cookie("access_token", "", expires=0)
-    flash("ಲಾಗ್ ಔಟ್ ಯಶಸ್ವಿಯಾಗಿ.", "info")
+    logger.info("User logged out and token cleared")
     return response

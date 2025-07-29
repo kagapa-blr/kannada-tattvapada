@@ -45,7 +45,7 @@ logger.info("Database initialized and SQLAlchemy bound to app.")
 # -------------------- Step 7: Blueprint Registration -------------------- #
 app.register_blueprint(home_bp)
 app.register_blueprint(tatvapada_bp)
-app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp, url_prefix="/admin")
 logger.info("Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp")
 

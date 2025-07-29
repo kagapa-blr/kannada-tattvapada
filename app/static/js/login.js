@@ -1,7 +1,13 @@
+//static/js/login.js
+
+import apiClient from "./apiClient.js";
+import apiEndpoints from "./apiEndpoints.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     const signupForm = document.getElementById("signupForm");
     const loginForm = document.getElementById("loginForm");
 
+    // Handle Signup
     if (signupForm) {
         signupForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -17,47 +23,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            const payload = { name, phone, email, username, password };
+
             try {
-                const response = await fetch("/signup", {
-                    method: "POST",
+                const response = await apiClient.post(apiEndpoints.auth.signup, payload, {
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        name,
-                        phone,
-                        email,
-                        username,
-                        password,
-                    }),
+                        "Content-Type": "application/json"
+                    }
                 });
 
-                if (response.ok) {
-                    bootstrap.Modal.getInstance(document.getElementById("signupModal")).hide();
-                    setTimeout(() => {
-                        alert("ಸೈನ್ ಅಪ್ ಯಶಸ್ವಿಯಾಗಿ ಆಗಿದೆ. ಈಗ ಲಾಗಿನ್ ಮಾಡಿ.");
-                        location.reload();
-                    }, 500);
-                } else {
-                    const errorText = await response.text();
-                    alert("ದೋಷ: " + errorText);
-                }
+                // Close the signup modal
+                const modalElement = document.getElementById("signupModal");
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) modalInstance.hide();
+
+                setTimeout(() => {
+                    alert("ಸೈನ್ ಅಪ್ ಯಶಸ್ವಿಯಾಗಿ ಆಗಿದೆ. ಈಗ ಲಾಗಿನ್ ಮಾಡಿ.");
+                    location.reload();
+                }, 500);
             } catch (err) {
                 console.error("Signup Error:", err);
-                alert("ಸೈನ್ ಅಪ್ ವಿಫಲವಾಗಿದೆ.");
+                alert("ಸೈನ್ ಅಪ್ ವಿಫಲವಾಯಿತು: " + (err.response?.data?.error || err.message));
             }
         });
     }
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", (e) => {
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
+    // Handle Login
+// Handle Login
+if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();  // ✅ Prevent form from submitting normally
 
-            if (!username || !password) {
-                e.preventDefault();
-                alert("ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಗುಪ್ತಪದ ನೀಡಬೇಕು.");
-            }
-        });
-    }
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!username || !password) {
+            alert("ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಗುಪ್ತಪದ ನೀಡಬೇಕು.");
+            return;
+        }
+
+        try {
+            const response = await apiClient.post(apiEndpoints.auth.login, {
+                username,
+                password
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            // On success, redirect
+            window.location.href = "/";
+        } catch (err) {
+            console.error("Login Error:", err);
+            alert("ಲಾಗಿನ್ ವಿಫಲವಾಯಿತು: " + (err.response?.data?.error || err.message));
+        }
+    });
+}
+
+
+
 });
