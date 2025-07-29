@@ -4,3 +4,4 @@ python-dotenv
 PyMySQL
 flask-bcrypt
 PyJWT
+flask_migrate

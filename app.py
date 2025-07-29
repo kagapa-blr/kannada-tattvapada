@@ -1,6 +1,8 @@
 import os
-from flask import Flask
+
 from dotenv import load_dotenv
+from flask import Flask
+
 from app.config.database import db_instance, init_db
 from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
@@ -43,7 +45,7 @@ logger.info("Database initialized and SQLAlchemy bound to app.")
 # -------------------- Step 7: Blueprint Registration -------------------- #
 app.register_blueprint(home_bp)
 app.register_blueprint(tatvapada_bp)
-app.register_blueprint(auth_bp)
+app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(admin_bp, url_prefix="/admin")
 logger.info("Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp")
 
@@ -55,6 +57,12 @@ if __name__ == "__main__":
         logger.debug("Creating tables if not present...")
         db_instance.create_all()
         logger.info("Database tables created or already exist.")
+
+        # Print the created table names
+        inspector = db_instance.inspect(db_instance.engine)
+        tables = inspector.get_table_names()
+        logger.info(f"Tables in the database: {tables}")
+        print("Created tables:", tables)
 
     logger.info("Flask app is up and running.")
     app.run(debug=False)
