@@ -1,8 +1,8 @@
 //static/js/login.js
 
-import apiClient from "./apiClient.js";
-import apiEndpoints from "./apiEndpoints.js";
 
+import apiEndpoints from "./apiEndpoints.js";
+import apiClient, { BASE_URL } from "./apiClient.js";
 document.addEventListener("DOMContentLoaded", () => {
     const signupForm = document.getElementById("signupForm");
     const loginForm = document.getElementById("loginForm");

@@ -5,7 +5,7 @@ import jwt
 from dotenv import load_dotenv
 from flask import (
     Blueprint, request, render_template, redirect,
-    url_for, flash, make_response, jsonify
+    url_for, make_response, jsonify
 )
 
 from app.models.user_management import User, Admin
@@ -72,10 +72,6 @@ def login():
     username = data.get("username")
     password = data.get("password")
     logger.info(f"Login attempt for username: {username}")
-
-    user_type = None
-    user_id = None
-
     # Try admin first
     admin = Admin.query.filter_by(username=username).first()
     if admin:
@@ -120,9 +116,11 @@ def login():
     return response
 
 
+
 @auth_bp.route("/logout")
 def logout():
-    response = make_response(jsonify({"message": "ಲಾಗ್ ಔಟ್ ಯಶಸ್ವಿಯಾಗಿ."}))
+    response = make_response(redirect(url_for("auth.login")))
     response.set_cookie("access_token", "", expires=0)
+    response.set_cookie("logout_message", "logout successful", max_age=5)
     logger.info("User logged out and token cleared")
     return response
