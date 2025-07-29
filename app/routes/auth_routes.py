@@ -33,7 +33,7 @@ def signup():
 
         create_user(**user_data)
         flash("ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ.", "success")
-        return redirect(url_for("home.login"))
+        return redirect(url_for("auth.login"))
 
     except ValueError as e:
         return render_template("login.html", error=str(e))
