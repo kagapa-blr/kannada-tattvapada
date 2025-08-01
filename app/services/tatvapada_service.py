@@ -45,11 +45,11 @@ class TatvapadaService:
                 raise ValueError("Author name (tatvapadakarara_hesaru) is required")
 
             # Step 2: Look up existing author
-            author = TatvapadaAuthorInfo.query.filter_by(hesaru=author_name).first()
+            author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
 
             # Step 3: If not found, create author
             if not author:
-                author = TatvapadaAuthorInfo(hesaru=author_name)
+                author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
                 db_instance.session.add(author)
                 db_instance.session.flush()  # To generate the UUID
 
@@ -86,7 +86,7 @@ class TatvapadaService:
             # If author name is being passed for update, map it to ID first
             author_name = data.get("tatvapadakarara_hesaru")
             if author_name:
-                existing_author = TatvapadaAuthorInfo.query.filter_by(hesaru=author_name).first()
+                existing_author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
                 if not existing_author:
                     raise ValueError(f"Author '{author_name}' not found. Please add the author before updating.")
                 data["tatvapada_author_id"] = existing_author.id
@@ -134,7 +134,7 @@ class TatvapadaService:
             # Step 2: If author name (string) is provided, map to author ID
             author_name = data.get("tatvapadakarara_hesaru")
             if author_name:
-                existing_author = TatvapadaAuthorInfo.query.filter_by(hesaru=author_name).first()
+                existing_author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
                 if not existing_author:
                     raise ValueError(f"Author '{author_name}' not found. Please add the author before updating.")
                 data["tatvapada_author_id"] = existing_author.id
@@ -283,7 +283,7 @@ class TatvapadaService:
                 db_instance.session.query(
                     Tatvapada.tatvapada_sankhye,
                     TatvapadaAuthorInfo.id,
-                    TatvapadaAuthorInfo.hesaru
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru
                 )
                 .join(
                     TatvapadaAuthorInfo,

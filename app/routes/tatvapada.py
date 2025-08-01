@@ -118,7 +118,7 @@ def update_tatvapada_by_composite_keys():
                 "tatvapadakosha_sheershike": updated_entry.tatvapadakosha_sheershike,
                 "mukhya_sheershike": updated_entry.mukhya_sheershike,
                 "tatvapada_author_id": updated_entry.tatvapada_author_id,
-                "tatvapadakarara_hesaru": updated_entry.tatvapadakarara_hesaru.hesaru if updated_entry.tatvapadakarara_hesaru else None,
+                "tatvapadakarara_hesaru": updated_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru if updated_entry.tatvapadakarara_hesaru else None,
                 "tatvapada_sankhye": updated_entry.tatvapada_sankhye,
                 "tatvapada_hesaru": updated_entry.tatvapada_hesaru,
                 "tatvapada_first_line": updated_entry.tatvapada_first_line,
@@ -158,7 +158,7 @@ def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankh
 
     # Include related author name (if relationship is present)
     if tatvapada.tatvapadakarara_hesaru:
-        data["tatvapadakarara_hesaru"] = tatvapada.tatvapadakarara_hesaru.hesaru
+        data["tatvapadakarara_hesaru"] = tatvapada.tatvapadakarara_hesaru.tatvapadakarara_hesaru
 
     return jsonify(data)
 

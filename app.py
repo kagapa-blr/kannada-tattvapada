@@ -22,9 +22,7 @@ app_root = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(app_root, "app", "templates")
 static_path = os.path.join(app_root, "app", "static")
 
-print("App root path:", app_root)
-print("Template folder:", template_path)
-print("Static folder:", static_path)
+
 
 logger.info(f"App root path: {app_root}")
 logger.info(f"Template folder path: {template_path}")
