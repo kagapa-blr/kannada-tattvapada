@@ -125,7 +125,7 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     apiClient.get(endpoint)
         .then(data => {
             renderTatvapada(data);
-            populateTatvapadaForm(data);
+            //populateTatvapadaForm(data);
         })
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
@@ -141,7 +141,7 @@ function resetDropdown(dropdown, placeholderText, disable = false) {
 // ---------- Render Tatvapada ----------
 function renderTatvapada(data) {
     displayPoem({
-        text: data.tatvapada_hesaru,
+        text: data.tatvapada_sheershike,
         poem: data.tatvapada,
         author: data.tatvapadakarara_hesaru
     });
@@ -150,15 +150,14 @@ function renderTatvapada(data) {
 }
 
 function displayOtherFields(data) {
-    document.getElementById('tatvapadakosha-value').textContent = data.tatvapadakosha || "";
-    document.getElementById('tatvapadakosha_sheershike-value').textContent = data.tatvapadakosha_sheershike || "";
-    document.getElementById('mukhya_sheershike-value').textContent = data.mukhya_sheershike || "";
-    document.getElementById('tatvapada_author_id-value').textContent = data.tatvapada_author_id || "";
-    document.getElementById('tatvapadakarara_hesaru-value').textContent = data.tatvapadakarara_hesaru || "";
-    document.getElementById('tatvapada_hesaru-value').textContent = data.tatvapada_hesaru || "";
-    document.getElementById('klishta_padagalu_artha-value').textContent = data.klishta_padagalu_artha || "";
-    document.getElementById('tippani-value').textContent = data.tippani || "";
-    document.getElementById('tatvapada_first_line-value').textContent = data.tatvapada_first_line || "";
+
+    document.getElementById('tatvapadakosha_sheershike_value').textContent = data.tatvapadakosha_sheershike || "";
+    document.getElementById('tatvapadakarara_hesaru_value').textContent = data.tatvapadakarara_hesaru || "";
+    document.getElementById('tatvapada_sheershike_value').textContent = data.tatvapada_sheershike || "";
+    document.getElementById('klishta_padagalu_artha_value').textContent = data.klishta_padagalu_artha || "";
+    document.getElementById('tippani_value').textContent = data.tippani || "";
+    document.getElementById('tatvapada_first_line_value').textContent = data.tatvapada_first_line || "";
+    document.getElementById('bhavanuvada_value').textContent = data.bhavanuvada || "";
 }
 
 function displayPoem(poemData) {
