@@ -150,16 +150,13 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
 
 function populateTatvapadaForm(data) {
     if (!data) return;
-
-    document.getElementById("tatvapadakosha").value = data.tatvapadakosha || "";
     document.getElementById("tatvapadakosha_sheershike").value = data.tatvapadakosha_sheershike || "";
-    document.getElementById("mukhya_sheershike").value = data.mukhya_sheershike || "";
-
-    document.getElementById("tatvapadakarara_hesaru-edit").value = data.tatvapadakarara_hesaru || "";
-    document.getElementById("tatvapada_hesaru").value = data.tatvapada_hesaru || "";
+    document.getElementById("tatvapada_sheershike").value = data.tatvapada_sheershike || "";
+    document.getElementById("vibhag").value = data.vibhag || "";
+    document.getElementById("tatvapadakarara_hesaru_update").value = data.tatvapadakarara_hesaru || "";
     document.getElementById("tatvapada_first_line").value = data.tatvapada_first_line || "";
-
     document.getElementById("tatvapada").value = data.tatvapada || "";
+    document.getElementById("bhavanuvada").value = data.bhavanuvada || "";
     document.getElementById("klishta_padagalu_artha").value = data.klishta_padagalu_artha || "";
     document.getElementById("tippani").value = data.tippani || "";
 }
@@ -192,7 +189,7 @@ function initializeFormSubmitHandler() {
         apiClient.put(apiEndpoints.tatvapada.updateTatvapada, jsonData)
             .then((response) => {
 
-                populateTatvapadaForm(jsonData); // update immediately
+                populateTatvapadaForm(response.updated_entry); // update immediately
 
                 // show modal with optional callback
                 showSuccessModal(null, response?.message || "ಅಪ್ಡೇಟ್ ಯಶಸ್ವಿಯಾಗಿದೆ.");

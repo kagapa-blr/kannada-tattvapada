@@ -19,24 +19,6 @@ class TatvapadaService:
     def __init__(self):
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
 
-
-
-    def insert_tatvapada1(self, data: dict) -> Optional[Tatvapada]:
-        try:
-            new_entry = Tatvapada(**data)
-            db_instance.session.add(new_entry)
-            db_instance.session.commit()
-            self.logger.info(f"Inserted Tatvapada: {new_entry.tatvapada_hesaru}")
-            return new_entry
-        except IntegrityError as ie:
-            db_instance.session.rollback()
-            self.logger.error(f"IntegrityError (possibly duplicate): {ie}")
-            raise ie  # Propagate up to the route handler
-        except SQLAlchemyError as e:
-            db_instance.session.rollback()
-            self.logger.error(f"General DB error while inserting Tatvapada: {e}")
-            raise e  # Propagate up
-
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
         try:
             # Step 1: Extract author name
@@ -69,51 +51,7 @@ class TatvapadaService:
             self.logger.error(f"Error inserting Tatvapada: {e}")
             raise e
 
-    def update_tatvapada(self, entry_id: int, data: dict) -> Optional[Tatvapada]:
-        try:
-            # Step 1: Fetch existing entry
-            existing_entry = Tatvapada.query.get(entry_id)
-            if not existing_entry:
-                raise ValueError(f"Tatvapada entry with id {entry_id} not found")
-
-            # Step 2: Check for unique constraint violation attempt
-            immutable_fields = {
-                "samputa_sankhye": existing_entry.samputa_sankhye,
-                "tatvapada_sankhye": existing_entry.tatvapada_sankhye,
-                "tatvapada_author_id": existing_entry.tatvapada_author_id
-            }
-
-            # If author name is being passed for update, map it to ID first
-            author_name = data.get("tatvapadakarara_hesaru")
-            if author_name:
-                existing_author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
-                if not existing_author:
-                    raise ValueError(f"Author '{author_name}' not found. Please add the author before updating.")
-                data["tatvapada_author_id"] = existing_author.id
-
-            # Step 3: Check attempted change to any field in the unique constraint
-            for field, original_value in immutable_fields.items():
-                if field in data and str(data[field]) != str(original_value):
-                    raise ValueError(
-                        f"Cannot change '{field}' for existing Tatvapada entry (ID: {entry_id}). "
-                        f"Please insert a new entry instead."
-                    )
-
-            # Step 4: Update the remaining fields
-            for key, value in data.items():
-                if hasattr(existing_entry, key):
-                    setattr(existing_entry, key, value)
-
-            db_instance.session.commit()
-            self.logger.info(f"Updated Tatvapada entry with id: {entry_id}")
-            return existing_entry
-
-        except (ValueError, SQLAlchemyError) as e:
-            db_instance.session.rollback()
-            self.logger.error(f"Error updating Tatvapada: {e}")
-            raise e
-
-    def update_by_composite_keys(
+    def update_by_composite_keys1(
             self,
             samputa_sankhye: int,
             tatvapada_sankhye: int,
@@ -162,6 +100,60 @@ class TatvapadaService:
             db_instance.session.commit()
             self.logger.info(
                 f"Updated Tatvapada entry with keys: {samputa_sankhye}, {tatvapada_sankhye}, {tatvapada_author_id}")
+            return existing_entry
+
+        except (ValueError, SQLAlchemyError) as e:
+            db_instance.session.rollback()
+            self.logger.error(f"Error updating Tatvapada: {e}")
+            raise e
+
+    def update_by_composite_keys(
+            self,
+            samputa_sankhye: int,
+            tatvapada_sankhye: int,
+            tatvapada_author_id: int,
+            data: dict
+    ) -> Optional[Tatvapada]:
+        try:
+            # Step 1: Fetch the existing entry
+            existing_entry = Tatvapada.query.filter_by(
+                samputa_sankhye=samputa_sankhye,
+                tatvapada_sankhye=tatvapada_sankhye,
+                tatvapada_author_id=tatvapada_author_id
+            ).first()
+
+            if not existing_entry:
+                raise ValueError("Tatvapada entry not found with given composite keys")
+
+            # Step 2: Enforce immutability of identifying fields (including author_id)
+            immutable_fields = {
+                "samputa_sankhye": existing_entry.samputa_sankhye,
+                "tatvapada_sankhye": existing_entry.tatvapada_sankhye,
+                "tatvapada_author_id": existing_entry.tatvapada_author_id
+            }
+            for field, original_value in immutable_fields.items():
+                if field in data and str(data[field]) != str(original_value):
+                    raise ValueError(
+                        f"Cannot change '{field}' for existing Tatvapada entry. Please insert a new entry instead."
+                    )
+
+            # Step 3: If author name is provided, update via relationship (this changes the shared author)
+            author_name = data.pop("tatvapadakarara_hesaru", None)
+            if author_name:
+                if existing_entry.tatvapadakarara_hesaru:
+                    existing_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru = author_name  # update the related author's name
+                else:
+                    raise ValueError("Author relationship missing; cannot update author name.")
+
+            # Step 4: Update the model fields (excluding the relationship name since handled)
+            for key, value in data.items():
+                if hasattr(existing_entry, key):
+                    setattr(existing_entry, key, value)
+
+            db_instance.session.commit()
+            self.logger.info(
+                f"Updated Tatvapada entry with keys: {samputa_sankhye}, {tatvapada_sankhye}, {tatvapada_author_id}"
+            )
             return existing_entry
 
         except (ValueError, SQLAlchemyError) as e:
@@ -304,7 +296,6 @@ class TatvapadaService:
         except SQLAlchemyError as e:
             self.logger.error(f"Error fetching sankhyes with author for samputa {samputa_sankhye}: {e}")
             return []
-
 
 
     def get_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> \

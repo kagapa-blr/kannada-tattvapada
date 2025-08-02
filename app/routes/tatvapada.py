@@ -114,17 +114,17 @@ def update_tatvapada_by_composite_keys():
         return jsonify({
             "message": "Tatvapada updated successfully",
             "updated_entry": {
-                "tatvapadakosha": updated_entry.tatvapadakosha,
                 "tatvapadakosha_sheershike": updated_entry.tatvapadakosha_sheershike,
-                "mukhya_sheershike": updated_entry.mukhya_sheershike,
+                "tatvapada_sheershike": updated_entry.tatvapada_sheershike,
                 "tatvapada_author_id": updated_entry.tatvapada_author_id,
                 "tatvapadakarara_hesaru": updated_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru if updated_entry.tatvapadakarara_hesaru else None,
                 "tatvapada_sankhye": updated_entry.tatvapada_sankhye,
-                "tatvapada_hesaru": updated_entry.tatvapada_hesaru,
                 "tatvapada_first_line": updated_entry.tatvapada_first_line,
                 "tatvapada": updated_entry.tatvapada,
                 "klishta_padagalu_artha": updated_entry.klishta_padagalu_artha,
                 "tippani": updated_entry.tippani,
+                "bhavanuvada": updated_entry.bhavanuvada,
+                "vibhag": updated_entry.vibhag,
             }
         })
 
