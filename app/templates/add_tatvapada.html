@@ -30,48 +30,59 @@
       </div>
     </fieldset>
 
-
     <!-- Inputs for modeNew -->
     <div id="inputs-container" class="mb-4">
       <div class="mb-2">
         <input type="number" id="samputa_input" name="samputa" class="form-control mb-1"
           placeholder="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ನಮೂದಿಸಿ" aria-label="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ನಮೂದಿಸಿ" />
         <div id="samputa_suggestion" class="form-text text-warning small">
-          ಈಗಾಗಲೇ ದಾಖಲಾಗಿರುವ ಸಂಪುಟಗಳು : <span id="samputa_suggestion_value"> [1, 2, 3, 4]</span> ವಿಭಿನ್ನ ನಮೂದಿಸಿ.
+          ಈಗಾಗಲೇ ದಾಖಲಾಗಿರುವ ಸಂಪುಟಗಳು : <span id="samputa_suggestion_value"></span> ವಿಭಿನ್ನ ನಮೂದಿಸಿ.
         </div>
       </div>
 
       <div class="mb-2">
         <input type="text" id="tatvapadakarara_hesaru_input_modeNew" name="tatvapadakarara_hesaru"
-          class="form-control mb-1" placeholder="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನಮೂದಿಸಿ" aria-label="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನಮೂದಿಸಿ" />
+          class="form-control mb-1" placeholder="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನಮೂದಿಸಿ" aria-label="ತತ್ತ್ವಪದಕಾರರ" />
       </div>
 
       <div class="mb-2">
         <input type="number" id="tatvapada_sankhye_input" name="tatvapada_sankhye" class="form-control mb-1"
-          placeholder="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ" aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ" />
-
+          placeholder="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ" aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ" />
       </div>
     </div>
 
     <!-- Cascading Dropdowns for modeExisting -->
     <section id="cascading-section" class="dropdown-container mb-4" style="display: none;"
       aria-label="ತತ್ತ್ವಪದ ಆಯ್ಕೆಗಳು">
-      <select id="samputa" class="dropdown" aria-controls="tatvapadakarara_hesaru tatvapada_sankhye"
-        aria-haspopup="listbox" aria-label="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ">
-        <option value="" selected disabled>ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
-      </select>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="samputa" class="form-label">ಸಂಪುಟ</label>
+          <select id="samputa" class="form-select" aria-controls="tatvapadakarara_hesaru tatvapada_sankhye"
+            aria-haspopup="listbox" aria-label="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ">
+            <option value="" selected disabled>ತತ್ತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+          </select>
+        </div>
 
-      <select id="tatvapadakarara_hesaru" class="dropdown" disabled aria-label="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು">
-        <option value="" selected disabled>ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</option>
-      </select>
+        <div class="col-md-4">
+          <label for="tatvapadakarara_hesaru" class="form-label">ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</label>
+          <select id="tatvapadakarara_hesaru" class="form-select" disabled aria-label="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು">
+            <option value="" selected disabled>ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</option>
+          </select>
+          <div id="inline-author-container" class="mt-2"></div>
+        </div>
 
-      <select id="tatvapada_sankhye" class="dropdown" disabled aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ">
-        <option value="" selected disabled>ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</option>
-      </select>
+        <div class="col-md-4">
+          <label for="tatvapada_sankhye" class="form-label">ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</label>
+          <select id="tatvapada_sankhye" class="form-select" disabled aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ">
+            <option value="" selected disabled>ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</option>
+          </select>
+          <div id="inline-sankhye-container" class="mt-2"></div>
+        </div>
+      </div>
     </section>
 
     <form id="tatvapada-add-form" novalidate>
-      <div class="row g-4">
+      <div class="row g-4 mt-2">
         <div class="col-md-4">
           <label for="tatvapadakosha_sheershike" class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</label>
           <input type="text" maxlength="150" id="tatvapadakosha_sheershike" name="tatvapadakosha_sheershike"
@@ -101,11 +112,9 @@
         </div>
 
         <div class="col-12">
-          <label for="tatvapada" class="form-label fw-bold">ಭಾವಾನುವಾದ</label>
-          <textarea id="bhavanuvada" name="bhavanuvada" class="form-control" rows="6" required placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
-ತ್ರಿಲೋಕದೋಳ್ ವಿರತಿ || ಪ ||
-...........
-        "></textarea>
+          <label for="bhavanuvada" class="form-label fw-bold">ಭಾವಾನುವಾದ</label>
+          <textarea id="bhavanuvada" name="bhavanuvada" class="form-control" rows="6"
+            placeholder="ಭಾವಾನುವಾದ"></textarea>
         </div>
         <div class="col-md-6">
           <label for="klishta_padagalu_artha" class="form-label fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</label>
@@ -119,9 +128,10 @@
         </div>
       </div>
 
-      <div class="text-center mt-4">
+      <div class="text-center mt-4 mb-5">
+
         <button type="submit" class="btn btn-success me-2">ಸೇರಿಸಿ</button>
-        <button type="reset" class="btn btn-secondary">ಕ್ಲಿಯರ್</button>
+        <button type="reset" class="btn btn-secondary">ಮರುಹೊಂದಿಸಿ</button>
       </div>
     </form>
   </main>
@@ -152,7 +162,7 @@
     </div>
   </div>
 
-  <!-- Add the following script tag to import the JS -->
+  <!-- Scripts -->
   <script type="module" src="{{ url_for('static', filename='js/addTatvapada.js') }}"></script>
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 </body>

@@ -19,7 +19,7 @@ class TatvapadaService:
     def __init__(self):
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
 
-    def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
+    def insert_tatvapada1(self, data: dict) -> Optional[Tatvapada]:
         try:
             # Step 1: Extract author name
             author_name = data.pop("tatvapadakarara_hesaru", None)
@@ -50,6 +50,59 @@ class TatvapadaService:
             db_instance.session.rollback()
             self.logger.error(f"Error inserting Tatvapada: {e}")
             raise e
+
+    def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
+        try:
+            # Work on a shallow copy so caller's dict isn't mutated unexpectedly
+            payload = data.copy()
+
+            author_name = payload.pop("tatvapadakarara_hesaru", None)
+            author_id = payload.get("tatvapada_author_id", None)
+
+            # Case: both provided -> ensure consistency
+            if author_name and author_id:
+                existing_author = TatvapadaAuthorInfo.query.filter_by(id=author_id).first()
+                if not existing_author:
+                    raise ValueError(f"Provided tatvapada_author_id '{author_id}' does not exist")
+                if existing_author.tatvapadakarara_hesaru != author_name:
+                    raise ValueError(
+                        "Conflict: provided tatvapadakarara_hesaru and tatvapada_author_id refer to different authors"
+                    )
+                author = existing_author
+
+            # Case: only author name provided
+            elif author_name:
+                author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
+                if not author:
+                    author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
+                    db_instance.session.add(author)
+                    db_instance.session.flush()  # generate UUID / ID
+
+            # Case: only author ID provided
+            elif author_id:
+                author = TatvapadaAuthorInfo.query.filter_by(id=author_id).first()
+                if not author:
+                    raise ValueError(f"tatvapada_author_id '{author_id}' does not exist")
+                author_name = author.tatvapadakarara_hesaru  # derive name if needed
+
+            else:
+                raise ValueError("Either tatvapadakarara_hesaru or tatvapada_author_id must be provided")
+
+            # Ensure author is present and assign its ID
+            payload["tatvapada_author_id"] = author.id
+
+            # Create the Tatvapada entry
+            new_entry = Tatvapada(**{k: v for k, v in payload.items() if k != "tatvapadakarara_hesaru"})
+            db_instance.session.add(new_entry)
+            db_instance.session.commit()
+
+            self.logger.info(f"Inserted Tatvapada for author: {author.tatvapadakarara_hesaru}")
+            return new_entry
+
+        except Exception as e:
+            db_instance.session.rollback()
+            self.logger.error(f"Error inserting Tatvapada: {e}")
+            raise
 
     def update_by_composite_keys1(
             self,
