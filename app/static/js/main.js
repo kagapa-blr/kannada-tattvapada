@@ -184,19 +184,3 @@ function displayPoem(poemData) {
     `;
 }
 
-// ---------- Populate Form ----------
-function populateTatvapadaForm(data) {
-    if (!data) return;
-
-    document.getElementById('tatvapadakosha').value = data.tatvapadakosha || "";
-    document.getElementById('tatvapadakosha_sheershike').value = data.tatvapadakosha_sheershike || "";
-    document.getElementById('mukhya_sheershike').value = data.mukhya_sheershike || "";
-
-    document.getElementById('tatvapadakarara_hesaru-edit').value = data.tatvapadakarara_hesaru || "";
-    document.getElementById('tatvapada_hesaru').value = data.tatvapada_hesaru || "";
-    document.getElementById('tatvapada_first_line').value = data.tatvapada_first_line || "";
-
-    document.getElementById('tatvapada').value = data.tatvapada || "";
-    document.getElementById('klishta_padagalu_artha').value = data.klishta_padagalu_artha || "";
-    document.getElementById('tippani').value = data.tippani || "";
-}

@@ -2,158 +2,159 @@
 <html lang="kn">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</title>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_tatvapada.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
-
-  <script type="module" src="{{ url_for('static', filename='js/addTatvapada.js') }}"></script>
-  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_tatvapada.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
 </head>
 
 <body>
   {% include 'navbar.html' %}
 
-  <div class="container mt-5">
+  <main class="container mt-5">
     <h2 class="mb-4 text-center">ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</h2>
 
     <!-- Mode Selection -->
-    <div class="mb-4">
-      <label class="fw-bold">ಆಯ್ಕೆಮಾಡಿ:</label>
+    <fieldset class="mb-4">
+      <legend class="fw-bold mb-2">ಆಯ್ಕೆಮಾಡಿ:</legend>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="entryMode" id="modeNew" value="new" checked>
-        <label class="form-check-label" for="modeNew">
-          ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ
-        </label>
+        <input class="form-check-input" type="radio" name="entryMode" id="modeNew" value="new" checked />
+        <label class="form-check-label" for="modeNew">ಹೊಸ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="radio" name="entryMode" id="modeExisting" value="existing">
-        <label class="form-check-label" for="modeExisting">
-          ಹಳೆಯ ಸಂಪುಟದಲ್ಲಿ ತತ್ತ್ವಪದ ಸೇರಿಸಿ
-        </label>
+        <input class="form-check-input" type="radio" name="entryMode" id="modeExisting" value="existing" />
+        <label class="form-check-label" for="modeExisting">ಹಳೆಯ ಸಂಪುಟದಲ್ಲಿ ತತ್ತ್ವಪದ ಸೇರಿಸಿ</label>
+      </div>
+    </fieldset>
+
+
+    <!-- Inputs for modeNew -->
+    <div id="inputs-container" class="mb-4">
+      <div class="mb-2">
+        <input type="number" id="samputa_input" name="samputa" class="form-control mb-1"
+          placeholder="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ನಮೂದಿಸಿ" aria-label="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ನಮೂದಿಸಿ" />
+        <div id="samputa_suggestion" class="form-text text-warning small">
+          ಈಗಾಗಲೇ ದಾಖಲಾಗಿರುವ ಸಂಪುಟಗಳು : <span id="samputa_suggestion_value"> [1, 2, 3, 4]</span> ವಿಭಿನ್ನ ನಮೂದಿಸಿ.
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <input type="text" id="tatvapadakarara_hesaru_input_modeNew" name="tatvapadakarara_hesaru"
+          class="form-control mb-1" placeholder="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನಮೂದಿಸಿ" aria-label="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನಮೂದಿಸಿ" />
+      </div>
+
+      <div class="mb-2">
+        <input type="number" id="tatvapada_sankhye_input" name="tatvapada_sankhye" class="form-control mb-1"
+          placeholder="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ" aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ" />
+
       </div>
     </div>
 
-    <!-- Cascading Dropdowns -->
-    <div class="dropdown-container" id="cascading-section" style="display: none;">
-      <select id="samputa" class="dropdown">
-        <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+    <!-- Cascading Dropdowns for modeExisting -->
+    <section id="cascading-section" class="dropdown-container mb-4" style="display: none;"
+      aria-label="ತತ್ತ್ವಪದ ಆಯ್ಕೆಗಳು">
+      <select id="samputa" class="dropdown" aria-controls="tatvapadakarara_hesaru tatvapada_sankhye"
+        aria-haspopup="listbox" aria-label="ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ">
+        <option value="" selected disabled>ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
       </select>
 
-      <select id="tatvapadakarara_hesaru" class="dropdown" disabled>
-        <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+      <select id="tatvapadakarara_hesaru" class="dropdown" disabled aria-label="ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು">
+        <option value="" selected disabled>ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</option>
       </select>
 
-      <select id="tatvapada_sankhye" class="dropdown" disabled>
-        <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
+      <select id="tatvapada_sankhye" class="dropdown" disabled aria-label="ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ">
+        <option value="" selected disabled>ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</option>
       </select>
-    </div>
+    </section>
 
-    <form id="tatvapada-add-form">
+    <form id="tatvapada-add-form" novalidate>
       <div class="row g-4">
         <div class="col-md-4">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ</label>
-          <input type="text" name="tatvapadakosha" class="form-control" required
-            placeholder="ಕರ್ನಾಟಕ ಸಮಗ್ರ ತತ್ವಪದಗಳ ಜನಪ್ರಿಯ ಸಂಪುಟ ಮಾಲೆ">
+          <label for="tatvapadakosha_sheershike" class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</label>
+          <input type="text" maxlength="150" id="tatvapadakosha_sheershike" name="tatvapadakosha_sheershike"
+            class="form-control" placeholder="ಶಿಶುನಾಳ ಶರೀಫರ ತತ್ವಪದಗಳು" />
+        </div>
+        <div class="col-md-4">
+          <label for="tatvapada_sheershike" class="form-label fw-bold">ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ</label>
+          <input type="text" maxlength="100" id="tatvapada_sheershike" name="tatvapada_sheershike" class="form-control"
+            placeholder="ರಾಮಲಿಂಗಮೂರ್ತಿ ಸದ್ಗುರು" />
         </div>
 
         <div class="col-md-4">
-          <label class="form-label fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ</label>
-          <input type="text" name="samputa_sankhye" class="form-control" required placeholder="1">
+          <label for="vibhag" class="form-label fw-bold">ವಿಭಾಗ</label>
+          <input type="text" maxlength="150" id="vibhag" name="vibhag" class="form-control" placeholder="ದೇವಸ್ತುತಿ" />
         </div>
-
         <div class="col-md-4">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ</label>
-          <input type="text" name="tatvapada_sankhye" class="form-control" required placeholder="2">
+          <label for="tatvapada_first_line" class="form-label fw-bold">ಮೊದಲ ಸಾಲು</label>
+          <input type="text" maxlength="100" id="tatvapada_first_line" name="tatvapada_first_line" class="form-control"
+            placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ" />
+        </div>
+        <div class="col-12">
+          <label for="tatvapada" class="form-label fw-bold">ತತ್ತ್ವಪದ ಪದ್ಯ <span class="text-danger">*</span></label>
+          <textarea id="tatvapada" name="tatvapada" class="form-control" rows="6" required placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
+ತ್ರಿಲೋಕದೋಳ್ ವಿರತಿ || ಪ ||
+...........
+"></textarea>
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದದ ಹೆಸರು</label>
-          <input type="text" name="tatvapada_hesaru" class="form-control" placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ">
+        <div class="col-12">
+          <label for="tatvapada" class="form-label fw-bold">ಭಾವಾನುವಾದ</label>
+          <textarea id="bhavanuvada" name="bhavanuvada" class="form-control" rows="6" required placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
+ತ್ರಿಲೋಕದೋಳ್ ವಿರತಿ || ಪ ||
+...........
+        "></textarea>
         </div>
-
-        <div class="col-md-4">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</label>
-          <input type="text" name="tatvapadakarara_hesaru" class="form-control" required placeholder="ಶಿಷುನಾಳ ಶರೀಫ಼">
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label fw-bold">ಮುಖ್ಯ ಶೀರ್ಷಿಕೆ</label>
-          <input type="text" name="mukhya_sheershike" class="form-control" placeholder="ದೇವಸ್ತುತಿ">
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</label>
-          <input type="text" name="tatvapadakosha_sheershike" class="form-control"
-            placeholder="ಶಿಶುನಾಳ ಶರೀಫರ ತತ್ವಪದಗಳುಶಿಶುನಾಳ ಶರೀಫ">
-        </div>
-
-        <div class="col-md-4">
-          <label class="form-label fw-bold">ಮೊದಲ ಸಾಲು</label>
-          <input type="text" name="tatvapada_first_line" class="form-control" placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ">
-        </div>
-
-        <div class="col-md-12">
-          <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಪದ್ಯ</label>
-          <textarea name="tatvapada" class="form-control" rows="6" required placeholder="ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
-ತ್ರಿಲೋಕದೋಳ್ ವಿರತಿ	|| ಪ ||
-ಗಂಗಾಧರನ ಸ್ತುತಿ
-ಧ್ಯಾನಿಸುವ ಆತ್ಮಾಭಿರತಿ
-ಕರುಣಿ ಕೈಲಾಸಕಧಿಪತಿ	|| 1 ||
-ಗಿರಿಜಾ ರಮಣನ ಸ್ತುತಿ
-ಭಜಿಸಿ ಶಿವಯೋಗ ಸ್ಥಿತಿ
-ಸಿದ್ದ ಶಿವಯೋಗಿ ಸುಮತಿ	|| 2 ||
-ಬೇಗನೆ ಹೊಂದಿಸು ಸದ್ಗತಿ
-ಶಿಶುನಾಳಧೀಶನೇ ಗತಿ
-ಕೊಡು ಬೇಗನೆ ಮುಕುತಿ	|| 3 ||"></textarea>
-        </div>
-
         <div class="col-md-6">
-          <label class="form-label fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</label>
-          <textarea name="klishta_padagalu_artha" class="form-control" rows="3"
+          <label for="klishta_padagalu_artha" class="form-label fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</label>
+          <textarea id="klishta_padagalu_artha" name="klishta_padagalu_artha" class="form-control" rows="3"
             placeholder="ಉದಾ: ವಿರತಿ = ತ್ಯಾಗ, ಸ್ತುತಿ = ಭಜನೆ"></textarea>
         </div>
-
         <div class="col-md-6">
-          <label class="form-label fw-bold">ಟಿಪ್ಪಣಿ</label>
-          <textarea name="tippani" class="form-control" rows="3"
-            placeholder="ಉದಾ: ಈ ತತ್ತ್ವಪದದ ರಚನೆ ಶಿಷ್ಟವಾದ ಧ್ವನಿಸಂಕೇತಗಳನ್ನು ಹೊಂದಿದೆ."></textarea>
+          <label for="tippani" class="form-label fw-bold">ಟಿಪ್ಪಣಿ</label>
+          <textarea id="tippani" name="tippani" class="form-control" rows="3"
+            placeholder="ಉದಾ: ಈ ತತ್ತ್ವದದ ರಚನೆ ಶಿಷ್ಟವಾದ ಧ್ವನಿಸಂಕೇತಗಳನ್ನು ಹೊಂದಿದೆ."></textarea>
         </div>
       </div>
 
       <div class="text-center mt-4">
-        <button type="submit" class="btn btn-success">ಸೇರಿಸಿ</button>
+        <button type="submit" class="btn btn-success me-2">ಸೇರಿಸಿ</button>
         <button type="reset" class="btn btn-secondary">ಕ್ಲಿಯರ್</button>
       </div>
     </form>
-  </div>
+  </main>
 
   <!-- Success Modal -->
-  <div class="modal fade" id="successModal" tabindex="-1">
+  <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4 text-center">
-        <h5 class="mb-3 text-success">ಯಶಸ್ವಿ!</h5>
+        <h5 id="successModalLabel" class="mb-3 text-success">ಯಶಸ್ವಿ!</h5>
         <p>ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ.</p>
         <p id="successMessage" class="mt-2 text-muted"></p>
-        <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">ಸರಿ</button>
+        <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal"
+          aria-label="Close Success Modal">ಸರಿ</button>
       </div>
     </div>
   </div>
 
   <!-- Error Modal -->
-  <div class="modal fade" id="errorModal" tabindex="-1">
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4 text-center">
-        <h5 class="mb-3 text-danger">ದೋಷ!</h5>
+        <h5 id="errorModalLabel" class="mb-3 text-danger">ದೋಷ!</h5>
         <p>ತತ್ತ್ವಪದವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.</p>
         <p id="errorMessage" class="mt-2 text-muted"></p>
-        <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+        <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal"
+          aria-label="Close Error Modal">ಮುಚ್ಚಿ</button>
       </div>
     </div>
   </div>
+
+  <!-- Add the following script tag to import the JS -->
+  <script type="module" src="{{ url_for('static', filename='js/addTatvapada.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 </body>
 
 </html>

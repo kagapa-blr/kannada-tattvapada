@@ -1,58 +1,87 @@
-
 /* ============ DROPDOWN SECTION ============ */
-.dropdown-section {
-    flex: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
 .dropdown-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
 }
 
-/* ============ CUSTOM DROPDOWNS ============ */
 .dropdown {
-    flex: 1 1 200px;
-    padding: 10px 14px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ced4da;
-    background-color: #fff;
-    transition: border-color 0.3s ease;
+  flex: 1 1 220px;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  transition: border-color 0.3s cubic-bezier(0.215, 0.61, 0.355, 1),
+    box-shadow 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+  cursor: pointer;
 }
 
 .dropdown:focus {
-    border-color: #4b49ac;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(75, 73, 172, 0.15);
+  border-color: #4b49ac;
+  outline: none;
+  box-shadow: 0 0 8px 3px rgba(75, 73, 172, 0.25);
 }
+
+.dropdown:hover:not(:disabled) {
+  border-color: #3a37a5;
+}
+
+.dropdown:disabled,
+.dropdown[disabled] {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+}
+
+/* ======= GENERAL BODY AND FORM ======= */
 body {
   background-color: #fdfcf9;
   font-family: "Noto Sans Kannada", sans-serif;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 label.form-label {
-  color: #333;
+  color: #1a1a1a;
 }
 
 textarea,
 input[type="text"] {
   border-radius: 6px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.3s ease;
+  font-size: 1rem;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  border-color: #4b49ac;
+  outline: none;
+  box-shadow: 0 0 8px 2px rgba(75, 73, 172, 0.3);
 }
 
 button.btn {
-  padding: 8px 20px;
+  padding: 8px 22px;
   font-size: 16px;
   border-radius: 10px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-weight: 600;
 }
 
+button.btn-success:hover,
+button.btn-success:focus {
+  background-color: #3a37a5;
+  box-shadow: 0 0 8px 3px rgba(58, 55, 165, 0.6);
+}
 
-
-
+button.btn-secondary:hover,
+button.btn-secondary:focus {
+  background-color: #6c757d;
+  box-shadow: 0 0 6px 2px rgba(108, 117, 125, 0.5);
+}

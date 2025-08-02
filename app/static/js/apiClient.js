@@ -7,7 +7,7 @@ const defaultHeaders = {
 };
 
 const buildUrlWithParams = (endpoint, params = {}) => {
-    const url = new URL(`${BASE_URL}${endpoint}`);
+    const url = new URL(endpoint, BASE_URL);
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
     return url.toString();
 };

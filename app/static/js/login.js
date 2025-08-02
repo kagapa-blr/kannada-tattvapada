@@ -49,37 +49,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Handle Login
-// Handle Login
-if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();  // ✅ Prevent form from submitting normally
+    // Handle Login
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();  // ✅ Prevent form from submitting normally
 
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-        if (!username || !password) {
-            alert("ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಗುಪ್ತಪದ ನೀಡಬೇಕು.");
-            return;
-        }
+            if (!username || !password) {
+                alert("ಬಳಕೆದಾರಹೆಸರು ಮತ್ತು ಗುಪ್ತಪದ ನೀಡಬೇಕು.");
+                return;
+            }
 
-        try {
-            const response = await apiClient.post(apiEndpoints.auth.login, {
-                username,
-                password
-            }, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
+            try {
+                const response = await apiClient.post(apiEndpoints.auth.login, {
+                    username,
+                    password
+                }, {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
 
-            // On success, redirect
-            window.location.href = "/";
-        } catch (err) {
-            console.error("Login Error:", err);
-            alert("ಲಾಗಿನ್ ವಿಫಲವಾಯಿತು: " + (err.response?.data?.error || err.message));
-        }
-    });
-}
+                // On success, redirect using BASE_URL
+                window.location.href = BASE_URL + "/";
+            } catch (err) {
+                console.error("Login Error:", err);
+                alert("ಲಾಗಿನ್ ವಿಫಲವಾಯಿತು: " + (err.response?.data?.error || err.message));
+            }
+        });
+    }
 
 
 
