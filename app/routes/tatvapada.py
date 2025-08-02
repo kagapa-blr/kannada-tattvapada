@@ -236,19 +236,9 @@ def delete_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sa
 
 
 
-@tatvapada_bp.route("/tatvapada/add", methods=["GET", "POST"])
+@tatvapada_bp.route("/tatvapada/add", methods=["GET"])
 def tatvapada_add_form():
-    if request.method == "POST":
-        form_data = request.get_json() if request.is_json else request.form.to_dict()
-        form_data["samputa_sankhye"] = int(form_data.get("samputa_sankhye", 0) or 0)
-
-        success = tatvapada_service.insert_tatvapada(form_data)
-        if success:
-            return jsonify({"message": "ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ."})
-        else:
-            return jsonify({"error": "ದಾಖಲಾತಿ ವಿಫಲವಾಗಿದೆ."}), 500
-
-    return render_template("insert.html")
+    return render_template("add_tatvapada.html")
 
 
 @tatvapada_bp.route("/tatvapada/update", methods=["GET", "POST"])
