@@ -11,20 +11,23 @@ KANNADA_NUM_MAP = {
 }
 
 # Patterns
-VERSE_HEADER_RE = re.compile(r'^([೦-೯]+)\.\s*(.*)')
-SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:]*\s*([೦-೯\d]+)', re.IGNORECASE)
-BLOCKER_RE = re.compile(r'(?:\|\|.*\|\||[೦-೯0-9])\s*$')  # paragraph ending with ||...|| or a digit
+VERSE_HEADER_RE = re.compile(r'^([೦-೯0-9]+)\.\s*(.*)')
+SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:]*\s*([೦-೯0-9]+)', re.IGNORECASE)
+BLOCKER_RE = re.compile(r'(?:\|\|.*\|\||॥|[೦-೯0-9])\s*$') # paragraph ending with ||...|| or a digit
 
 # Special-field prefixes
 BHAVANUVADA_PREFIXES = ("ಭವಾನುವಾದ",)
 KLISHTA_PREFIXES = ("ಅರ್ಥ",)
 TIPPANI_PREFIXES = ("ಟಿಪ್ಪಣಿ", "ತಿಪ್ಪಣಿ")
 
+# === HELPERS ===
 def normalize_para(text: str) -> str:
     return unicodedata.normalize('NFC', text.strip())
 
 def kannada_to_int(s: str) -> int | None:
-    digits = ''.join(KANNADA_NUM_MAP.get(ch, '') for ch in s if ch in KANNADA_NUM_MAP)
+    # Convert Kannada digits to Arabic, keep Arabic digits as is
+    translated = ''.join(KANNADA_NUM_MAP.get(ch, ch) for ch in s)
+    digits = ''.join(ch for ch in translated if ch.isdigit())
     return int(digits) if digits.isdigit() else None
 
 def is_blocker_para(para: str) -> bool:
@@ -43,7 +46,12 @@ def extract_paragraphs_from_docx(path: Path) -> list[str]:
             paras.append(text)
     return paras
 
-def backward_author_and_vibhag(paras: list[str], index: int) -> tuple[str, str]:
+def backward_author_and_vibhag(paras: list[str], index: int, prev_author: str = "-") -> tuple[str, str]:
+    """
+    Look backwards from the verse index to find author and vibhag.
+    If prev_author is "-" or empty, and current candidate has only one line,
+    treat it as author and skip vibhag.
+    """
     candidates = []
     j = index - 1
     while j >= 0 and len(candidates) < 2:
@@ -58,6 +66,13 @@ def backward_author_and_vibhag(paras: list[str], index: int) -> tuple[str, str]:
             continue
         candidates.append(p)
         j -= 1
+
+    if prev_author in ("-", "") and candidates:
+        first_candidate = candidates[0]
+        # If it looks like a single-line (no "\n") and not too long, treat as author
+        if "\n" not in first_candidate and len(first_candidate.split()) <= 6:
+            return first_candidate, "-"
+
     if len(candidates) == 2:
         return candidates[1], candidates[0]
     elif len(candidates) == 1:
@@ -65,6 +80,7 @@ def backward_author_and_vibhag(paras: list[str], index: int) -> tuple[str, str]:
     else:
         return "-", "-"
 
+# === CORE PARSER ===
 def parse_document(paras: list[str]) -> list[dict]:
     entries = []
     if not paras:
@@ -73,15 +89,18 @@ def parse_document(paras: list[str]) -> list[dict]:
     tatvapadakosha_sheershike = paras[0]
     samputa_sankhye = "-"
     samputa_index = -1
+
+    # Detect samputa
     for i, p in enumerate(paras):
         m = SAMPUTA_RE.match(p)
         if m:
             raw = m.group(1)
-            num = kannada_to_int(raw) if any(ch in KANNADA_NUM_MAP for ch in raw) else None
+            num = kannada_to_int(raw)
             samputa_sankhye = str(num) if num is not None else raw
             samputa_index = i
             break
 
+    # Find first author after samputa
     current_author = "-"
     default_tatvapada_sheershike = "-"
     for j in range(samputa_index + 1, len(paras)):
@@ -104,11 +123,12 @@ def parse_document(paras: list[str]) -> list[dict]:
             continue
 
         raw_num = verse_match.group(1)
-        tatvapada_sankhye = str(kannada_to_int(raw_num) or raw_num)
+        num_int = kannada_to_int(raw_num)
+        tatvapada_sankhye = str(num_int) if num_int is not None else raw_num
         sheershike_rest = verse_match.group(2).strip()
 
-        # If verse number is 1, resolve both author and vibhag by backward scan
-        if tatvapada_sankhye in ("1", "೧"):
+        # If verse number is 1
+        if num_int == 1:
             author_back, vibhag_back = backward_author_and_vibhag(paras, i)
             if author_back != "-":
                 current_author = author_back
@@ -117,7 +137,7 @@ def parse_document(paras: list[str]) -> list[dict]:
                 current_vibhag = vibhag_back
                 last_vibhag = current_vibhag
         else:
-            # For other verses, resolve vibhag by scanning backward until a non-blocker non-verse line
+            # For other verses, find vibhag by scanning backward
             j = i - 1
             found_vibhag = None
             while j >= 0:
@@ -129,7 +149,7 @@ def parse_document(paras: list[str]) -> list[dict]:
                     j -= 1
                     continue
                 if is_blocker_para(candidate):
-                    break  # don't go past content that looks like verse-body marker
+                    break
                 found_vibhag = candidate
                 break
             if found_vibhag:
@@ -139,7 +159,7 @@ def parse_document(paras: list[str]) -> list[dict]:
         tatvapada_sheershike = sheershike_rest if sheershike_rest else default_tatvapada_sheershike
         tatvapada_first_line = paras[i + 1] if i + 1 < len(paras) else "-"
 
-        # Collect block until next verse header
+        # Collect block until next verse
         block = []
         k = i + 1
         while k < len(paras) and not VERSE_HEADER_RE.match(paras[k]):
@@ -177,6 +197,7 @@ def parse_document(paras: list[str]) -> list[dict]:
 
     return entries
 
+# === STATS & PROCESSING ===
 def gather_stats(df: pd.DataFrame) -> dict:
     return {
         "total_tatvapada_entries": len(df),
@@ -231,6 +252,7 @@ def process_folder(input_dir: Path):
         stats_df.to_csv(output_dir / "stats.csv", index=False, encoding="utf-8-sig")
         print(f"Statistics summary saved to: {output_dir / 'stats.csv'}")
 
+# === MAIN ===
 def main():
     inp = input("Enter folder path containing .docx files: ").strip()
     input_dir = Path(inp)
