@@ -62,5 +62,5 @@ if __name__ == "__main__":
         logger.info(f"Tables in the database: {tables}")
         print("Created tables:", tables)
 
-    logger.info("Flask app is up and running.")
-    app.run(debug=False)
+    logger.info(f"Flask app is up and running")
+    app.run(host="0.0.0.0", port=5000, debug=False)

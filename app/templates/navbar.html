@@ -1,18 +1,22 @@
-<!-- ========== HEADER BAR ========== -->
-<div class="header-bar">
-    <div class="container">
-        <h1>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</h1>
-        <p>ಸಂತ ಮಹಾಕವಿ ಕನಕದಾಸ ಅಧ್ಯಯನ ಮತ್ತು ಸಂಶೋಧನಾ ಕೇಂದ್ರ, ಬೆಂಗಳೂರು</p>
-    </div>
-</div>
+<!-- Header + Navbar Partial -->
+<header id="navbar-header-bar" class="navbar-header">
+  <div class="navbar-container">
+    <h1 class="navbar-header__title">ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</h1>
+    <p class="navbar-header__subtitle">ಸಂತ ಮಹಾಕವಿ ಕನಕದಾಸ ಅಧ್ಯಯನ ಮತ್ತು ಸಂಶೋಧನಾ ಕೇಂದ್ರ, ಬೆಂಗಳೂರು</p>
+  </div>
+</header>
 
-<!-- ========== TOP NAVIGATION BAR ========== -->
-<div class="top-navabar-bar">
-    <div class="nav-inner">
-        <a href="{{ url_for('home.home_page') }}" class="nav-btn active">ಮುಖಪುಟ</a>
-        <a href="#" class="nav-btn">ಬಗ್ಗೆ</a>
-        <a href="#" class="nav-btn">ಸೇವೆಗಳು</a>
-        <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-btn">ನಿರ್ವಾಹಕರು</a>
-        <a href="#" class="nav-btn">ಸಂಪರ್ಕಿಸಿ</a>
+<nav id="navbar-top-navbar" class="navbar-nav" aria-label="Primary">
+  <div class="navbar-nav__inner">
+    <button id="navbar-nav-toggle" class="navbar-nav__toggle" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-nav__hamburger"></span>
+    </button>
+    <div class="navbar-nav__links" id="navbar-nav-links">
+      <a href="{{ url_for('home.home_page') }}" class="navbar-nav__link">ಮುಖಪುಟ</a>
+      <a href="#" class="navbar-nav__link">ಬಗ್ಗೆ</a>
+      <a href="#" class="navbar-nav__link">ಸೇವೆಗಳು</a>
+      <a href="{{ url_for('admin.admin_dashboard') }}" class="navbar-nav__link">ನಿರ್ವಾಹಕರು</a>
+      <a href="#" class="navbar-nav__link">ಸಂಪರ್ಕಿಸಿ</a>
     </div>
-</div>
+  </div>
+</nav>
