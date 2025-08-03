@@ -61,22 +61,34 @@ def add_tatvapada():
         return jsonify({"error": "Unexpected error occurred."}), 500
 
 
-@tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
+@tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])  # or GET based on your API
 def search_tatvapada():
-    data = request.get_json()
-    if not data or "keyword" not in data:
-        return jsonify({"error": "Keyword is required in JSON body"}), 400
-
-    keyword = data["keyword"].strip()
+    data = request.get_json() or {}
+    keyword = data.get("keyword", "").strip()
     if not keyword:
-        return jsonify({"error": "Keyword cannot be empty"}), 400
+        return jsonify({"error": "Keyword is required"}), 400
 
     results = tatvapada_service.search_by_keyword(keyword)
-    return jsonify([
-        {k: v for k, v in r.__dict__.items() if not k.startswith("_")}
-        for r in results
-    ])
 
+    def serialize_tatvapada(t):
+        return {
+            "id": t.id,
+            "samputa_sankhye": t.samputa_sankhye,
+            "tatvapadakosha_sheershike": t.tatvapadakosha_sheershike,
+            "tatvapada_author_id": t.tatvapada_author_id,
+            "tatvapadakarara_hesaru": t.tatvapadakarara_hesaru.tatvapadakarara_hesaru if t.tatvapadakarara_hesaru else None,
+            "vibhag": t.vibhag,
+            "tatvapada_sheershike": t.tatvapada_sheershike,
+            "tatvapada_sankhye": t.tatvapada_sankhye,
+            "tatvapada_first_line": t.tatvapada_first_line,
+            "tatvapada": t.tatvapada,
+            "bhavanuvada": t.bhavanuvada,
+            "klishta_padagalu_artha": t.klishta_padagalu_artha,
+            "tippani": t.tippani,
+        }
+
+    serialized = [serialize_tatvapada(t) for t in results]
+    return jsonify(serialized)
 
 @tatvapada_bp.route("/api/tatvapada/sankhyes-by-samputa", methods=["GET"])
 def get_tatvapada_sankhye_by_samputa():

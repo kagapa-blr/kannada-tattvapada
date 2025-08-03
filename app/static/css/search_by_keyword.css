@@ -1,0 +1,67 @@
+/* Modal body flex and font */
+.modal-body.d-flex {
+  padding: 1.5rem;
+  font-family: 'Noto Sans Kannada', sans-serif; /* Choose your preferred Kannada font */
+  color: #333;
+}
+
+/* Cards and hover effect */
+#searchResults .card {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  cursor: default;
+}
+
+#searchResults .card:hover {
+  background-color: #fffbea; /* Light yellow */
+  box-shadow: 0 6px 20px rgba(255, 235, 59, 0.3);
+  z-index: 10;
+}
+
+/* Bold labels with Bootstrap primary color */
+#searchResults .fw-bold {
+  color: #0d6efd;
+}
+
+/* Scrollbar for search results */
+#searchResults::-webkit-scrollbar {
+  width: 8px;
+}
+
+#searchResults::-webkit-scrollbar-thumb {
+  background-color: rgba(13, 110, 253, 0.5);
+  border-radius: 4px;
+}
+
+#searchResults::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Reduced padding and font size for search input area */
+#searchModal .form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0 !important;
+}
+
+#searchModal input.form-control-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+#searchModal button.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+#searchModal .modal-header,
+#searchModal .modal-footer {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Sticky total count container styles are inline in HTML */
