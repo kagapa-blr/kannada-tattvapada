@@ -8,7 +8,6 @@
   font-display: swap;
 }
 
-
 body {
   font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
   background-color: #f8f9fa;
@@ -23,6 +22,7 @@ body {
 }
 
 /* ============ HEADER ============ */
+
 .header-bar {
   width: 100%;
   background-color: #4b49ac;
@@ -43,6 +43,7 @@ body {
 }
 
 /* ============ BLACK NAVIGATION BAR (MODERN LOOK) ============ */
+
 .top-navabar-bar {
   width: 100%;
   background-color: #000000;
@@ -74,6 +75,7 @@ body {
 }
 
 /* ============ MAIN LAYOUT ============ */
+
 .main-layout {
   display: flex;
   gap: 20px;
@@ -82,6 +84,7 @@ body {
 }
 
 /* ============ LEFT SECTION ============ */
+
 .dropdown-section {
   flex: 3;
   display: flex;
@@ -107,6 +110,7 @@ body {
 }
 
 /* ============ POEM DISPLAY AREA ============ */
+
 .poem-display-area {
   background-color: #ffffff;
   padding: 0;
@@ -121,6 +125,7 @@ body {
 }
 
 /* Scrollable content area */
+
 .poem-display {
   max-height: 500px;
   overflow-y: auto;
@@ -130,6 +135,7 @@ body {
 }
 
 /* Sticky title bar */
+
 .poem-title {
   position: sticky;
   top: 0;
@@ -147,6 +153,7 @@ body {
 }
 
 /* Poem content */
+
 .poem-content {
   padding: 24px 30px;
 }
@@ -160,6 +167,7 @@ body {
 }
 
 /* Sticky author */
+
 .poem-author {
   position: sticky;
   bottom: 0;
@@ -176,6 +184,7 @@ body {
 }
 
 /* Placeholder styling */
+
 .poem-placeholder {
   text-align: center;
   color: #888;
@@ -187,6 +196,7 @@ body {
 }
 
 /* ============ RIGHT SECTION ============ */
+
 .button-section {
   flex: 1;
   display: flex;
@@ -220,6 +230,7 @@ body {
 }
 
 /* ============ SCROLLBAR STYLING ============ */
+
 .poem-display-area::-webkit-scrollbar {
   width: 10px;
 }
@@ -240,6 +251,7 @@ body {
 }
 
 /* ============ RESPONSIVE ============ */
+
 @media (max-width: 768px) {
   .main-layout {
     flex-direction: column;
@@ -265,32 +277,61 @@ body {
 }
 
 /* ============ OTHER-FIELDS FIELD-BOX STYLE ============ */
+
 .field-box {
+  position: relative;
+  /* for absolute positioning of label */
   background-color: #ffffff;
-  border: 1px solid #ddd;
+  border: 1.5px solid #4b49ac;
+  /* stronger accent color for border */
   border-radius: 10px;
-  padding: 15px 20px;
+  padding: 20px 20px 16px;
+  /* more padding top for label */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   min-height: 110px;
+  color: #333;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  color: #333;
-  transition: box-shadow 0.3s ease;
-  margin-bottom: 10px;
 }
 
 .field-box:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(75, 73, 172, 0.3);
+  border-color: #6c5ce7;
+  /* brighten border on hover */
 }
+
+/* Label styled as a floating legend overlapping the box border */
 
 .field-box label {
-  font-weight: 600;
+  display: inline-block;
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background-color: #ffffff;
+  /* same as box background to cover border */
+  padding: 0 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
   color: #4b49ac;
-  margin-bottom: 10px;
+  pointer-events: none;
+  /* label not clickable */
+  transition: color 0.3s ease;
+  user-select: none;
+  white-space: nowrap;
+  text-shadow: 0 0 1px #fff;
+  /* subtle contrast for readability */
+  z-index: 1;
 }
 
-.field-content {
-  background-color: #f9f9f9;
+.field-box:hover label {
+  color: #6c5ce7;
+  /* didactic purple accent on hover */
+}
+
+/* .field-content {
+  background-color: #fafafa;
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 12px 16px;
@@ -299,4 +340,11 @@ body {
   min-height: 50px;
   word-wrap: break-word;
   box-sizing: border-box;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+} */
+
+.field-content:focus-within {
+  border-color: #6c5ce7;
+  background-color: #fff;
+  outline: none;
 }
