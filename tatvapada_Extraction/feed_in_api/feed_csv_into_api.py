@@ -5,7 +5,7 @@ import time
 # API endpoint
 API_URL = "http://localhost:5000/api/tatvapada/add"
 
-extracted_file = r"C:\Users\techk\Desktop\kagapa\kannada-tattvapada\tatvapada_Extraction\output_csv\ಕರ್ನಾಟಕ ಸಮಗ್ರ ತತ್ವಪದಗಳ ಜನಪ್ರಿಯ ಸಂಪುಟ ಮಾಲೆ ಸಂಪುಟ ೨.csv"
+extracted_file = r"samputa11.csv"
 # Load extracted tatvapada data
 df = pd.read_csv(extracted_file, encoding="utf-8-sig")
 
@@ -18,7 +18,6 @@ for index, row in df.iterrows():
     payload = {
         "samputa_sankhye": str(row.get("samputa_sankhye", "")),
         "tatvapadakosha_sheershike": row.get("tatvapadakosha_sheershike", ""),
-        "tatvapada_author_id": row.get("tatvapada_author_id", "-"),
         "tatvapadakarara_hesaru": row.get("tatvapadakarara_hesaru", ""),
         "vibhag": row.get("vibhag", "-"),
         "tatvapada_sheershike": row.get("tatvapada_sheershike", ""),
@@ -27,8 +26,9 @@ for index, row in df.iterrows():
         "tatvapada": row.get("tatvapada", ""),
         "bhavanuvada": row.get("bhavanuvada", "-"),
         "klishta_padagalu_artha": row.get("klishta_padagalu_artha", "-"),
-        "tippani": row.get("tippani", "-")
+        "tippani": row.get("tippani", "-"),
     }
+
 
     try:
         response = requests.post(API_URL, json=payload)
