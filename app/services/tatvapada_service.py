@@ -2,7 +2,6 @@ from typing import List
 from typing import Optional
 
 from sqlalchemy import distinct
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.config.database import db_instance
@@ -18,38 +17,6 @@ class TatvapadaService:
 
     def __init__(self):
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
-
-    def insert_tatvapada1(self, data: dict) -> Optional[Tatvapada]:
-        try:
-            # Step 1: Extract author name
-            author_name = data.pop("tatvapadakarara_hesaru", None)
-            if not author_name:
-                raise ValueError("Author name (tatvapadakarara_hesaru) is required")
-
-            # Step 2: Look up existing author
-            author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
-
-            # Step 3: If not found, create author
-            if not author:
-                author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
-                db_instance.session.add(author)
-                db_instance.session.flush()  # To generate the UUID
-
-            # Step 4: Assign author ID to the tatvapada
-            data["tatvapada_author_id"] = author.id
-
-            # Step 5: Create the Tatvapada object
-            new_entry = Tatvapada(**data)
-            db_instance.session.add(new_entry)
-            db_instance.session.commit()
-
-            self.logger.info(f"Inserted Tatvapada for author: {author_name}")
-            return new_entry
-
-        except Exception as e:
-            db_instance.session.rollback()
-            self.logger.error(f"Error inserting Tatvapada: {e}")
-            raise e
 
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
         try:
@@ -104,61 +71,7 @@ class TatvapadaService:
             self.logger.error(f"Error inserting Tatvapada: {e}")
             raise
 
-    def update_by_composite_keys1(
-            self,
-            samputa_sankhye: int,
-            tatvapada_sankhye: int,
-            tatvapada_author_id: int,
-            data: dict
-    ) -> Optional[Tatvapada]:
-        try:
-            # Step 1: Fetch the existing entry
-            existing_entry = Tatvapada.query.filter_by(
-                samputa_sankhye=samputa_sankhye,
-                tatvapada_sankhye=tatvapada_sankhye,
-                tatvapada_author_id=tatvapada_author_id
-            ).first()
 
-            if not existing_entry:
-                raise ValueError("Tatvapada entry not found with given composite keys")
-
-            # Step 2: If author name (string) is provided, map to author ID
-            author_name = data.get("tatvapadakarara_hesaru")
-            if author_name:
-                existing_author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
-                if not existing_author:
-                    raise ValueError(f"Author '{author_name}' not found. Please add the author before updating.")
-                data["tatvapada_author_id"] = existing_author.id
-
-            # Step 3: Enforce immutability of identifying fields
-            immutable_fields = {
-                "samputa_sankhye": existing_entry.samputa_sankhye,
-                "tatvapada_sankhye": existing_entry.tatvapada_sankhye,
-                "tatvapada_author_id": existing_entry.tatvapada_author_id
-            }
-            for field, original_value in immutable_fields.items():
-                if field in data and str(data[field]) != str(original_value):
-                    raise ValueError(
-                        f"Cannot change '{field}' for existing Tatvapada entry. Please insert a new entry instead.")
-
-            # Step 4: Remove relationship field (string) before update
-            if "tatvapadakarara_hesaru" in data:
-                del data["tatvapadakarara_hesaru"]
-
-            # Step 5: Update the model fields
-            for key, value in data.items():
-                if hasattr(existing_entry, key):
-                    setattr(existing_entry, key, value)
-
-            db_instance.session.commit()
-            self.logger.info(
-                f"Updated Tatvapada entry with keys: {samputa_sankhye}, {tatvapada_sankhye}, {tatvapada_author_id}")
-            return existing_entry
-
-        except (ValueError, SQLAlchemyError) as e:
-            db_instance.session.rollback()
-            self.logger.error(f"Error updating Tatvapada: {e}")
-            raise e
 
     def update_by_composite_keys(
             self,
@@ -254,7 +167,7 @@ class TatvapadaService:
             self.logger.error(f"Error deleting specific Tatvapada: {e}")
             raise
 
-    def search_by_keyword(self, keyword: str) -> List[Tatvapada]:
+    def search_by_keyword(self, keyword: str) -> list:
         try:
             results = Tatvapada.query.filter(
                 Tatvapada.tatvapada.ilike(f"%{keyword}%")

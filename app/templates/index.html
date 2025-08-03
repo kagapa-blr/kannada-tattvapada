@@ -15,6 +15,7 @@
   <!-- JavaScript -->
   <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
 
 </head>
 
@@ -139,7 +140,40 @@
 
     </div>
   </div>
+
+
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="searchModalLabel">ತತ್ತ್ವಪದ ಶೋಧನೆ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Search Input -->
+        <div class="mb-3">
+          <label for="searchKeyword" class="form-label fw-bold">ಶೋಧಿಸಲು ಪದವನ್ನು ನಮೂದಿಸಿ</label>
+          <input type="text" class="form-control" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
+        </div>
+        <button type="button" class="btn btn-primary mb-3" id="btnSearch">ಶೋಧಿಸಿ</button>
+
+        <!-- Results area -->
+        <div id="searchResults" style="max-height: 60vh; overflow-y: auto;">
+          <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   {% include 'footer.html' %}
+
+
 </body>
 
 </html>

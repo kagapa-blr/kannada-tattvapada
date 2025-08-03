@@ -61,11 +61,15 @@ def add_tatvapada():
         return jsonify({"error": "Unexpected error occurred."}), 500
 
 
-@tatvapada_bp.route("/api/tatvapada/search", methods=["GET"])
+@tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
 def search_tatvapada():
-    keyword = request.args.get("keyword", "").strip()
+    data = request.get_json()
+    if not data or "keyword" not in data:
+        return jsonify({"error": "Keyword is required in JSON body"}), 400
+
+    keyword = data["keyword"].strip()
     if not keyword:
-        return jsonify({"error": "Keyword is required"}), 400
+        return jsonify({"error": "Keyword cannot be empty"}), 400
 
     results = tatvapada_service.search_by_keyword(keyword)
     return jsonify([
