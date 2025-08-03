@@ -13,8 +13,8 @@ KANNADA_NUM_MAP = {
 # Patterns
 VERSE_HEADER_RE = re.compile(r'^([೦-೯0-9]+)\.\s*(.*)')
 SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:]*\s*([೦-೯0-9]+)', re.IGNORECASE)
-BLOCKER_RE = re.compile(r'(?:\|\|.*\|\||॥|[೦-೯0-9])\s*$') # paragraph ending with ||...|| or a digit
-
+#BLOCKER_RE = re.compile(r'(?:\|\|.*\|\||॥|[೦-೯0-9])\s*$') # paragraph ending with ||...|| or a digit
+BLOCKER_RE = re.compile(r'(?:\|\|.*?\|\||॥|[೦-೯0-9])\s*$')
 # Special-field prefixes
 BHAVANUVADA_PREFIXES = ("ಭವಾನುವಾದ",)
 KLISHTA_PREFIXES = ("ಅರ್ಥ",)
@@ -215,7 +215,7 @@ def process_folder(input_dir: Path):
     for docx_file in sorted(input_dir.glob("*.docx")):
         try:
             paras = extract_paragraphs_from_docx(docx_file)
-            print(f"paragraph: {paras}")
+            #print(f"paragraph: {paras}")
             parsed = parse_document(paras)
             if not parsed:
                 print(f"[WARN] No entries extracted from {docx_file.name}")

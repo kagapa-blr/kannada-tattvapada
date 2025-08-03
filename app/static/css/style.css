@@ -1,6 +1,16 @@
 /* ============ GLOBAL STYLES ============ */
+
+@font-face {
+  font-family: "NudiParijatha";
+  src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 body {
-  font-family: "Noto Sans Kannada", sans-serif;
+  font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
   background-color: #f8f9fa;
   margin: 0;
   padding: 0;
@@ -96,15 +106,6 @@ body {
   border: 1px solid #ccc;
 }
 
-
-
-
-
-
-/* ============ POEM DISPLAY AREA ============ */
-
-
-
 /* ============ POEM DISPLAY AREA ============ */
 .poem-display-area {
   background-color: #ffffff;
@@ -185,12 +186,6 @@ body {
   margin-bottom: 10px;
 }
 
-
-
-
-
-
-
 /* ============ RIGHT SECTION ============ */
 .button-section {
   flex: 1;
@@ -267,4 +262,41 @@ body {
   .poem-display-area {
     width: 100%;
   }
+}
+
+/* ============ OTHER-FIELDS FIELD-BOX STYLE ============ */
+.field-box {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+  transition: box-shadow 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.field-box:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.field-box label {
+  font-weight: 600;
+  color: #4b49ac;
+  margin-bottom: 10px;
+}
+
+.field-content {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: #555;
+  min-height: 50px;
+  word-wrap: break-word;
+  box-sizing: border-box;
 }
