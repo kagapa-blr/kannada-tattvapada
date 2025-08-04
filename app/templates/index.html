@@ -143,51 +143,51 @@
   </div>
 
 
-<!-- Search Modal -->
-<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 95vw; max-height: 90vh;">
-    <div class="modal-content" style="height: 90vh;">
-      <div class="modal-header py-2 px-3">
-        <h5 class="modal-title" id="searchModalLabel">ತತ್ತ್ವಪದ ಶೋಧನೆ</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body d-flex flex-column p-2" style="height: calc(100% - 56px);">
+  <!-- Search Modal -->
+  <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
+      <div class="modal-content" style="height: 90vh;">
+        <div class="modal-header py-2 px-3">
+          <h5 class="modal-title" id="searchModalLabel">ತತ್ತ್ವಪದ ಶೋಧನೆ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body d-flex flex-column p-2" style="height: calc(100% - 56px);">
+          <!-- Sticky total count -->
+          <div id="resultCount" style="
+              position: sticky;
+              top: 0;
+              background: white;
+              z-index: 1050;
+              padding: 6px 8px;
+              border-bottom: 1px solid #dee2e6;
+              font-weight: 700;
+              font-size: 1.1rem;
+              text-align: center;">
+            <p class="mb-0 text-primary" style="font-size: 1rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          </div>
 
-        <!-- Sticky total count -->
-        <div id="resultCount"
-             style="
-                position: sticky;
-                top: 0;
-                background: white;
-                z-index: 1050;
-                padding: 6px 8px;
-                border-bottom: 1px solid #dee2e6;
-                font-weight: 700;
-                font-size: 1.1rem;
-                text-align: center;
-             ">
-          <p class="mb-0 text-primary" style="font-size: 1rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          <!-- Search input and button inline -->
+          <div class="d-flex align-items-center my-2 gap-2">
+            <label for="searchKeyword" class="form-label fw-bold mb-0"
+              style="font-size: 0.9rem; flex-shrink: 0; white-space: nowrap;">ಶೋಧಿಸಿ ಪದ:</label>
+            <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ"
+              style="flex-grow: 1; min-width: 0;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnSearch"
+              style="white-space: nowrap;">ಶೋಧಿಸಿ</button>
+          </div>
+
+          <!-- Scrollable results container -->
+          <div id="searchResults" style="overflow-y: auto; flex-grow: 1; margin-top: 6px;">
+            <p class="text-muted" style="font-size: 0.9rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          </div>
         </div>
 
-        <!-- Search input and button inline -->
-        <div class="d-flex align-items-center my-2 gap-2">
-          <label for="searchKeyword" class="form-label fw-bold mb-0" style="font-size: 0.9rem; flex-shrink: 0; white-space: nowrap;">ಶೋಧಿಸಿ ಪದ:</label>
-          <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ" style="flex-grow: 1; min-width: 0;">
-          <button type="button" class="btn btn-primary btn-sm" id="btnSearch" style="white-space: nowrap;">ಶೋಧಿಸಿ</button>
+        <div class="modal-footer py-2 px-3">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
         </div>
-
-        <!-- Scrollable results container -->
-        <div id="searchResults" style="overflow-y: auto; flex-grow: 1; margin-top: 6px;">
-          <p class="text-muted" style="font-size: 0.9rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
-        </div>
-
-      </div>
-      <div class="modal-footer py-2 px-3">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
       </div>
     </div>
   </div>
-</div>
 
   {% include 'footer.html' %}
 
