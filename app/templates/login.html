@@ -19,8 +19,8 @@
   <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center custom-bg">
     <div class="login-card shadow-lg p-4 rounded-4 bg-white border-0">
       <div class="text-center mb-3">
-        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo" class="mb-2" width="56">
-        <h2 class="text-primary mb-1" style="font-weight:700;">ಲಾಗಿನ್ ಮಾಡಿ</h2>
+        <img src="{{ url_for('static', filename='/images/kanakadasLogo.jpg') }}" alt="Logo" class="mb-2" width="56">
+        <h2 class="text-primary mb-1" style="font-weight:700;">ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ</h2>
         <div class="text-muted mb-3">ಸ್ವಾಗತ!</div>
       </div>
       <form id="loginForm" action="{{ url_for('auth.login') }}" method="post" novalidate>
@@ -35,7 +35,8 @@
             placeholder="ಗುಪ್ತಪದವನ್ನು ನಮೂದಿಸಿ">
         </div>
         <div class="d-flex justify-content-between align-items-center my-3">
-          <a href="#" class="small link-primary" data-bs-toggle="modal" data-bs-target="#signupModal">ಹೊಸ ಬಳಕೆದಾರರಾಗಿದ್ದೀರಾ? ಸೈನ್ ಅಪ್ ಮಾಡಿ</a>
+          <a href="#" class="small link-primary" data-bs-toggle="modal" data-bs-target="#signupModal">ಹೊಸ
+            ಬಳಕೆದಾರರಾಗಿದ್ದೀರಾ? ಸೈನ್ ಅಪ್ ಮಾಡಿ</a>
         </div>
         <button type="submit" class="btn btn-primary w-100 mb-2 py-2">ಲಾಗಿನ್</button>
       </form>
@@ -70,7 +71,8 @@
           </div>
           <div class="mb-3">
             <label for="phone" class="form-label">ದೂರವಾಣಿ ಸಂಖ್ಯೆ <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" id="phone" required maxlength="10" pattern="\d{10}" placeholder="10 ಅಂಕಿ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ">
+            <input type="tel" class="form-control" id="phone" required maxlength="10" pattern="\d{10}"
+              placeholder="10 ಅಂಕಿ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ">
           </div>
           <div class="mb-3">
             <label for="email" class="form-label">ಇಮೇಲ್ ವಿಳಾಸ <span class="text-danger">*</span></label>
@@ -78,11 +80,13 @@
           </div>
           <div class="mb-3">
             <label for="signup-username" class="form-label">ಬಳಕೆದಾರಹೆಸರು <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="signup-username" required maxlength="32" placeholder="ಬಳಕೆದಾರಹೆಸರು">
+            <input type="text" class="form-control" id="signup-username" required maxlength="32"
+              placeholder="ಬಳಕೆದಾರಹೆಸರು">
           </div>
           <div class="mb-4">
             <label for="signup-password" class="form-label">ಗುಪ್ತಪದ <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" id="signup-password" required maxlength="32" placeholder="ಗುಪ್ತಪದ">
+            <input type="password" class="form-control" id="signup-password" required maxlength="32"
+              placeholder="ಗುಪ್ತಪದ">
           </div>
           <button type="submit" class="btn btn-success w-100 py-2">ಸೈನ್ ಅಪ್</button>
         </form>
@@ -96,8 +100,7 @@
       <div class="modal-content border-0">
         <div class="modal-header bg-danger text-white" id="messageModalHeader">
           <h5 class="modal-title" id="messageModalLabel">ದೋಷ</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-            aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center fs-5" id="messageModalBody"></div>
         <div class="modal-footer justify-content-center border-0">
@@ -114,4 +117,5 @@
   <!-- Custom JS -->
   <script type="module" src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
+
 </html>

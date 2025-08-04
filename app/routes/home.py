@@ -14,10 +14,6 @@ logger = setup_logger("home", "home.log")
 home_bp = Blueprint("home", __name__)
 
 @home_bp.route('/')
-@login_required
 def home_page():
     return render_template("index.html")
 
-@home_bp.route('/old')
-def home_old():
-    return render_template("old.html")
