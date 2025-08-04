@@ -1,28 +1,93 @@
-body {
-  font-family: 'Noto Sans Kannada', sans-serif;
-  background: linear-gradient(to right, #e3f2fd, #e8f5e9);
-  margin: 0;
+/* static/css/login.css */
+body, html {
+  font-family: 'Noto Sans Kannada', sans-serif !important;
+  background: linear-gradient(120deg, #2196f3 0%, #e3f2fd 100%);
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  color: #323232;
+}
+
+.custom-bg {
+  background: linear-gradient(120deg, #e3f2fd 0%, #e8f5e9 100%);
 }
 
 .login-card {
-  background-color: #fff;
-  padding: 2.5rem 2rem;
-  border-radius: 1rem;
-  width: 100%;
+  background: #ffffff;
   max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  min-width: 330px;
+  padding: 2.75rem 2rem;
+  border-radius: 1.5rem !important;
+  box-shadow: 0px 8px 32px 0px rgba(23, 36, 64, 0.05), 0 2px 8px 0 rgba(23, 36, 64, 0.04);
+  border: none !important;
+  outline: none !important;
+  transition: box-shadow 0.2s;
 }
 
-.form-control:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-label {
+.form-label {
   font-weight: 600;
-  color: #333;
+  color: #1a237e;
 }
 
-.alert {
-  font-size: 0.95rem;
+.form-control {
+  border-radius: 0.7rem;
+  box-shadow: none;
+  border: 1px solid #bdbdbd;
+  font-size: 1.03rem;
+  padding: 0.65rem 0.95rem;
+  transition: border-color 0.18s;
+}
+.form-control:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 0.14rem rgba(25, 118, 210, 0.16);
+}
+
+button, .btn {
+  font-size: 1.08rem;
+  border-radius: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg,#1976d2 0%, #42a5f5 100%);
+  border: none;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(90deg,#0d47a1 0%, #1e88e5 100%);
+}
+
+.btn-success {
+  background: linear-gradient(90deg,#43a047 0%, #66bb6a 100%);
+  border: none;
+}
+.btn-success:hover,
+.btn-success:focus {
+  background: linear-gradient(90deg,#388e3c 0%, #43a047 100%);
+}
+
+a.link-primary {
+  text-decoration: none;
+  color: #1976d2;
+  font-weight: 500;
+}
+a.link-primary:hover { text-decoration: underline; }
+
+.modal-content {
+  border-radius: 1.1rem;
+  border: none;
+  box-shadow: 0 4px 32px 0 rgba(20,40,50,0.09);
+}
+
+#messageModal .modal-header.bg-danger    { background: linear-gradient(90deg, #d32f2f,#e57373); }
+#messageModal .modal-header.bg-success   { background: linear-gradient(90deg, #388e3c,#81c784); }
+#messageModal .modal-header.bg-primary   { background: linear-gradient(90deg,#1976d2, #42a5f5);}
+#messageModal .modal-header.bg-secondary { background: #455a64; }
+
+#messageModalBody {
+  padding: 1.15rem 0 0.4rem;
+}
+
+@media (max-width: 575px) {
+  .login-card { max-width: 95vw; min-width: 90vw; padding:1.2rem 0.75rem; }
 }

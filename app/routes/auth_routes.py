@@ -72,6 +72,7 @@ def login():
     username = data.get("username")
     password = data.get("password")
     logger.info(f"Login attempt for username: {username}")
+
     # Try admin first
     admin = Admin.query.filter_by(username=username).first()
     if admin:
@@ -82,13 +83,14 @@ def login():
         user = User.query.filter_by(username=username).first()
         if not user or not bcrypt.check_password_hash(user.password_hash, password):
             logger.warning(f"Failed login attempt for user: {username}")
-            return jsonify({"error": "ತಪ್ಪು ಬಳಕೆದಾರಹೆಸರು ಅಥವಾ ಗುಪ್ತಪದ"}), 401
+            # --- IMPORTANT: English only in backend response ---
+            return jsonify({"error": "Invalid username or password"}), 401
 
         user_type = "user"
         user_id = user.id
         logger.info(f"User '{username}' logged in successfully")
 
-    # JWT payload with expiry and user_type
+    # JWT payload etc... [no changes needed here]
     payload = {
         "user_id": user_id,
         "username": username,
@@ -99,7 +101,6 @@ def login():
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     logger.debug(f"JWT issued for '{username}' with user_type '{user_type}'")
 
-    # Set token in cookie and return user info as JSON
     response = make_response(jsonify({
         "message": "Login successful",
         "token": token,
@@ -111,10 +112,9 @@ def login():
         token,
         httponly=True,
         samesite="Lax",
-        secure=False  # ✅ Set to True in production
+        secure=False  # Secure=True in production!
     )
     return response
-
 
 
 @auth_bp.route("/logout")
