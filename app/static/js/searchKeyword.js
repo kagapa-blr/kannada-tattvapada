@@ -15,16 +15,29 @@ function escapeHtml(text) {
   });
 }
 
-// Highlight keyword occurrences (inline styled span with yellow background)
 function highlightKeyword(text, keyword) {
   if (!keyword) return escapeHtml(text);
+
+  // Escape regex special chars
   const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const regex = new RegExp(`(${escapedKeyword})`, 'gi');
-  return escapeHtml(text).replace(
+
+  // Pattern to match trailing halant or combining marks after keyword
+  // \u0CCD is Kannada halant, \p{M} is any combining mark
+  const trailingCombining = '(?:[\u0CCD\\p{M}])*';
+
+  // Regex with Unicode flag 'u' and case-insensitive 'i' and global 'g'
+  const regex = new RegExp(`(${escapedKeyword}${trailingCombining})`, 'giu');
+
+  // Escape text before highlighting
+  const escapedText = escapeHtml(text);
+
+  // Replace matched clusters with highlight span
+  return escapedText.replace(
     regex,
     '<span style="background-color: yellow; color: black; font-weight: bold; padding: 0 2px; border-radius: 2px;">$1</span>'
   );
 }
+
 
 function searchContent() {
   // Show modal
