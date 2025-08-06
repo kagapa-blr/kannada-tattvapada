@@ -8,3 +8,4 @@ flask_migrate
 python-docx
 pandas
 requests
+cryptography

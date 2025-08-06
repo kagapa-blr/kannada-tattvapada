@@ -18,6 +18,14 @@
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   <script src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
 
+  <!-- Choices.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+  <!-- Choices.js JS -->
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+
+
 </head>
 
 <body>
@@ -29,6 +37,43 @@
 
       <!-- ========== LEFT SECTION ========== -->
       <div class="dropdown-section">
+
+        <!-- Inline Style Fixes for Choices.js Dropdowns -->
+        <style>
+          .dropdown-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            /* Arrange dropdowns in a row */
+            gap: 10px;
+            /* Space between dropdowns */
+            align-items: center;
+            /* Vertically align dropdowns */
+            flex-wrap: nowrap;
+            /* Prevent wrapping to next line */
+          }
+
+          .dropdown {
+            flex: 1 1 auto;
+            /* Allow dropdowns to grow/shrink evenly */
+            min-width: 180px;
+            /* Minimum width for each dropdown */
+            max-width: 300px;
+            /* Optional max width */
+          }
+
+          .choices__list--dropdown {
+            z-index: 9999 !important;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            position: absolute;
+          }
+
+          
+        </style>
+
 
         <!-- Dropdowns -->
         <div class="dropdown-container">
@@ -45,9 +90,7 @@
           </select>
         </div>
 
-
         <!-- ========== TATVAPADA DETAILS (3 per row, modern layout) ========== -->
-
         <div class="other-fields mt-4">
           <div class="row g-4">
 
@@ -103,10 +146,8 @@
           </div>
         </div>
 
-
         <!-- Poem Display Area -->
         <div class="tatvapada-display">
-
           <label class="form-label fw-bold">ತತ್ತ್ವಪದ :</label>
           <div class="poem-display-area" id="poem-display-area">
             <div class="poem-placeholder">
@@ -117,13 +158,8 @@
           </div>
         </div>
 
-
-        <div class="tippani">
-
-        </div>
-        <div class="klishta_padagalu_artha">
-
-        </div>
+        <div class="tippani"></div>
+        <div class="klishta_padagalu_artha"></div>
 
       </div>
 

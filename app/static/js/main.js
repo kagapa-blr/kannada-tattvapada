@@ -2,16 +2,45 @@ import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
 
 let currentTatvapadaData = [];
+let choicesInstances = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-    function selectTab(element) {
-        document.querySelectorAll('.top-navabar-bar .nav-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-    }
-
+    initializeDropdownsWithChoices();
     initializeDropdownHandlers();
     loadSamputas();
 });
+
+// ---------- Initialize Dropdowns with Choices ----------
+function initializeDropdownsWithChoices() {
+    const samputa = document.getElementById("samputa");
+    const author = document.getElementById("tatvapadakarara_hesaru");
+    const sankhye = document.getElementById("tatvapada_sankhye");
+
+    choicesInstances.samputa = new Choices(samputa, {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        placeholderValue: 'ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ'
+    });
+
+    choicesInstances.author = new Choices(author, {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        placeholderValue: 'ತತ್ವಪದಕಾರರ ಹೆಸರು'
+    });
+
+    choicesInstances.sankhye = new Choices(sankhye, {
+        searchEnabled: true,
+        itemSelectText: '',
+        shouldSort: false,
+        placeholderValue: 'ತತ್ವಪದ ಸಂಖ್ಯೆ'
+    });
+
+    // Disable initially
+    choicesInstances.author.disable();
+    choicesInstances.sankhye.disable();
+}
 
 // ---------- Setup Event Listeners ----------
 function initializeDropdownHandlers() {
@@ -33,7 +62,6 @@ function initializeDropdownHandlers() {
         const authorId = authorDropdown.value;
         if (authorId) {
             populateTatvapadaSankhyes(authorId);
-            sankhyeDropdown.disabled = false;
         } else {
             resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
         }
@@ -50,20 +78,19 @@ function initializeDropdownHandlers() {
     });
 }
 
-// ---------- Load Samputas from API ----------
+// ---------- Load Samputas ----------
 function loadSamputas() {
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
             const dropdown = document.getElementById("samputa");
             resetDropdown(dropdown, "ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ", false);
 
-            samputas.forEach(sankhye => {
-                const option = document.createElement("option");
-                option.value = sankhye;
-                option.textContent = `ಸಂಪುಟ ${sankhye}`;
-                dropdown.appendChild(option);
-            });
+            const choices = samputas.map(sankhye => ({
+                value: sankhye,
+                label: `ಸಂಪುಟ ${sankhye}`
+            }));
 
+            choicesInstances.samputa.setChoices(choices, 'value', 'label', true);
             dropdown.disabled = false;
         })
         .catch(error => {
@@ -86,15 +113,20 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
             resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
 
             const seen = new Set();
+            const authorChoices = [];
+
             data.forEach(item => {
                 if (!seen.has(item.tatvapadakarara_id)) {
-                    const option = document.createElement("option");
-                    option.value = item.tatvapadakarara_id;
-                    option.textContent = item.tatvapadakarara_hesaru;
-                    authorDropdown.appendChild(option);
+                    authorChoices.push({
+                        value: item.tatvapadakarara_id,
+                        label: item.tatvapadakarara_hesaru
+                    });
                     seen.add(item.tatvapadakarara_id);
                 }
             });
+
+            choicesInstances.author.setChoices(authorChoices, 'value', 'label', true);
+            choicesInstances.author.enable();
         })
         .catch(error => {
             console.error("Error fetching authors for samputa:", error);
@@ -110,12 +142,13 @@ function populateTatvapadaSankhyes(authorId) {
         item => item.tatvapadakarara_id.toString() === authorId
     );
 
-    filtered.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.tatvapada_sankhye;
-        option.textContent = `ತತ್ವಪದ ${item.tatvapada_sankhye}`;
-        sankhyeDropdown.appendChild(option);
-    });
+    const sankhyeChoices = filtered.map(item => ({
+        value: item.tatvapada_sankhye,
+        label: `ತತ್ವಪದ ${item.tatvapada_sankhye}`
+    }));
+
+    choicesInstances.sankhye.setChoices(sankhyeChoices, 'value', 'label', true);
+    choicesInstances.sankhye.enable();
 }
 
 // ---------- Fetch Specific Tatvapada ----------
@@ -125,7 +158,6 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     apiClient.get(endpoint)
         .then(data => {
             renderTatvapada(data);
-            //populateTatvapadaForm(data);
         })
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
@@ -134,8 +166,23 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
 
 // ---------- Reset Any Dropdown ----------
 function resetDropdown(dropdown, placeholderText, disable = false) {
-    dropdown.innerHTML = `<option value="">${placeholderText}</option>`;
-    dropdown.disabled = disable;
+    const id = dropdown.id;
+
+    if (choicesInstances[id]) {
+        choicesInstances[id].clearChoices();
+        choicesInstances[id].setChoices(
+            [{ value: '', label: placeholderText, disabled: true, selected: true }],
+            'value',
+            'label',
+            true
+        );
+
+        if (disable) {
+            choicesInstances[id].disable();
+        } else {
+            choicesInstances[id].enable();
+        }
+    }
 }
 
 // ---------- Render Tatvapada ----------
@@ -149,8 +196,8 @@ function renderTatvapada(data) {
     displayOtherFields(data);
 }
 
+// ---------- Display Additional Tatvapada Info ----------
 function displayOtherFields(data) {
-
     document.getElementById('tatvapadakosha_sheershike_value').textContent = data.tatvapadakosha_sheershike || "";
     document.getElementById('tatvapadakarara_hesaru_value').textContent = data.tatvapadakarara_hesaru || "";
     document.getElementById('tatvapada_sheershike_value').textContent = data.tatvapada_sheershike || "";
@@ -160,6 +207,7 @@ function displayOtherFields(data) {
     document.getElementById('bhavanuvada_value').textContent = data.bhavanuvada || "";
 }
 
+// ---------- Display Poem Nicely ----------
 function displayPoem(poemData) {
     const poemDisplayArea = document.getElementById('poem-display-area');
     if (!poemDisplayArea) {
@@ -183,4 +231,3 @@ function displayPoem(poemData) {
         </div>
     `;
 }
-

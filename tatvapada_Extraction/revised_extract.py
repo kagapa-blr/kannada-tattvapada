@@ -137,7 +137,7 @@ def parse_document(paras: list[str]) -> list[dict]:
         num_int = kannada_to_int(raw_num)
         tatvapada_sankhye = str(num_int) if num_int is not None else raw_num.lstrip('0')  # remove leading 0 if any
 
-        # NEW LOGIC: If tatvapada_sankhye == "1", update author and vibhag by backward scan
+        # If tatvapada_sankhye == "1", update author and vibhag by backward scan
         if tatvapada_sankhye == "1":
             author_back, vibhag_back = backward_author_and_vibhag(paras, i, prev_author=current_author)
             if author_back != "-":
@@ -148,7 +148,7 @@ def parse_document(paras: list[str]) -> list[dict]:
         author = current_author
         vibhag = "-"
 
-        # Backward scan for author/vibhag, stops at punctuation-ending lines or headers or samputa lines
+        # Backward scan for author/vibhag
         j = i - 1
         candidate_lines = []
         while j >= 0:
@@ -163,7 +163,6 @@ def parse_document(paras: list[str]) -> list[dict]:
             candidate_lines.append((j, line))
             j -= 1
 
-        # Determine vibhag and author from candidate lines
         vibhag_idx = None
         for idx, (_, line_text) in enumerate(candidate_lines):
             if not ends_with_punctuation(line_text):
@@ -192,7 +191,25 @@ def parse_document(paras: list[str]) -> list[dict]:
         while k < len(paras) and not re.match(r'^([೦-೯0-9]+)[\(\.]', paras[k].strip()):
             block.append(paras[k])
             k += 1
-        tatvapada_content = "\n".join(block).strip() or "-"
+
+        # Initialize fields for special content
+        bhavanuvada = "-"
+        klishta_padagalu_artha = "-"
+        tippani = "-"
+
+        remaining_block = []
+        for para_text in block:
+            stripped_para = para_text.strip()
+            if stripped_para.startswith("ಭಾವಾನುವಾದ"):
+                bhavanuvada = stripped_para[len("ಭಾವಾನುವಾದ"):].lstrip(" :\-–—").strip() or "-"
+            elif stripped_para.startswith("ಅರ್ಥ"):
+                klishta_padagalu_artha = stripped_para[len("ಅರ್ಥ"):].lstrip(" :\-–—").strip() or "-"
+            elif stripped_para.startswith("ಟಿಪ್ಪಣಿ"):
+                tippani = stripped_para[len("ಟಿಪ್ಪಣಿ"):].lstrip(" :\-–—").strip() or "-"
+            else:
+                remaining_block.append(para_text)
+
+        tatvapada_content = "\n".join(remaining_block).strip() or "-"
 
         # Remove number prefix from verse header to get clean sheershike
         clean_sheershike = re.sub(r'^[೦-೯0-9]+[\.\(]\s*', '', line_stripped)
@@ -204,17 +221,16 @@ def parse_document(paras: list[str]) -> list[dict]:
             "vibhag": current_vibhag or last_vibhag or "-",
             "tatvapada_sheershike": clean_sheershike,
             "tatvapada_sankhye": tatvapada_sankhye,
-            "tatvapada_first_line": block[0].strip() if block else "-",
+            "tatvapada_first_line": remaining_block[0].strip() if remaining_block else "-",
             "tatvapada": tatvapada_content,
-            "bhavanuvada": "-",
-            "klishta_padagalu_artha": "-",
-            "tippani": "-"
+            "bhavanuvada": bhavanuvada,
+            "klishta_padagalu_artha": klishta_padagalu_artha,
+            "tippani": tippani
         })
 
         i = k
 
     return entries
-
 
 
 
