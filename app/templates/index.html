@@ -6,25 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ಸಮಗ್ರ ಕನ್ನಡ ತತ್ತ್ವಪದ ಕೋಶ</title>
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/search_by_keyword.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <!-- 1. Bootstrap CSS (should come before your custom styles) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
-  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-  <!-- JavaScript -->
-  <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
-
-  <!-- Choices.js CSS -->
+  <!-- 2. Choices.js CSS (comes before your styles so you can override it) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 
-  <!-- Choices.js JS -->
+  <!-- 3. Your Custom CSS (override both Bootstrap and Choices.js) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/search_by_keyword.css') }}">
+
+  <!-- 4. Bootstrap JS (needs to come before any script that might use Bootstrap components) -->
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+  <!-- 5. Choices.js Script (required before any script using it) -->
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
-
+  <!-- 6. Your Scripts (can use Bootstrap and Choices.js) -->
+  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
 
 </head>
 
@@ -38,56 +40,32 @@
       <!-- ========== LEFT SECTION ========== -->
       <div class="dropdown-section">
 
-        <!-- Inline Style Fixes for Choices.js Dropdowns -->
-        <style>
-          .dropdown-container {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            /* Arrange dropdowns in a row */
-            gap: 10px;
-            /* Space between dropdowns */
-            align-items: center;
-            /* Vertically align dropdowns */
-            flex-wrap: nowrap;
-            /* Prevent wrapping to next line */
-          }
-
-          .dropdown {
-            flex: 1 1 auto;
-            /* Allow dropdowns to grow/shrink evenly */
-            min-width: 180px;
-            /* Minimum width for each dropdown */
-            max-width: 300px;
-            /* Optional max width */
-          }
-
-          .choices__list--dropdown {
-            z-index: 9999 !important;
-            background-color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            max-height: 300px;
-            overflow-y: auto;
-            position: absolute;
-          }
-
-          
-        </style>
 
 
-        <!-- Dropdowns -->
-        <div class="dropdown-container">
-          <select id="samputa" class="dropdown">
-            <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
-          </select>
 
-          <select id="tatvapadakarara_hesaru" class="dropdown" disabled>
-            <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
-          </select>
+        <!-- ========== STYLED DROPDOWN SECTION ========== -->
+        <div class="dropdown-wrapper container my-4">
+          <div class="row g-3 align-items-center">
 
-          <select id="tatvapada_sankhye" class="dropdown" disabled>
-            <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
-          </select>
+            <div class="col-md-4">
+              <select id="samputa" class="form-select dropdown" aria-label="Select Samputa">
+                <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <select id="tatvapadakarara_hesaru" class="form-select dropdown" disabled aria-label="Select Author">
+                <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <select id="tatvapada_sankhye" class="form-select dropdown" disabled aria-label="Select Tatvapada">
+                <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
+              </select>
+            </div>
+
+          </div>
         </div>
 
         <!-- ========== TATVAPADA DETAILS (3 per row, modern layout) ========== -->

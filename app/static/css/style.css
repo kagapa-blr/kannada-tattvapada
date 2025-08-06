@@ -5,6 +5,7 @@
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+  font-size: 20px;
 }
 
 body {
@@ -13,6 +14,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  font-size: 20px;
 }
 
 .container {
@@ -77,6 +79,8 @@ body {
   flex-wrap: wrap;
   gap: 20px;
   padding: 30px 20px;
+  position: relative;
+  z-index: 0;
 }
 
 /* ============ LEFT SECTION (Dropdowns & Poem) ============ */
@@ -94,7 +98,7 @@ body {
   align-items: center;
   margin-bottom: 30px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 
 .dropdown {
@@ -104,6 +108,8 @@ body {
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
+  background-color: #fff;
+  z-index: 2;
 }
 
 /* ============ POEM DISPLAY AREA ============ */
@@ -117,6 +123,8 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   font-size: 1.2rem;
   color: #333;
+  position: relative;
+  z-index: 0;
 }
 
 .poem-display {
@@ -273,12 +281,27 @@ body {
 
 /* ============ CHOICES DROPDOWN FIX ============ */
 .choices__list--dropdown {
-  z-index: 9999;
+  z-index: 9999 !important;
   background-color: #fff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   max-height: 300px;
   overflow-y: auto;
   position: absolute;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.choices__list--dropdown .choices__item {
+  padding: 10px;
+  font-size: 1rem;
+  color: #333;
+  background: #fff;
+}
+
+.choices__list--dropdown .choices__item--selectable:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
 }
 
 /* ============ RESPONSIVE ============ */
@@ -304,4 +327,12 @@ body {
   .poem-display-area {
     width: 100%;
   }
+}
+
+.choices__inner,
+.choices__list--dropdown .choices__item,
+.choices__list--single .choices__item {
+  font-size: 20px !important;
+  /* You can adjust to 16px, 20px etc. */
+  line-height: 1.6;
 }
