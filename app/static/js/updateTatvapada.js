@@ -1,6 +1,6 @@
 import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
-
+import { showLoader, hideLoader } from "./loader.js";
 let currentTatvapadaData = [];
 
 
@@ -71,6 +71,8 @@ function initializeDropdownHandlers() {
 
 // --------------------- Load Samputa --------------------- //
 function loadSamputas() {
+    showLoader(); // Show loading spinner
+
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
             const dropdown = document.getElementById("samputa");
@@ -87,12 +89,18 @@ function loadSamputas() {
         })
         .catch(error => {
             console.error("Error loading Samputas:", error);
+        })
+        .finally(() => {
+            hideLoader(); // Always hide the loader after completion
         });
 }
 
 // --------------------- Fetch Author & Sankhya --------------------- //
+
 function fetchAuthorsAndSankhyas(samputaSankhye) {
     const endpoint = apiEndpoints.tatvapada.getAuthorSankhyasBySamputa(samputaSankhye);
+
+    showLoader(); // Show global loader
 
     apiClient.get(endpoint)
         .then(data => {
@@ -117,8 +125,12 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
         })
         .catch(error => {
             console.error("Error fetching authors for samputa:", error);
+        })
+        .finally(() => {
+            hideLoader(); // Hide loader no matter what
         });
 }
+
 
 // --------------------- Populate Sankhyes --------------------- //
 function populateTatvapadaSankhyes(authorId) {
@@ -141,12 +153,20 @@ function populateTatvapadaSankhyes(authorId) {
 function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     const endpoint = apiEndpoints.tatvapada.getSpecificTatvapada(samputa, authorId, sankhye);
 
+    showLoader(); // Show global loading spinner
+
     return apiClient.get(endpoint)
-        .then(data => populateTatvapadaForm(data))
+        .then(data => {
+            populateTatvapadaForm(data);
+        })
         .catch(error => {
             console.error("Error fetching specific Tatvapada:", error);
+        })
+        .finally(() => {
+            hideLoader(); // Always hide loader after completion
         });
 }
+
 
 function populateTatvapadaForm(data) {
     if (!data) return;
@@ -162,6 +182,7 @@ function populateTatvapadaForm(data) {
 }
 
 // --------------------- Submit Handler --------------------- //
+
 
 
 function initializeFormSubmitHandler() {
@@ -186,20 +207,21 @@ function initializeFormSubmitHandler() {
         jsonData.tatvapada_sankhye = sankhye;
         jsonData.tatvapada_author_id = authorId;
 
+        showLoader(); // Show loader before API call
+
         apiClient.put(apiEndpoints.tatvapada.updateTatvapada, jsonData)
             .then((response) => {
-
-                populateTatvapadaForm(response.updated_entry); // update immediately
-
-                // show modal with optional callback
+                populateTatvapadaForm(response.updated_entry); // Update UI immediately
                 showSuccessModal(null, response?.message || "ಅಪ್ಡೇಟ್ ಯಶಸ್ವಿಯಾಗಿದೆ.");
             })
             .catch(error => {
                 handleErrorModal(error);
+            })
+            .finally(() => {
+                hideLoader(); // Hide loader after completion
             });
     });
 }
-
 
 
 // --------------------- Modal Helpers --------------------- //

@@ -1,6 +1,6 @@
 import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
-
+import { showLoader, hideLoader } from "./loader.js";
 // Escape HTML characters to avoid XSS
 function escapeHtml(text) {
   if (!text) return '';
@@ -46,6 +46,7 @@ async function handleSearchClick() {
 
   countDiv.innerHTML = '';
   resultsDiv.innerHTML = '<p>ಶೋಧನೆ ನಡೆಯುತ್ತಿದೆ...</p>';
+  showLoader(); // Show global loader
 
   try {
     const data = await apiClient.post(apiEndpoints.tatvapada.searchByWord, { keyword });
@@ -99,6 +100,8 @@ async function handleSearchClick() {
   } catch (error) {
     countDiv.innerHTML = '';
     resultsDiv.innerHTML = `<p class="text-danger">ಶೋಧನೆಯಲ್ಲಿ ದೋಷ: ${escapeHtml(error.message)}</p>`;
+  } finally {
+    hideLoader(); // Always hide loader
   }
 }
 

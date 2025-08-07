@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 </head>
 
 <body>
@@ -59,7 +59,8 @@
         <button type="submit" class="save-btn">Save Changes</button>
     </form>
 
- {% include 'footer.html' %}
+    {% include 'customLoader.html' %}
+    {% include 'footer.html' %}
 
 </body>
 
