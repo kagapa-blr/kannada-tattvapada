@@ -2,8 +2,10 @@ import pandas as pd
 import requests
 import os
 
+
 # API endpoint
-API_URL = "http://localhost:5000/api/tatvapada/add"
+#API_URL = f"http://localhost:5000/api/tatvapada/add"
+API_URL = f"https://kagapa.com/kannada-tattvapada/api/tatvapada/add"
 
 # Ask for folder path
 folder_path = input("Enter the folder path containing CSV files: ").strip()

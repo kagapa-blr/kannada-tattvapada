@@ -6,7 +6,8 @@ const apiEndpoints = {
         getAuthorSankhyasBySamputa: (samputaSankhye) => `/api/tatvapada/author-sankhyes-by-samputa/${samputaSankhye}`,
         getSpecificTatvapada: (samputa, authorId, sankhye) => `/api/tatvapada/${samputa}/${authorId}/${sankhye}`,
         updateTatvapada: "/api/tatvapada/update",
-        addTatvapada: "/api/tatvapada/add"
+        addTatvapada: "/api/tatvapada/add",
+        searchByWord:"/api/tatvapada/search"
     },
     auth: {
         signup: "/signup",

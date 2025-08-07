@@ -26,7 +26,7 @@
   <!-- 6. Your Scripts (can use Bootstrap and Choices.js) -->
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
 
 </head>
 
@@ -143,7 +143,7 @@
 
       <!-- ========== RIGHT SECTION ========== -->
       <div class="button-section">
-        <button class="nav-button primary" onclick="searchContent()">🔍 ಶೋಧನೆ</button>
+        <button class="nav-button primary" id="searchBtn">🔍 ಶೋಧನೆ</button>
         <button class="nav-button" onclick="showIndex()">📋 ತತ್ತ್ವಪದ ಸೂಚಿ</button>
         <button class="nav-button" onclick="showDictionary()">📖 ಅರ್ಥಕೋಶ</button>
         <button class="nav-button" onclick="showNotes()">📝 ಟಿಪ್ಪಣಿ</button>

@@ -52,7 +52,7 @@ def add_tatvapada():
 
     except IntegrityError:
         return jsonify({
-            "error": "Tatvapada already exists with the same Sampuṭa Sankhye, Tatvapada Sankhye, and Tatvapadakara Hesaru."
+            "error": "Tatvapada already exists with the same samputa_sankhye, Tatvapada Sankhye, and Tatvapadakara Hesaru."
         }), 409
     except SQLAlchemyError:
         return jsonify({"error": "Database error occurred while inserting the Tatvapada."}), 500
