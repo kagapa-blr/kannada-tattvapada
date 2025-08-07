@@ -1,5 +1,7 @@
+// main.js
 import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
+import { showLoader, hideLoader } from "./loader.js";
 
 let currentTatvapadaData = [];  // Stores author+sankhye list for selected samputa
 let choicesInstances = {};      // Stores Choices.js instances for dropdowns
@@ -72,17 +74,20 @@ function setupEventListeners() {
 
 // --------- Load Samputa List ---------
 function loadSamputaOptions() {
+    showLoader();
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
             const options = samputas.map(s => ({ value: s, label: `ಸಂಪುಟ ${s}` }));
             updateChoices("samputa", options);
         })
-        .catch(err => console.error("Samputa Load Error:", err));
+        .catch(err => console.error("Samputa Load Error:", err))
+        .finally(hideLoader);
 }
 
 // --------- Fetch Authors and Sankhyas ---------
 function fetchAuthorsAndSankhyas(samputa) {
     const endpoint = apiEndpoints.tatvapada.getAuthorSankhyasBySamputa(samputa);
+    showLoader();
 
     apiClient.get(endpoint)
         .then(data => {
@@ -98,7 +103,8 @@ function fetchAuthorsAndSankhyas(samputa) {
 
             updateChoices("tatvapadakarara_hesaru", authors);
         })
-        .catch(err => console.error("Author fetch error:", err));
+        .catch(err => console.error("Author fetch error:", err))
+        .finally(hideLoader);
 }
 
 // --------- Populate Sankhyes for Selected Author ---------
@@ -119,10 +125,12 @@ function populateSankhyesForAuthor(authorId) {
 // --------- Fetch and Display Specific Tatvapada ---------
 function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     const endpoint = apiEndpoints.tatvapada.getSpecificTatvapada(samputa, authorId, sankhye);
+    showLoader();
 
     apiClient.get(endpoint)
         .then(renderTatvapada)
-        .catch(err => console.error("Tatvapada fetch error:", err));
+        .catch(err => console.error("Tatvapada fetch error:", err))
+        .finally(hideLoader);
 }
 
 // --------- Choices Utilities ---------
