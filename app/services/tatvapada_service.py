@@ -2,7 +2,7 @@ from typing import List
 from typing import Optional
 
 from sqlalchemy import distinct
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada
@@ -72,11 +72,10 @@ class TatvapadaService:
             raise
 
 
-
     def update_by_composite_keys(
             self,
-            samputa_sankhye: int,
-            tatvapada_sankhye: int,
+            samputa_sankhye: float,
+            tatvapada_sankhye: str,
             tatvapada_author_id: int,
             data: dict
     ) -> Optional[Tatvapada]:
@@ -89,30 +88,28 @@ class TatvapadaService:
             ).first()
 
             if not existing_entry:
-                raise ValueError("Tatvapada entry not found with given composite keys")
+                raise ValueError("Tatvapada entry not found with the given composite keys.")
 
-            # Step 2: Enforce immutability of identifying fields (including author_id)
-            immutable_fields = {
-                "samputa_sankhye": existing_entry.samputa_sankhye,
-                "tatvapada_sankhye": existing_entry.tatvapada_sankhye,
-                "tatvapada_author_id": existing_entry.tatvapada_author_id
-            }
-            for field, original_value in immutable_fields.items():
-                if field in data and str(data[field]) != str(original_value):
-                    raise ValueError(
-                        f"Cannot change '{field}' for existing Tatvapada entry. Please insert a new entry instead."
-                    )
+            # Step 2: Make a safe copy of incoming data
+            update_data = dict(data)
 
-            # Step 3: If author name is provided, update via relationship (this changes the shared author)
-            author_name = data.pop("tatvapadakarara_hesaru", None)
-            if author_name:
+            # Step 3: Remove immutable fields from the update set
+            immutable_fields = ["samputa_sankhye", "tatvapada_sankhye", "tatvapada_author_id"]
+            for field in immutable_fields:
+                if field in update_data:
+                    self.logger.debug(f"Ignoring update to immutable field: {field}")
+                    update_data.pop(field)
+
+            # Step 4: If author name is provided, update the shared author record
+            author_name = update_data.pop("tatvapadakarara_hesaru", None)
+            if author_name and author_name.strip():
                 if existing_entry.tatvapadakarara_hesaru:
-                    existing_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru = author_name  # update the related author's name
+                    existing_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru = author_name.strip()
                 else:
                     raise ValueError("Author relationship missing; cannot update author name.")
 
-            # Step 4: Update the model fields (excluding the relationship name since handled)
-            for key, value in data.items():
+            # Step 5: Update remaining allowed fields
+            for key, value in update_data.items():
                 if hasattr(existing_entry, key):
                     setattr(existing_entry, key, value)
 
@@ -122,10 +119,37 @@ class TatvapadaService:
             )
             return existing_entry
 
-        except (ValueError, SQLAlchemyError) as e:
+        except IntegrityError as e:
             db_instance.session.rollback()
-            self.logger.error(f"Error updating Tatvapada: {e}")
-            raise e
+            error_str = str(e.orig)
+
+            # Handle duplicate author name case
+            if "tatvapada_author_info.tatvapadakarara_hesaru" in error_str:
+                self.logger.warning(f"Duplicate author name attempted: {error_str}")
+                raise ValueError("The author name already exists. Please choose a different name.")
+
+            # Handle any other unique constraint violations
+            if "uq_tatvapada_composite" in error_str:
+                self.logger.warning(f"Duplicate composite key attempted: {error_str}")
+                raise ValueError("A Tatvapada entry with the same samputa, sankhye, and author already exists.")
+
+            self.logger.error(f"Database integrity error: {error_str}")
+            raise ValueError("A database constraint was violated. Please review your input.")
+
+        except ValueError as ve:
+            db_instance.session.rollback()
+            self.logger.warning(f"Validation error: {ve}")
+            raise ve
+
+        except SQLAlchemyError as sqle:
+            db_instance.session.rollback()
+            self.logger.error(f"Unexpected database error: {sqle}")
+            raise ValueError("An unexpected database error occurred while updating the Tatvapada.")
+
+        except Exception as ex:
+            db_instance.session.rollback()
+            self.logger.error(f"Unexpected error: {ex}")
+            raise ValueError("An unexpected error occurred while updating the Tatvapada.")
 
     def delete_tatvapada_by_samputa(self, samputa_sankhye: int) -> int:
         """
