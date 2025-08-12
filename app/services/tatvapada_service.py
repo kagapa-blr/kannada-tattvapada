@@ -166,6 +166,47 @@ class TatvapadaService:
             self.logger.error(f"Error deleting Tatvapada by samputa_sankhye={samputa_sankhye}: {e}")
             raise
 
+    def delete_by_composite_keys(
+            self,
+            samputa_sankhye: float,
+            tatvapada_sankhye: str,
+            tatvapada_author_id: int
+    ) -> bool:
+        try:
+            # Step 1: Find the specific Tatvapada entry
+            entry = Tatvapada.query.filter_by(
+                samputa_sankhye=samputa_sankhye,
+                tatvapada_sankhye=tatvapada_sankhye,
+                tatvapada_author_id=tatvapada_author_id
+            ).first()
+
+            if not entry:
+                raise ValueError("Tatvapada entry not found with the given composite keys.")
+
+            # Step 2: Delete only this Tatvapada record
+            db_instance.session.delete(entry)
+            db_instance.session.commit()
+
+            self.logger.info(
+                f"Deleted Tatvapada entry with keys: {samputa_sankhye}, {tatvapada_sankhye}, {tatvapada_author_id}"
+            )
+            return True
+
+        except ValueError as ve:
+            db_instance.session.rollback()
+            self.logger.warning(f"Delete validation error: {ve}")
+            raise ve
+
+        except SQLAlchemyError as sqle:
+            db_instance.session.rollback()
+            self.logger.error(f"Database error while deleting Tatvapada: {sqle}")
+            raise ValueError("A database error occurred while deleting the Tatvapada.")
+
+        except Exception as ex:
+            db_instance.session.rollback()
+            self.logger.error(f"Unexpected error during delete: {ex}")
+            raise ValueError("An unexpected error occurred while deleting the Tatvapada.")
+
     def delete_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> bool:
         """
         Deletes a specific Tatvapada entry identified by the composite key.
@@ -230,31 +271,6 @@ class TatvapadaService:
             return []
 
 
-    def get_authors_and_sankhyes_by_samputa(self, samputa_sankhye: int) -> List[dict]:
-        """
-        Returns a list of dicts with keys: 'tatvapadakarara_hesaru' and 'tatvapada_sankhye'
-        for the given samputa_sankhye.
-        """
-        try:
-            results = Tatvapada.query.filter_by(
-                samputa_sankhye=samputa_sankhye
-            ).with_entities(
-                Tatvapada.tatvapadakarara_hesaru,
-                Tatvapada.tatvapada_sankhye
-            ).distinct().all()
-
-            return [
-                {
-                    "tatvapadakarara_hesaru": row[0],
-                    "tatvapada_sankhye": int(row[1]) if row[1] is not None else None
-                }
-                for row in results
-                if row[0] is not None and row[1] is not None
-            ]
-        except SQLAlchemyError as e:
-            self.logger.error(f"Error fetching authors and sankhyes by samputa {samputa_sankhye}: {e}")
-            return []
-
     def get_sankhyes_with_author_by_samputa(self, samputa_sankhye: int) -> List[dict]:
         """
         Returns a list of dicts with tatvapada_sankhye, author id, and author name (hesaru)
@@ -309,4 +325,32 @@ class TatvapadaService:
                 f"author_id: {tatvapada_author_id}, sankhye: {tatvapada_sankhye}): {e}"
             )
             return None
+
+
+#------------------------------------------DELETE ---------------
+    def get_all_delete_keys(self) -> list[str]:
+        """
+        Returns all Tatvapada entries as a list of delete path strings:
+        <samputa_sankhye>/<tatvapada_sankhye>/<tatvapada_author_id>
+        """
+        entries = Tatvapada.query.with_entities(
+            Tatvapada.samputa_sankhye,
+            Tatvapada.tatvapada_sankhye,
+            Tatvapada.tatvapada_author_id
+        ).all()
+
+        result = []
+        for samputa_sankhye, tatvapada_sankhye, tatvapada_author_id in entries:
+            # Convert samputa_sankhye to int if it’s whole number, else keep as float string
+            if samputa_sankhye is not None:
+                if samputa_sankhye.is_integer():
+                    samputa_str = str(int(samputa_sankhye))
+                else:
+                    samputa_str = str(samputa_sankhye)
+            else:
+                samputa_str = ""
+
+            result.append(f"{samputa_str}/{tatvapada_sankhye}/{tatvapada_author_id}")
+
+        return result
 

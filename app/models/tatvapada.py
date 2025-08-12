@@ -27,7 +27,7 @@ class Tatvapada(db_instance.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Identifiers and metadata
-    samputa_sankhye = Column(Float, nullable=True)
+    samputa_sankhye = Column(String(15), nullable=True)
     tatvapadakosha_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     tatvapadakarara_hesaru = relationship(

@@ -218,33 +218,50 @@ def delete_tatvapada_by_samputa(samputa_sankhye):
         return jsonify({"error": f"Failed to delete entries: {str(e)}"}), 500
 
 
-@tatvapada_bp.route("/api/tatvapada/<int:samputa_sankhye>/<int:tatvapada_author_id>/<tatvapada_sankhye>", methods=["DELETE"])
-def delete_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
-    """
-    Deletes a specific Tatvapada entry using composite key.
-    Example: DELETE /api/tatvapada/1/2/4
-    """
+@tatvapada_bp.route(
+    "/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>",
+    methods=["DELETE"]
+)
+def delete_specific_tatvapada(samputa_sankhye, tatvapada_sankhye, tatvapada_author_id):
     try:
-        deleted = tatvapada_service.delete_specific_tatvapada(
-            samputa_sankhye=samputa_sankhye,
-            tatvapada_author_id=tatvapada_author_id,
-            tatvapada_sankhye=tatvapada_sankhye
+        # Convert samputa_sankhye to float if possible
+        try:
+            samputa_sankhye_val = float(samputa_sankhye)
+        except ValueError:
+            raise ValueError("Invalid samputa_sankhye. Must be a number.")
+
+        deleted = tatvapada_service.delete_by_composite_keys(
+            samputa_sankhye_val,
+            tatvapada_sankhye,
+            tatvapada_author_id
         )
 
         if deleted:
-            return jsonify({
-                "message": "Tatvapada deleted successfully."
-            }), 200
+            return jsonify({"message": "Tatvapada entry deleted successfully"}), 200
         else:
-            return jsonify({
-                "message": "Tatvapada already deleted or not found for given keys.",
-                "samputa_sankhye": samputa_sankhye,
-                "tatvapada_author_id": tatvapada_author_id,
-                "tatvapada_sankhye": tatvapada_sankhye
-            }), 404
+            return jsonify({"error": "Tatvapada entry not found"}), 404
 
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": f"Failed to delete Tatvapada: {str(e)}"}), 500
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@tatvapada_bp.route("/api/tatvapada/delete-keys", methods=["GET"])
+def get_delete_keys():
+    try:
+        keys = tatvapada_service.get_all_delete_keys()
+        return jsonify({"delete_keys": keys}), 200
+    except Exception as e:
+        tatvapada_service.logger.error(f"Error fetching delete keys: {e}")
+        return jsonify({"error": "Failed to fetch delete keys"}), 500
+
+
+
+
+
+
+
+
 
 # =======================
 # WEB FORM ROUTES
