@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint,Float
 from sqlalchemy.orm import relationship
 from app.config.database import db_instance
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
@@ -27,7 +27,7 @@ class Tatvapada(db_instance.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Identifiers and metadata
-    samputa_sankhye = Column(Integer, nullable=True)
+    samputa_sankhye = Column(Float, nullable=True)
     tatvapadakosha_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     tatvapadakarara_hesaru = relationship(
