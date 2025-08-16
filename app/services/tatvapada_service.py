@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import List
 from typing import Optional
 
@@ -321,35 +322,35 @@ class TatvapadaService:
 
 
 #------------------------------------------DELETE ---------------
-
     @staticmethod
-    def get_all_delete_keys() -> List[str]:
+    def get_all_delete_keys():
         """
-        Returns all Tatvapada entries as a list of delete path strings:
-        <samputa_sankhye>/<tatvapada_sankhye>/<tatvapada_author_id>
+        Optimized response: groups tatvapada_sankhyes by samputa and author.
         """
-        entries = db_instance.session.query(
-            Tatvapada.samputa_sankhye,
-            Tatvapada.tatvapada_sankhye,
-            Tatvapada.tatvapada_author_id
-        ).all()
 
-        result = []
-        for samputa_sankhye, tatvapada_sankhye, tatvapada_author_id in entries:
-            # Convert samputa_sankhye to integer string if numeric like "3.0"
-            if samputa_sankhye is not None:
-                try:
-                    if float(samputa_sankhye).is_integer():
-                        samputa_str = str(int(float(samputa_sankhye)))
-                    else:
-                        samputa_str = str(samputa_sankhye)
-                except ValueError:
-                    samputa_str = str(samputa_sankhye)
-            else:
-                samputa_str = ""
+        results = (
+            db_instance.session.query(
+                Tatvapada.samputa_sankhye,
+                Tatvapada.tatvapada_author_id,
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru,
+                Tatvapada.tatvapada_sankhye
+            )
+            .join(TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id)
+            .order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_author_id, Tatvapada.tatvapada_sankhye)
+            .all()
+        )
 
-            tatvapada_sankhye_str = tatvapada_sankhye if tatvapada_sankhye else ""
+        grouped = defaultdict(lambda: {"tatvapada_sankhyes": []})
 
-            result.append(f"{samputa_str}/{tatvapada_sankhye_str}/{tatvapada_author_id}")
+        for row in results:
+            key = (row.samputa_sankhye, row.tatvapada_author_id)
+            grouped[key]["samputa_sankhye"] = row.samputa_sankhye
+            grouped[key]["tatvapada_author_id"] = row.tatvapada_author_id
+            grouped[key]["tatvapadakarara_hesaru"] = row.tatvapadakarara_hesaru
+            grouped[key]["tatvapada_sankhyes"].append(row.tatvapada_sankhye)
 
-        return result
+        delete_keys = list(grouped.values())
+
+        return {"delete_keys": delete_keys}
+
+

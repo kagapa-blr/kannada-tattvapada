@@ -273,10 +273,10 @@ def get_delete_keys():
 @tatvapada_bp.route("/tatvapada/add", methods=["GET"])
 def tatvapada_add_form():
     """Render web form for adding a Tatvapada."""
-    return render_template("add_tatvapada.html")
+    return render_template("admin_tabs/add_tatvapada.html")
 
 
 @tatvapada_bp.route("/tatvapada/update", methods=["GET", "POST"])
 def tatvapada_update_form():
     """Render web form for updating a Tatvapada."""
-    return render_template("update_tatvapada.html")
+    return render_template("admin_tabs/update_tatvapada.html")
