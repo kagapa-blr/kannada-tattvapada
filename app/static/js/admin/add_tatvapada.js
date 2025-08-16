@@ -1,6 +1,7 @@
 // static/js/tabs/add.js
 import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
+import { showLoader, hideLoader } from "../loader.js";
 
 let currentTatvapadaData = [];
 let initialized = false; // prevent double init
@@ -110,6 +111,7 @@ function initializeDropdownHandlers() {
 
 // --------------------- Load Samputas --------------------- //
 function loadSamputas() {
+    showLoader();
     apiClient
         .get(apiEndpoints.tatvapada.getSamputas)
         .then((samputas) => {
@@ -122,7 +124,6 @@ function loadSamputas() {
             const samputaSuggestionValue = document.getElementById("add_tatvapada_samputa_suggestion_value");
             const sortedList = list.slice().sort((a, b) => a - b);
             samputaSuggestionValue.textContent = `[${sortedList.join(", ")}]`;
-
 
             const dropdown = document.getElementById("add_tatvapada_samputa");
             resetDropdown(dropdown, "ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ", true);
@@ -139,6 +140,9 @@ function loadSamputas() {
         })
         .catch((error) => {
             console.error("[AddTab] Error loading Samputas:", error);
+        })
+        .finally(() => {
+            hideLoader();
         });
 }
 
@@ -146,6 +150,7 @@ function loadSamputas() {
 function fetchAuthorsAndSankhyas(samputaSankhye) {
     const endpoint = apiEndpoints.tatvapada.getAuthorSankhyasBySamputa(samputaSankhye);
 
+    showLoader();
     apiClient
         .get(endpoint)
         .then((data) => {
@@ -177,8 +182,12 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
         })
         .catch((error) => {
             console.error("[AddTab] Error fetching authors for samputa:", error);
+        })
+        .finally(() => {
+            hideLoader();
         });
 }
+
 
 // --------------------- Populate Sankhyes --------------------- //
 function populateTatvapadaSankhyes(authorId) {
@@ -204,15 +213,18 @@ function populateTatvapadaSankhyes(authorId) {
 function fetchSpecificTatvapada(samputa, authorId, sankhye) {
     const endpoint = apiEndpoints.tatvapada.getSpecificTatvapada(samputa, authorId, sankhye);
 
+    showLoader();
     return apiClient
         .get(endpoint)
-        .then((data) => {
-            return data;
-        })
+        .then((data) => data)
         .catch((error) => {
             console.error("[AddTab] Error fetching specific Tatvapada:", error);
+        })
+        .finally(() => {
+            hideLoader();
         });
 }
+
 
 function populateTatvapadaForm(data) {
     if (!data) return;
@@ -283,12 +295,15 @@ function initializeFormSubmitHandler() {
         const formData = new FormData(form);
         const jsonData = Object.fromEntries(formData.entries());
 
+        showLoader(); // 🚀 Show loader before hitting API
+
         if (isNewMode) {
             const samputa = document.getElementById("add_tatvapada_samputa_input").value.trim();
             const authorName = document.getElementById("add_tatvapada_tatvapadakarara_hesaru_input_modeNew").value.trim();
             const sankhye = document.getElementById("add_tatvapada_tatvapada_sankhye_input")?.value.trim();
 
             if (!authorName) {
+                hideLoader();
                 alert("ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಅಗತ್ಯವಿದೆ");
                 return;
             }
@@ -308,7 +323,11 @@ function initializeFormSubmitHandler() {
                 .catch((error) => {
                     console.error("[AddTab] Add API Error:", error);
                     handleErrorModal(error);
+                })
+                .finally(() => {
+                    hideLoader(); // ✅ always hide loader
                 });
+
         } else {
             const samputa = document.getElementById("add_tatvapada_samputa").value;
             const sankhyeSelect = document.getElementById("add_tatvapada_tatvapada_sankhye");
@@ -317,6 +336,7 @@ function initializeFormSubmitHandler() {
             const sankhyeValue = sankhyeSelect.value;
 
             if (!samputa) {
+                hideLoader();
                 alert("ಸಂಪುಟ ಆಯ್ಕೆ ಮಾಡಬೇಕು");
                 return;
             }
@@ -325,6 +345,7 @@ function initializeFormSubmitHandler() {
             if (authorId === "__add_new__") {
                 const inlineAuthorInput = document.getElementById("add_tatvapada_inline_new_author");
                 if (!inlineAuthorInput || !inlineAuthorInput.value.trim()) {
+                    hideLoader();
                     alert("ಹೊಸ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನೀಡಿರಿ");
                     return;
                 }
@@ -332,6 +353,7 @@ function initializeFormSubmitHandler() {
             } else if (authorId) {
                 jsonData.tatvapada_author_id = authorId;
             } else {
+                hideLoader();
                 alert("ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಆಯ್ಕೆ ಅಗತ್ಯವಿದೆ");
                 return;
             }
@@ -339,6 +361,7 @@ function initializeFormSubmitHandler() {
             if (sankhyeValue === "__add_new_sankhye__") {
                 const inlineSankhyeInput = document.getElementById("add_tatvapada_inline_new_sankhye");
                 if (!inlineSankhyeInput || !inlineSankhyeInput.value.trim()) {
+                    hideLoader();
                     alert("ಹೊಸ ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ ನೀಡಿ");
                     return;
                 }
@@ -346,11 +369,11 @@ function initializeFormSubmitHandler() {
             } else if (sankhyeValue) {
                 jsonData.tatvapada_sankhye = sankhyeValue;
             } else {
+                hideLoader();
                 alert("ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ ಆಯ್ಕೆ ಮಾಡಬೇಕು");
                 return;
             }
 
-            console.log
             apiClient
                 .post(apiEndpoints.tatvapada.addTatvapada, jsonData)
                 .then((response) => {
@@ -362,10 +385,14 @@ function initializeFormSubmitHandler() {
                 .catch((error) => {
                     console.error("[AddTab] Update API Error:", error);
                     handleErrorModal(error);
+                })
+                .finally(() => {
+                    hideLoader(); // ✅ always hide loader
                 });
         }
     });
 }
+
 
 // --------------------- Modal Helpers --------------------- //
 function showSuccessModal(callback, message = "ಯಶಸ್ವಿಯಾಗಿದೆ.") {
