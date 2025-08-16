@@ -22,31 +22,21 @@ async function loadDeleteKeys() {
         deleteKeys.forEach(entry => {
             const row = document.createElement("tr");
 
-            const sankhyaCheckboxes = entry.tatvapada_sankhyes.map(s => `
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input row-select" type="checkbox"
-                    data-samputa="${entry.samputa_sankhye}"
-                    data-author="${entry.tatvapada_author_id}"
-                    data-author-name="${entry.tatvapadakarara_hesaru}"
-                    data-sankhya="${s}">
-                  <label class="form-check-label">${s}</label>
-                </div>
-            `).join(" ");
-
             row.innerHTML = `
                 <td>
-                  <input type="checkbox" class="row-author-select"
-                    data-samputa="${entry.samputa_sankhye}"
-                    data-author="${entry.tatvapada_author_id}">
+                  <input type="checkbox" class="row-author-select" data-samputa="${entry.samputa_sankhye}" data-author="${entry.tatvapada_author_id}">
                 </td>
                 <td>${entry.samputa_sankhye}</td>
                 <td>${entry.tatvapada_author_id}</td>
                 <td>${entry.tatvapadakarara_hesaru}</td>
-                <td>${sankhyaCheckboxes}</td>
+                <td class="col-sankhya">
+                    <button class="btn btn-sm btn-outline-primary toggle-sankhya-btn">Show</button>
+                    <div class="sankhya-scrollable mt-1" style="display:none; max-height:150px; overflow-y:auto;"></div>
+                </td>
                 <td>
-                  <button class="btn btn-danger btn-sm delete-btn"
-                    data-samputa="${entry.samputa_sankhye}"
-                    data-author="${entry.tatvapada_author_id}"
+                  <button class="btn btn-danger btn-sm delete-btn" 
+                    data-samputa="${entry.samputa_sankhye}" 
+                    data-author="${entry.tatvapada_author_id}" 
                     data-author-name="${entry.tatvapadakarara_hesaru}">
                     Delete All
                   </button>
@@ -54,9 +44,40 @@ async function loadDeleteKeys() {
             `;
 
             tbody.appendChild(row);
+
+            // Populate Sankhya checkboxes (sorted numerically)
+            const sankhyaContainer = row.querySelector(".sankhya-scrollable");
+            entry.tatvapada_sankhyes
+                .sort((a, b) => parseInt(a) - parseInt(b))
+                .forEach(s => {
+                    const div = document.createElement("div");
+                    div.className = "form-check form-check-inline";
+                    div.innerHTML = `
+                        <input class="form-check-input row-select" type="checkbox"
+                            data-samputa="${entry.samputa_sankhye}"
+                            data-author="${entry.tatvapada_author_id}"
+                            data-author-name="${entry.tatvapadakarara_hesaru}"
+                            data-sankhya="${s}">
+                        <label class="form-check-label">${s}</label>
+                    `;
+                    sankhyaContainer.appendChild(div);
+                });
+
+            // Toggle Sankhya display
+            const toggleBtn = row.querySelector(".toggle-sankhya-btn");
+            toggleBtn.addEventListener("click", () => {
+                if (sankhyaContainer.style.display === "none") {
+                    sankhyaContainer.style.display = "block";
+                    toggleBtn.textContent = "Hide";
+                } else {
+                    sankhyaContainer.style.display = "none";
+                    toggleBtn.textContent = "Show";
+                }
+            });
         });
 
         attachEventHandlers();
+
     } catch (err) {
         showFailure("Failed to load Tatvapadas");
         console.error(err);
@@ -65,6 +86,7 @@ async function loadDeleteKeys() {
     }
 }
 
+
 function attachEventHandlers() {
     const modal = new bootstrap.Modal(document.getElementById("deleteConfirmModal"));
     const confirmBtn = document.getElementById("confirmDeleteBtn");
@@ -72,7 +94,6 @@ function attachEventHandlers() {
     const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
     const selectAll = document.getElementById("selectAll");
 
-    // Confirm delete
     confirmBtn.onclick = async () => {
         if (pendingDeleteAction) {
             await pendingDeleteAction();
@@ -112,11 +133,11 @@ function attachEventHandlers() {
         });
     });
 
-    // Select All checkbox
+    // Select All master checkbox
     if (selectAll) {
         selectAll.addEventListener("change", () => {
             const checkboxes = document.querySelectorAll(".row-select");
-            checkboxes.forEach(cb => (cb.checked = selectAll.checked));
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
             bulkDeleteBtn.disabled = !selectAll.checked;
         });
     }
@@ -138,7 +159,7 @@ function attachEventHandlers() {
                 sankhya: cb.dataset.sankhya
             }));
 
-            if (selected.length === 0) return;
+            if (!selected.length) return;
 
             const { samputa, authorId, authorName } = selected[0];
             const tatvapadaNumbers = selected.map(s => s.sankhya).join(", ");

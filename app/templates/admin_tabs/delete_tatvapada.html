@@ -1,6 +1,23 @@
 <div class="delete-tatvapada-container">
     <h3>Delete Tatvapada</h3>
 
+    <!-- User Guidance / Info -->
+    <div class="alert alert-info">
+        <h6>How to use this tab:</h6>
+        <ul class="mb-0">
+            <li><strong>Select individual Tatvapada(s):</strong> Use the checkboxes under "Tatvapada Sankhyes" to pick
+                specific entries.</li>
+            <li><strong>Delete selected Tatvapada(s):</strong> Click the "Delete Selected" button after choosing
+                Tatvapada(s).</li>
+            <li><strong>Delete all Tatvapadas of an author:</strong> Use the "Delete All" button in the last column of
+                each row.</li>
+            <li><strong>Select All:</strong> Use the top-left "Select All" checkbox to quickly select all visible
+                Tatvapadas.</li>
+            <li>All delete actions require confirmation via a modal to prevent accidental deletion.</li>
+            <li>Success and failure notifications will appear in pop-up modals after each operation.</li>
+        </ul>
+    </div>
+
     <!-- Bulk Action Buttons -->
     <div class="mb-2 d-flex justify-content-between align-items-center">
         <div>
@@ -25,6 +42,7 @@
     </table>
 </div>
 
+<!-- Modals -->
 <!-- Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
