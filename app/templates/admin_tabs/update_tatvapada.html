@@ -1,0 +1,96 @@
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">ತತ್ತ್ವಪದ ಸಂಪಾದನೆ</h2>
+
+  <!-- Dropdowns -->
+  <div class="update_tatvapada_dropdown-container">
+    <select id="update_tatvapada_samputa" class="update_tatvapada_dropdown">
+      <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
+    </select>
+
+    <select id="update_tatvapada_author" class="update_tatvapada_dropdown" disabled>
+      <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
+    </select>
+
+    <select id="update_tatvapada_sankhye" class="update_tatvapada_dropdown" disabled>
+      <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
+    </select>
+  </div>
+
+  <form id="update_tatvapada_form">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <label class="form-label fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</label>
+        <input type="text" id="update_tatvapadakosha_sheershike" name="tatvapadakosha_sheershike" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">ವಿಭಾಗ</label>
+        <input type="text" id="update_vibhag" name="vibhag" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ</label>
+        <input type="text" id="update_tatvapada_sheershike" name="tatvapada_sheershike" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು</label>
+        <input type="text" id="update_author_name" name="tatvapadakarara_hesaru" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">ಮೊದಲ ಸಾಲು</label>
+        <input type="text" id="update_first_line" name="tatvapada_first_line" class="form-control">
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label fw-bold">ತತ್ತ್ವಪದ ಪದ್ಯ</label>
+        <textarea id="update_tatvapada_text" name="tatvapada" class="form-control" rows="6" required></textarea>
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label fw-bold">ಭಾವಾನುವಾದ</label>
+        <textarea id="update_bhavanuvada" name="bhavanuvada" class="form-control" rows="6" required></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</label>
+        <textarea id="update_klishta" name="klishta_padagalu_artha" class="form-control" rows="3"></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">ಟಿಪ್ಪಣಿ</label>
+        <textarea id="update_tippani" name="tippani" class="form-control" rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="text-center mt-4 mb-5">
+      <button type="submit" class="btn btn-primary">ಉಳಿಸಿ</button>
+      <button type="reset" class="btn btn-secondary">ಮರುಹೊಂದಿಸಿ</button>
+    </div>
+  </form>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="update_tatvapada_successModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4 text-center">
+      <h5 class="mb-3 text-success">ಯಶಸ್ವಿ!</h5>
+      <p>ತತ್ತ್ವಪದ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ.</p>
+      <p id="update_tatvapada_successMessage" class="mt-2 text-muted"></p>
+      <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">ಸರಿ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="update_tatvapada_errorModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-4 text-center">
+      <h5 class="mb-3 text-danger">ದೋಷ!</h5>
+      <p>ತತ್ತ್ವಪದವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.</p>
+      <p id="update_tatvapada_errorMessage" class="mt-2 text-muted"></p>
+      <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+    </div>
+  </div>
+</div>
