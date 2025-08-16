@@ -20,57 +20,50 @@ class TatvapadaService:
 
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
         try:
-            # Work on a shallow copy so caller's dict isn't mutated unexpectedly
             payload = data.copy()
 
+            # --- Author Handling ---
             author_name = payload.pop("tatvapadakarara_hesaru", None)
-            author_id = payload.get("tatvapada_author_id", None)
+            if not author_name:
+                raise ValueError("tatvapadakarara_hesaru is required")
 
-            # Case: both provided -> ensure consistency
-            if author_name and author_id:
-                existing_author = TatvapadaAuthorInfo.query.filter_by(id=author_id).first()
-                if not existing_author:
-                    raise ValueError(f"Provided tatvapada_author_id '{author_id}' does not exist")
-                if existing_author.tatvapadakarara_hesaru != author_name:
-                    raise ValueError(
-                        "Conflict: provided tatvapadakarara_hesaru and tatvapada_author_id refer to different authors"
-                    )
-                author = existing_author
+            # Find or create author
+            author = TatvapadaAuthorInfo.query.filter_by(
+                tatvapadakarara_hesaru=author_name
+            ).first()
 
-            # Case: only author name provided
-            elif author_name:
-                author = TatvapadaAuthorInfo.query.filter_by(tatvapadakarara_hesaru=author_name).first()
-                if not author:
-                    author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
-                    db_instance.session.add(author)
-                    db_instance.session.flush()  # generate UUID / ID
+            if not author:
+                author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
+                db_instance.session.add(author)
+                db_instance.session.flush()  # generate author.id
 
-            # Case: only author ID provided
-            elif author_id:
-                author = TatvapadaAuthorInfo.query.filter_by(id=author_id).first()
-                if not author:
-                    raise ValueError(f"tatvapada_author_id '{author_id}' does not exist")
-                author_name = author.tatvapadakarara_hesaru  # derive name if needed
-
-            else:
-                raise ValueError("Either tatvapadakarara_hesaru or tatvapada_author_id must be provided")
-
-            # Ensure author is present and assign its ID
             payload["tatvapada_author_id"] = author.id
 
-            # Create the Tatvapada entry
-            new_entry = Tatvapada(**{k: v for k, v in payload.items() if k != "tatvapadakarara_hesaru"})
+            # --- Create new Tatvapada ---
+            new_entry = Tatvapada(**payload)
             db_instance.session.add(new_entry)
             db_instance.session.commit()
 
-            self.logger.info(f"Inserted Tatvapada for author: {author.tatvapadakarara_hesaru}")
+            self.logger.info(
+                f"Inserted Tatvapada for author '{author.tatvapadakarara_hesaru}' (id={author.id})"
+            )
             return new_entry
+
+        except IntegrityError as ie:
+            db_instance.session.rollback()
+            self.logger.warning(f"Duplicate Tatvapada insert attempt: {ie}")
+            # Return None or raise custom exception so API route can return 409
+            raise IntegrityError("Duplicate Tatvapada entry", ie.params, ie.orig)
+
+        except SQLAlchemyError as se:
+            db_instance.session.rollback()
+            self.logger.error(f"Database error while inserting Tatvapada: {se}", exc_info=True)
+            raise
 
         except Exception as e:
             db_instance.session.rollback()
-            self.logger.error(f"Error inserting Tatvapada: {e}")
+            self.logger.error(f"Unexpected error inserting Tatvapada: {e}", exc_info=True)
             raise
-
 
     def update_by_composite_keys(
             self,
@@ -328,12 +321,14 @@ class TatvapadaService:
 
 
 #------------------------------------------DELETE ---------------
-    def get_all_delete_keys(self) -> list[str]:
+
+    @staticmethod
+    def get_all_delete_keys() -> List[str]:
         """
         Returns all Tatvapada entries as a list of delete path strings:
         <samputa_sankhye>/<tatvapada_sankhye>/<tatvapada_author_id>
         """
-        entries = Tatvapada.query.with_entities(
+        entries = db_instance.session.query(
             Tatvapada.samputa_sankhye,
             Tatvapada.tatvapada_sankhye,
             Tatvapada.tatvapada_author_id
@@ -341,16 +336,20 @@ class TatvapadaService:
 
         result = []
         for samputa_sankhye, tatvapada_sankhye, tatvapada_author_id in entries:
-            # Convert samputa_sankhye to int if it’s whole number, else keep as float string
+            # Convert samputa_sankhye to integer string if numeric like "3.0"
             if samputa_sankhye is not None:
-                if samputa_sankhye.is_integer():
-                    samputa_str = str(int(samputa_sankhye))
-                else:
+                try:
+                    if float(samputa_sankhye).is_integer():
+                        samputa_str = str(int(float(samputa_sankhye)))
+                    else:
+                        samputa_str = str(samputa_sankhye)
+                except ValueError:
                     samputa_str = str(samputa_sankhye)
             else:
                 samputa_str = ""
 
-            result.append(f"{samputa_str}/{tatvapada_sankhye}/{tatvapada_author_id}")
+            tatvapada_sankhye_str = tatvapada_sankhye if tatvapada_sankhye else ""
+
+            result.append(f"{samputa_str}/{tatvapada_sankhye_str}/{tatvapada_author_id}")
 
         return result
-
