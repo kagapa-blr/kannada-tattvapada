@@ -17,6 +17,7 @@ export function initAddTab() {
     loadSamputas();
     initializeFormSubmitHandler();
 
+    initializeBulkUploadHandler();
     // Accessibility fix for bootstrap modals
     document.addEventListener("hide.bs.modal", function () {
         if (document.activeElement) {
@@ -430,4 +431,51 @@ function handleErrorModal(error) {
 function resetDropdown(dropdown, placeholder, disable = false) {
     dropdown.innerHTML = `<option value="">${placeholder}</option>`;
     dropdown.disabled = disable;
+}
+
+
+
+
+
+function initializeBulkUploadHandler() {
+    const bulkForm = document.getElementById('bulk_upload_form');
+    if (!bulkForm) return;
+
+    bulkForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById('bulk_upload_file');
+        if (!fileInput.files || !fileInput.files.length) {
+            alert("CSV ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ");
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        showLoader();
+        try {
+            const response = await fetch('/bulk-upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            hideLoader();
+            if (response.ok && data.success) {
+                let msg = data.message || "ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಪ್‌ಲೋಡ್ ಆಯಿತು.";
+                if (data.errors && data.errors.length) {
+                    msg += `<br><strong>ಚುಕ್ಕುಗಳು:</strong><ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                }
+                document.getElementById('bulk_upload_successMessage').innerHTML = msg;
+                new bootstrap.Modal(document.getElementById('bulk_upload_successModal')).show();
+                bulkForm.reset();
+            } else {
+                document.getElementById('bulk_upload_errorMessage').textContent = data.message || data.error || "ಅಪ್ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.";
+                new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
+            }
+        } catch (err) {
+            hideLoader();
+            document.getElementById('bulk_upload_errorMessage').textContent = "ಸರ್ವರ್ ದೋಷ: " + (err.message || '');
+            new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
+        }
+    });
 }

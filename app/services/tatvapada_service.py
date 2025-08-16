@@ -3,11 +3,9 @@ from typing import List
 from typing import Optional
 
 from sqlalchemy import distinct
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
-from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 from app.utils.logger import setup_logger
 
 
@@ -354,3 +352,94 @@ class TatvapadaService:
         return {"delete_keys": delete_keys}
 
 
+
+
+
+import csv
+import io
+
+from sqlalchemy.exc import IntegrityError
+from app.config.database import db_instance
+from app.models.tatvapada import Tatvapada
+from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+
+BULK_UPLOAD_COLUMNS = [
+    'samputa_sankhye',
+    'tatvapadakosha_sheershike',
+    'tatvapadakarara_hesaru',
+    'vibhag',
+    'tatvapada_sheershike',
+    'tatvapada_sankhye',
+    'tatvapada_first_line',
+    'tatvapada',
+    'bhavanuvada',
+    'klishta_padagalu_artha',
+    'tippani'
+]
+
+class BulkUploadService:
+    def __init__(self, db_session=None):
+        self.db = db_session or db_instance.session
+
+    def upload_csv_records(self, file_stream):
+        try:
+            # Use utf-8-sig to remove BOM if present
+            file_content = file_stream.read().decode('utf-8-sig')
+            #print(file_content)  # For debugging
+
+            reader = csv.DictReader(io.StringIO(file_content))
+            # Normalize header
+            header = [h.strip() for h in reader.fieldnames]
+            missing_cols = set(BULK_UPLOAD_COLUMNS) - set(header)
+            if missing_cols:
+                raise ValueError(f"Missing columns in CSV header: {', '.join(missing_cols)}")
+
+            records_added = 0
+            errors = []
+
+            for i, row in enumerate(reader, 1):
+                # Normalize keys for each row
+                row = {k.strip(): v for k, v in row.items()}
+
+                author_name = row.get('tatvapadakarara_hesaru', '').strip()
+                if not author_name:
+                    errors.append(f"Row {i}: author name missing")
+                    continue
+
+                # Find or create author
+                author = TatvapadaAuthorInfo.query.filter_by(
+                    tatvapadakarara_hesaru=author_name
+                ).first()
+                if not author:
+                    author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
+                    self.db.add(author)
+                    try:
+                        self.db.flush()
+                    except IntegrityError:
+                        self.db.rollback()
+                        author = TatvapadaAuthorInfo.query.filter_by(
+                            tatvapadakarara_hesaru=author_name
+                        ).first()
+                        if not author:
+                            errors.append(f"Row {i}: Could not create author '{author_name}'.")
+                            continue
+
+                tatvapada = Tatvapada(
+                    samputa_sankhye=row.get('samputa_sankhye'),
+                    tatvapadakosha_sheershike=row.get('tatvapadakosha_sheershike'),
+                    tatvapada_author_id=author.id,
+                    vibhag=row.get('vibhag'),
+                    tatvapada_sheershike=row.get('tatvapada_sheershike'),
+                    tatvapada_sankhye=row.get('tatvapada_sankhye'),
+                    tatvapada_first_line=row.get('tatvapada_first_line'),
+                    tatvapada=row.get('tatvapada'),
+                    bhavanuvada=row.get('bhavanuvada'),
+                    klishta_padagalu_artha=row.get('klishta_padagalu_artha'),
+                    tippani=row.get('tippani')
+                )
+                self.db.add(tatvapada)
+                records_added += 1
+
+            return records_added, errors
+        except Exception as e:
+            return 0, [str(e)]

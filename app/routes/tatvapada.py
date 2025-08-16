@@ -15,7 +15,8 @@ from flask import (
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.inspection import inspect
 
-from app.services.tatvapada_service import TatvapadaService
+from app.config.database import db_instance
+from app.services.tatvapada_service import TatvapadaService, BulkUploadService
 from app.utils.helper import kannada_to_english_digits
 from app.utils.logger import setup_logger
 
@@ -280,3 +281,34 @@ def tatvapada_add_form():
 def tatvapada_update_form():
     """Render web form for updating a Tatvapada."""
     return render_template("admin_tabs/update_tatvapada.html")
+
+
+bulk_upload_service = BulkUploadService(db_instance.session)
+
+@tatvapada_bp.route("/bulk-upload", methods=["POST"])
+def bulk_upload():
+    """
+    Accept CSV file (in 'file' parameter), insert Tatvapada and author records.
+    """
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file part in request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    try:
+        records_added, errors = bulk_upload_service.upload_csv_records(file)
+        db_instance.session.commit()
+        return jsonify({
+            "success": True,
+            "message": f"{records_added} records added",
+            "errors": errors
+        }), 200
+    except Exception as e:
+        db_instance.session.rollback()
+        return jsonify({
+            "success": False,
+            "message": "Failed to insert CSV records",
+            "error": str(e)
+        }), 500

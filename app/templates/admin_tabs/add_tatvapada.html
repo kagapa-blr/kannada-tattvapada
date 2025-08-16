@@ -119,6 +119,48 @@
             <button type="reset" class="btn btn-secondary">ಮರುಹೊಂದಿಸಿ</button>
         </div>
     </form>
+
+
+    <hr class="my-5" />
+
+    <h2 class="mb-4 text-center">ಒಟ್ಟು ತತ್ತ್ವಪದ CSV ಮೂಲಕ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</h2>
+
+    <form id="bulk_upload_form" enctype="multipart/form-data" novalidate>
+        <div class="mb-3">
+            <label for="bulk_upload_file" class="form-label fw-bold">CSV ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ</label>
+            <input class="form-control" type="file" id="bulk_upload_file" name="file" accept=".csv" required />
+            <div class="form-text">
+                ಫೈಲ್ ಆವಶ್ಯಕ ಕOLUMನ್ ಗಳು: samputa_sankhye, tatvapadakosha_sheershike, tatvapadakarara_hesaru, vibhag,
+                tatvapada_sheershike, tatvapada_sankhye, tatvapada_first_line, tatvapada, bhavanuvada,
+                klishta_padagalu_artha, tippani
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">CSV ಅಪ್ಪ್‌ಲೋಡ್ ಮಾಡಿ</button>
+        </div>
+    </form>
+
+    <!-- Success/Error modals for bulk upload -->
+    <div class="modal fade" id="bulk_upload_successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4 text-center">
+                <h5 class="text-success">ಅಪ್ಪ್‌ಲೋಡಿಂಗ್ ಯಶಸ್ವಿ</h5>
+                <p id="bulk_upload_successMessage"></p>
+                <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">ಸರಿ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bulk_upload_errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4 text-center">
+                <h5 class="text-danger">ಅಪ್ಪ್‌ಲೋಡ್ ವಿಫಲ</h5>
+                <p id="bulk_upload_errorMessage"></p>
+                <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+            </div>
+        </div>
+    </div>
+
 </main>
 
 <!-- Modals -->
