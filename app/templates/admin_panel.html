@@ -11,9 +11,9 @@
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
   <!-- CSS files -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/update.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_tatvapada.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/update.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/add_tatvapada.css') }}">
 
   <!-- Main Dashboard JS (imports all tab scripts) -->
   <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
@@ -54,20 +54,20 @@
         {% include "admin_tabs/users.html" %}
       </div>
       <div id="admin-add" class="admin-tab-content">
-        {% include "admin_tabs/add.html" %}
+        {% include "admin_tabs/add_tatvapada.html" %}
       </div>
       <div id="admin-update" class="admin-tab-content">
-        {% include "admin_tabs/update.html" %}
+        {% include "admin_tabs/update_tatvapada.html" %}
       </div>
       <div id="admin-delete" class="admin-tab-content">
-        {% include "admin_tabs/delete.html" %}
+        {% include "admin_tabs/delete_tatvapada.html" %}
       </div>
     </div>
     <footer class="admin-footer">
       © <span>2025</span> Tatvapada Management System | Designed by KAGAPA
     </footer>
   </div>
-
+  {% include 'customLoader.html' %}
 </body>
 
 </html>

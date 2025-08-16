@@ -1,8 +1,8 @@
-import { initOverviewTab } from "./tabs/overview.js";
-import { initUsersTab } from "./tabs/users.js";
-import { initUpdateTab } from "./tabs/update.js";
-import { initAddTab } from "./tabs/add.js";
-import { initDeleteTab } from "./tabs/delete.js";
+import { initOverviewTab } from "./admin/overview.js";
+import { initUsersTab } from "./admin/users.js";
+import { initUpdateTab } from "./admin/update_tatvapada.js";
+import { initAddTab } from "./admin/add_tatvapada.js";
+import { initDeleteTab } from "./admin/delete_tatvapada.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const links = document.querySelectorAll(".admin-sidebar a");
