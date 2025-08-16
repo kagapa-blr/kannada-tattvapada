@@ -1,187 +1,248 @@
 import os
 import re
+import shutil
 import unicodedata
-import pandas as pd
+from pathlib import Path
 from docx import Document
-from docx.shared import Pt
+import pandas as pd
 
-class TatvapadaExtractor:
-    COLUMNS = [
-        'tatvapadakosha',
-        'samputa',
-        'sheershike',
-        'tatvapadakarar_hesaru',
-        'mukhya_sheershike',
-        'tatvapada_sankya_hesaru',
-        'tatvapada'
-    ]
+# === CONSTANTS ===
+KANNADA_NUM_MAP = {
+    '೦': '0', '೧': '1', '೨': '2', '೩': '3', '೪': '4',
+    '೫': '5', '೬': '6', '೭': '7', '೮': '8', '೯': '9'
+}
+SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:–—]*\s*([೦-೯0-9]+)', re.IGNORECASE)
+VERSE_HEADER_RE = re.compile(r'^\s*([೦-೯0-9]+)(?:[\.\(]|\s+)\s*')
+SPECIAL_ENDINGS = ("||", "॥")
 
-    DIGIT_PATTERN = r'[೦೧೨೩೪೫೬೭೮೯0-9]'
-    ENTRY_PATTERN = re.compile(rf'^0*({DIGIT_PATTERN}+)[\s\.]*.*')
+# === HELPERS ===
+def normalize_para(text):
+    return unicodedata.normalize('NFC', text.strip())
 
-    IGNORE_PREFIXES = ['ಪರಿವಿಡಿ']
+def kannada_to_number(s):
+    trans = ''.join(KANNADA_NUM_MAP.get(ch, ch) for ch in s)
+    if re.match(r'^\d+(\.\d+)?$', trans):
+        return trans
+    return None
 
-    def __init__(self, input_folder, output_folder, consolidated_csv):
-        self.input_folder = input_folder
-        self.output_folder = output_folder
-        self.consolidated_csv = consolidated_csv
-        self.all_rows = []
+def kannada_to_int(s):
+    trans = ''.join(KANNADA_NUM_MAP.get(ch, ch) for ch in s)
+    digits = ''.join(ch for ch in trans if ch.isdigit())
+    return int(digits) if digits.isdigit() else None
 
-    def clean_line(self, text):
-        normalized = unicodedata.normalize('NFKC', text.replace('\u200b', '').replace('\u200c', ''))
-        return re.sub(r'\s+', ' ', normalized).strip()
+def valid_heading_line(line):
+    s = line.strip()
+    if not s:
+        return False
+    if "|" in s or "।" in s or "॥" in s:
+        return False
+    if any(s.endswith(se) for se in SPECIAL_ENDINGS):
+        return False
+    if any(s.startswith(se) for se in SPECIAL_ENDINGS):
+        return False
+    if re.match(r'^[0-9೦-೯]', s):  # starts with digit
+        return False
+    if len(s.split()) > 5:
+        return False
+    return True
 
-    def to_kannada(self, number: int) -> str:
-        return ''.join({
-            '0': '೦', '1': '೧', '2': '೨', '3': '೩', '4': '೪',
-            '5': '೫', '6': '೬', '7': '೭', '8': '೮', '9': '೯'
-        }[d] for d in str(number))
+def extract_paragraphs_from_docx(path):
+    doc = Document(path)
+    return [normalize_para(p.text) for p in doc.paragraphs if normalize_para(p.text)]
 
-    def is_valid_mukhya_sheershike(self, line: str) -> bool:
+# === Author detection ===
+def is_author_name(candidate):
+    cand = candidate.strip()
+    if not cand or not valid_heading_line(cand):
+        return False
+    return cand.endswith("ತತ್ವಪದಗಳು")
+
+# === Get max 2 valid headings before verse ===
+def get_heading_lines_before_verse(paras, verse_index):
+    heading_lines = []
+    j = verse_index - 1
+    while j >= 0 and len(heading_lines) < 2:
+        line = paras[j].strip()
         if not line:
-            return False
-        if self.ENTRY_PATTERN.match(line):
-            return False
-        if line.endswith(('||', '।', '॥')) or any(x in line for x in ['|', '।', '॥']):
-            return False
-        if len(line) > 60:
-            return False
-        return True
+            j -= 1
+            continue
+        if valid_heading_line(line):
+            heading_lines.insert(0, line)
+        else:
+            break
+        j -= 1
+    return heading_lines
 
-    def extract_from_docx(self, file_path):
-        print(f'\n📄 Processing: {os.path.basename(file_path)}')
-        doc = Document(file_path)
-        paragraphs = [self.clean_line(p.text) for p in doc.paragraphs]
-        non_empty = [p for p in paragraphs if p.strip()]
+# === CORE PARSER ===
+def parse_document(paras):
+    if not paras:
+        return []
 
-        if not non_empty:
-            print("⚠️ Empty document.")
-            return []
+    samputa_sankhye, tatvapadakosha_sheershike = "-", "-"
+    samputa_index = -1
 
-        tatvapadakosha = non_empty[0]
-        samputa = next((p for p in non_empty if p.startswith('ಸಂಪುಟ')), '')
-
-        sheershike = ''
-        for p in non_empty:
-            if p not in [tatvapadakosha, samputa] and not self.ENTRY_PATTERN.match(p):
-                sheershike = p
+    # Find samputa
+    for i, p in enumerate(paras):
+        if p.lower().startswith("ಸಂಪುಟ"):
+            m = SAMPUTA_RE.match(p)
+            if m:
+                samputa_sankhye = kannada_to_number(m.group(1)) or m.group(1)
+                samputa_index = i
                 break
 
-        tatvapadakarar_hesaru = sheershike
+    # Find document title
+    for j in range(samputa_index + 1, len(paras)):
+        if paras[j]:
+            tatvapadakosha_sheershike = paras[j]
+            break
 
-        rows = []
-        current_entry = None
-        current_lines = []
-        current_mukhya_sheershike = ''
-        started = False
-        expected_number = 1
+    # Get first author (mandatory)
+    current_author = "-"
+    for p in paras:
+        if is_author_name(p):
+            current_author = p
+            break
 
-        for idx, para in enumerate(non_empty):
-            # ✅ Skip ignored prefixes at paragraph level
-            if any(para.startswith(prefix) for prefix in self.IGNORE_PREFIXES):
-                print(f"⏭️ Skipping paragraph due to IGNORE prefix: {para}")
-                continue
+    last_vibhag = "-"
+    author_verse_counter = 0
+    entries = []
 
-            match = self.ENTRY_PATTERN.match(para)
-            if match:
-                digit_prefix = match.group(1).strip()
-                expected_kannada = self.to_kannada(expected_number)
-                expected_english = str(expected_number)
+    i = 0
+    while i < len(paras):
+        line = paras[i]
+        verse_match = VERSE_HEADER_RE.match(line)
+        if not verse_match:
+            i += 1
+            continue
 
-                if not started:
-                    if digit_prefix == expected_kannada or digit_prefix == expected_english:
-                        started = True
-                    else:
-                        continue
+        # Get headings before verse
+        heading_lines = get_heading_lines_before_verse(paras, i)
+        detected_author = None
+        detected_vibhag = None
 
-                if digit_prefix != expected_kannada and digit_prefix != expected_english:
-                    print(f"⛔ Stopped: Expected {expected_kannada}/{expected_english}, found {digit_prefix}")
-                    break
-
-                if current_entry:
-                    rows.append({
-                        'tatvapadakosha': tatvapadakosha,
-                        'samputa': samputa,
-                        'sheershike': sheershike,
-                        'tatvapadakarar_hesaru': tatvapadakarar_hesaru,
-                        'mukhya_sheershike': current_mukhya_sheershike,
-                        'tatvapada_sankya_hesaru': current_entry,
-                        'tatvapada': '\n'.join(current_lines).strip()
-                    })
-                    print(f'📌 Mukhya Sheershike: {current_mukhya_sheershike} | Sankhya Hesaru: {current_entry}')
-
-                current_entry = para
-                current_lines = []
-                expected_number += 1
-
-                for j in range(idx - 1, -1, -1):
-                    prev_line = non_empty[j].strip()
-                    if not prev_line:
-                        continue
-                    if self.is_valid_mukhya_sheershike(prev_line):
-                        current_mukhya_sheershike = prev_line
-                        break
+        for hl in heading_lines:
+            if is_author_name(hl):
+                detected_author = hl
             else:
-                if started:
-                    current_lines.append(para)
+                detected_vibhag = hl
 
-        if started and current_entry:
-            rows.append({
-                'tatvapadakosha': tatvapadakosha,
-                'samputa': samputa,
-                'sheershike': sheershike,
-                'tatvapadakarar_hesaru': tatvapadakarar_hesaru,
-                'mukhya_sheershike': current_mukhya_sheershike,
-                'tatvapada_sankya_hesaru': current_entry,
-                'tatvapada': '\n'.join(current_lines).strip()
-            })
-            print(f'📌 Mukhya Sheershike: {current_mukhya_sheershike}  Sankhya Hesaru: {current_entry}')
+        # Author reset counter if changed
+        if detected_author and detected_author != tatvapadakosha_sheershike:
+            if detected_author != current_author:
+                current_author = detected_author
+                author_verse_counter = 0  # reset for new author
 
-        if not rows:
-            print("⚠️ No tatvapadas extracted! Printing all checked paragraphs:")
-            for i, p in enumerate(non_empty):
-                print(f"{i + 1:02}: {p}")
+        # Increment verse counter for this author
+        author_verse_counter += 1
+        tatvapada_sankhye = str(author_verse_counter)
 
-        print(f"✅ Extracted {len(rows)} tatvapadas from {os.path.basename(file_path)}")
-        return rows
+        # Vibhag carry-forward
+        if detected_vibhag and not is_author_name(detected_vibhag):
+            last_vibhag = detected_vibhag
+        current_vibhag = last_vibhag or "-"
 
-    def save_to_docx_with_nudi_font(self, rows, output_path):
-        doc = Document()
-        for row in rows:
-            para = doc.add_paragraph()
-            run = para.add_run(f"{row['tatvapada_sankya_hesaru']}\n{row['tatvapada']}\n")
-            run.font.name = 'NudiUni01k'
-            run.font.size = Pt(14)
-        doc.save(output_path)
+        # Collect verse content
+        block = []
+        k = i + 1
+        while k < len(paras) and not VERSE_HEADER_RE.match(paras[k]):
+            block.append(paras[k])
+            k += 1
 
-    def process_single_file(self, filename):
-        file_path = os.path.join(self.input_folder, filename)
-        rows = self.extract_from_docx(file_path)
-        self.all_rows.extend(rows)
+        # Special fields
+        bhavanuvada, klishta_padagalu_artha, tippani = "-", "-", "-"
+        remaining = []
+        for para_text in block:
+            if para_text.startswith("ಭಾವಾನುವಾದ"):
+                bhavanuvada = para_text[len("ಭಾವಾನುವಾದ"):].lstrip(" :-–—").strip() or "-"
+            elif para_text.startswith("ಅರ್ಥ"):
+                klishta_padagalu_artha = para_text[len("ಅರ್ಥ"):].lstrip(" :-–—").strip() or "-"
+            elif para_text.startswith("ಟಿಪ್ಪಣಿ"):
+                tippani = para_text[len("ಟಿಪ್ಪಣಿ"):].lstrip(" :-–—").strip() or "-"
+            else:
+                remaining.append(para_text)
 
-        df = pd.DataFrame(rows, columns=self.COLUMNS)
-        output_csv = os.path.join(self.output_folder, filename.replace('.docx', '.csv'))
-        df.to_csv(output_csv, index=False, encoding='utf-8')
+        tatvapada_content = "\n".join(remaining).strip() or "-"
+        clean_sheershike = re.sub(r"^[೦-೯0-9]+[.(]?\s*", "", line)
 
-        output_docx = os.path.join(self.output_folder, filename.replace('.docx', '_nudi.docx'))
-        self.save_to_docx_with_nudi_font(rows, output_docx)
+        entries.append({
+            "samputa_sankhye": samputa_sankhye,
+            "tatvapadakosha_sheershike": tatvapadakosha_sheershike,
+            "tatvapadakarara_hesaru": current_author,
+            "vibhag": current_vibhag,
+            "tatvapada_sheershike": clean_sheershike,
+            "tatvapada_sankhye": tatvapada_sankhye,   # 👈 Auto increment per author
+            "tatvapada_first_line": remaining[0].strip() if remaining else "-",
+            "tatvapada": tatvapada_content,
+            "bhavanuvada": bhavanuvada,
+            "klishta_padagalu_artha": klishta_padagalu_artha,
+            "tippani": tippani
+        })
+        i = k
 
-    def process_all_files(self):
-        print(f'\n📂 Scanning: {self.input_folder}\n')
-        os.makedirs(self.output_folder, exist_ok=True)
+    return entries
 
-        for filename in sorted(os.listdir(self.input_folder)):
-            if filename.endswith('.docx'):
-                self.process_single_file(filename)
+# === PROCESS FOLDER ===
+def process_folder(input_dir):
+    base_dir = Path("output_csv")
+    shutil.rmtree(base_dir, ignore_errors=True)
+    out_dir = base_dir / "individual"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-        df_all = pd.DataFrame(self.all_rows, columns=self.COLUMNS)
-        df_all.to_csv(self.consolidated_csv, index=False, encoding='utf-8')
-        print(f"\n📦 All tatvapadas saved to {self.consolidated_csv} ({len(self.all_rows)} rows)\n")
+    for docx_file in sorted(Path(input_dir).glob("*.docx")):
+        try:
+            paras = extract_paragraphs_from_docx(docx_file)
+            parsed = parse_document(paras)
+            if not parsed:
+                continue
+            df = pd.DataFrame(parsed)
+            out_path = out_dir / f"{docx_file.stem}.csv"
+            df.to_csv(out_path, index=False, encoding="utf-8-sig")
+            print("Saved:", out_path)
+        except Exception as e:
+            print("Error processing", docx_file, ":", e)
 
-if __name__ == '__main__':
-    input_folder = './tatvapada_docs'
-    output_folder = './tatvapada_output'
-    consolidated_csv = 'tatvapada_extracted_all.csv'
 
-    extractor = TatvapadaExtractor(input_folder, output_folder, consolidated_csv)
-    extractor.process_all_files()
+
+
+# Kannada digit mapping
+kannada_to_arabic = str.maketrans({
+    '೦': '0', '೧': '1', '೨': '2', '೩': '3', '೪': '4',
+    '೫': '5', '೬': '6', '೭': '7', '೮': '8', '೯': '9'
+})
+
+def rename_docx_files(directory):
+    for filename in os.listdir(directory):
+        if filename.lower().endswith(".docx"):
+            # Remove extra spaces for easier matching
+            clean_name = re.sub(r'\s+', '', filename)
+            # Convert Kannada digits to Arabic
+            clean_name = clean_name.translate(kannada_to_arabic)
+
+            # Extract all numbers from the filename
+            numbers = re.findall(r'\d+', clean_name)
+
+            if numbers:
+                if len(numbers) >= 2:
+                    # Format as main.sub (e.g., 8.1)
+                    new_name = f"samputa_{numbers[0]}.{numbers[1]}.docx"
+                else:
+                    # Only main number
+                    new_name = f"samputa_{numbers[0]}.docx"
+
+                old_path = os.path.join(directory, filename)
+                new_path = os.path.join(directory, new_name)
+
+                if not os.path.exists(new_path):
+                    os.rename(old_path, new_path)
+                    print(f"Renamed: {filename} → {new_name}")
+                else:
+                    print(f"Skipped (already exists): {new_name}")
+
+# Example usage:
+# rename_docx_files(r"C:\path\to\your\docx\folder")
+
+# === MAIN ===
+if __name__ == "__main__":
+    inp = input("Folder with .docx: ").strip()
+    #rename_docx_files(inp)
+    process_folder(inp)

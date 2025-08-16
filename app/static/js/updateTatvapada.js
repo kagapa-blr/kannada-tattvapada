@@ -9,7 +9,7 @@ let currentTatvapadaData = [];
 // --------------------- DOM Ready --------------------- //
 document.addEventListener("DOMContentLoaded", () => {
     initializeFormSubmitHandler();
-    setupNavigation();
+    //setupNavigation();
     initializeDropdownHandlers();
     loadSamputas();
 

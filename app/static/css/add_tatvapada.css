@@ -1,5 +1,5 @@
 /* ============ DROPDOWN SECTION ============ */
-.dropdown-container {
+.add_tatvapada_dropdown_container {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
@@ -8,7 +8,7 @@
   margin-bottom: 30px;
 }
 
-.dropdown {
+.add_tatvapada_dropdown {
   flex: 1 1 220px;
   padding: 10px 14px;
   font-size: 1rem;
@@ -20,18 +20,18 @@
   cursor: pointer;
 }
 
-.dropdown:focus {
+.add_tatvapada_dropdown:focus {
   border-color: #4b49ac;
   outline: none;
   box-shadow: 0 0 8px 3px rgba(75, 73, 172, 0.25);
 }
 
-.dropdown:hover:not(:disabled) {
+.add_tatvapada_dropdown:hover:not(:disabled) {
   border-color: #3a37a5;
 }
 
-.dropdown:disabled,
-.dropdown[disabled] {
+.add_tatvapada_dropdown:disabled,
+.add_tatvapada_dropdown[disabled] {
   background-color: #e9ecef;
   color: #6c757d;
   cursor: not-allowed;

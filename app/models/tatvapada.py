@@ -27,7 +27,7 @@ class Tatvapada(db_instance.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Identifiers and metadata
-    samputa_sankhye = Column(String(15), nullable=True)
+    samputa_sankhye = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     tatvapadakosha_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     tatvapadakarara_hesaru = relationship(
@@ -35,7 +35,7 @@ class Tatvapada(db_instance.Model):
     )
     vibhag = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapada_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
-    tatvapada_sankhye = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+    tatvapada_sankhye = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     tatvapada_first_line = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapada = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
 

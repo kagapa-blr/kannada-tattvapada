@@ -1,11 +1,11 @@
+import time
 import pandas as pd
 import requests
 import os
 
-
 # API endpoint
-#API_URL = f"http://localhost:5000/api/tatvapada/add"
-API_URL = f"https://kagapa.com/kannada-tattvapada/api/tatvapada/add"
+#API_URL = f"https://kagapa.com/kannada-tattvapada/api/tatvapada/add"
+API_URL = f"http://localhost:5000/api/tatvapada/add"
 
 # Ask for folder path
 folder_path = input("Enter the folder path containing CSV files: ").strip()
@@ -24,6 +24,7 @@ if not csv_files:
 
 total_success = 0
 total_fail = 0
+failed_rows_list = []  # To store all failed rows
 
 for csv_file in csv_files:
     file_path = os.path.join(folder_path, csv_file)
@@ -55,25 +56,57 @@ for csv_file in csv_files:
             "tippani": row.get("tippani", "-"),
         }
 
+        # Print key info before inserting
+        print(f"Inserting row {index + 1}: "
+              f"samputa_sankhye={payload['samputa_sankhye']}, "
+              f"tatvapadakarara_hesaru={payload['tatvapadakarara_hesaru']}, "
+              f"tatvapada_sankhye={payload['tatvapada_sankhye']}")
+
         try:
             response = requests.post(API_URL, json=payload)
 
             if response.status_code in (200, 201):
-                print(f"Row {index + 1} uploaded.")
+                print(f"Row {index + 1} uploaded successfully.")
                 success_count += 1
             else:
-                print(f"Row {index + 1} failed. Status: {response.status_code}, Response: {response.text}")
+                print(f"Row {index + 1} failed. Status: {response.status_code}")
                 fail_count += 1
+                failed_rows_list.append({
+                    "file": csv_file,
+                    "row_index": index + 1,
+                    "data": row.to_dict(),
+                    "status": response.status_code,
+                    "response": response.text
+                })
 
         except Exception as e:
             print(f"Error uploading row {index + 1}: {e}")
             fail_count += 1
+            failed_rows_list.append({
+                "file": csv_file,
+                "row_index": index + 1,
+                "data": row.to_dict(),
+                "status": "Exception",
+                "response": str(e)
+            })
 
     print(f"\nFinished uploading {csv_file}: Success: {success_count}, Failed: {fail_count}")
 
     total_success += success_count
     total_fail += fail_count
 
+    # Wait for 1 minute before processing next CSV
+    print("Waiting 15 seconds before processing next file...")
+    time.sleep(15)
+
 print("\nAll files processed.")
 print(f"Total Success: {total_success}")
 print(f"Total Failed: {total_fail}")
+
+# Display failed rows as a table
+if failed_rows_list:
+    print("\nFailed Rows Table:")
+    failed_df = pd.DataFrame(failed_rows_list)
+    print(failed_df)
+else:
+    print("\nNo failed rows.")

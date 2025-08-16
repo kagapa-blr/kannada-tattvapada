@@ -1,0 +1,41 @@
+<h2>📊 Overview</h2>
+<p>Welcome to the Tatvapada Management Dashboard. Here’s a quick snapshot of your system status:</p>
+
+<!-- Stats Cards -->
+<div id="admin-overview-statsCards" class="admin-overview-statsCards">
+    <div class="admin-overview-card" id="card-total-samputa">
+        <h3>Total Samputa</h3>
+        <p class="admin-overview-card-number" id="totalSamputa">--</p>
+    </div>
+
+    <div class="admin-overview-card" id="card-total-tatvapada">
+        <h3>Total Tatvapada</h3>
+        <p class="admin-overview-card-number" id="totalTatvapada">--</p>
+    </div>
+
+    <div class="admin-overview-card" id="card-total-authors">
+        <h3>Total Authors</h3>
+        <p class="admin-overview-card-number" id="totalAuthors">--</p>
+    </div>
+
+    <div class="admin-overview-card" id="card-total-admins">
+        <h3>Total Admins</h3>
+        <p class="admin-overview-card-number" id="totalAdmins">--</p>
+    </div>
+</div>
+
+<!-- Tatvapada per Samputa -->
+<div class="admin-overview-samputa-table-wrapper">
+    <h3>📦 Tatvapada Count by Samputa</h3>
+    <table class="admin-overview-samputa-table">
+        <thead>
+            <tr>
+                <th>Samputa</th>
+                <th>Tatvapada Count</th>
+            </tr>
+        </thead>
+        <tbody id="samputaTableBody">
+            <!-- JS will fill rows here -->
+        </tbody>
+    </table>
+</div>

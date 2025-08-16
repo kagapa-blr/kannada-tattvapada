@@ -1,12 +1,19 @@
 # app/routes/admin_routes.py
-
-from flask import request, redirect, url_for, flash, render_template, Blueprint
-from app.config.database import db_instance
-from app.models.user_management import User, Admin
+from flask import request, render_template, Blueprint, jsonify
+from app.services.admin_dashboard import DashboardService
+from app.services.user_manage_service import (
+    get_all_users_with_admin_status,
+    update_user,
+    update_admin_status,
+    delete_user
+)
 from app.utils.auth_decorator import login_required
 
 admin_bp = Blueprint("admin", __name__)
 
+# ----------------------
+# Admin dashboard page
+# ----------------------
 @admin_bp.route("/")
 @login_required
 def admin_dashboard():
@@ -17,45 +24,90 @@ def admin_dashboard():
     return render_template("admin_panel.html")
 
 
+# ----------------------
+# GET all users with admin status
+# ----------------------
 @admin_bp.route("/users", methods=["GET"])
 @login_required
-def user_management():
+def get_users():
     """
-    Display all users with option to promote/demote as admin.
+    Returns all users with admin status as JSON.
     URL: /admin/users
     """
-    users = User.query.all()
-    admin_usernames = {admin.username for admin in Admin.query.all()}
-    return render_template("user_management.html", users=users, admin_usernames=admin_usernames)
+    return jsonify(get_all_users_with_admin_status())
 
 
-@admin_bp.route("/users/save", methods=["POST"])
+# ----------------------
+# PUT - Update user details (username, email, phone, admin)
+# ----------------------
+@admin_bp.route("/users/<int:user_id>", methods=["PUT"])
 @login_required
-def save_user_changes():
+def edit_user(user_id):
     """
-    Save user updates (username, phone, email) and handle admin toggling.
-    URL: /admin/users/save
+    Update a user's details.
+    Request JSON: { "username": str, "email": str, "phone": str, "is_admin": bool }
     """
-    users = User.query.all()
-    current_admins = {admin.username: admin for admin in Admin.query.all()}
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
 
-    for user in users:
-        new_username = request.form.get(f"username_{user.id}", user.username)
-        new_phone = request.form.get(f"phone_{user.id}", user.phone)
-        new_email = request.form.get(f"email_{user.id}", user.email)
-        make_admin = request.form.get(f"is_admin_{user.id}") == "on"
+    updated_user = update_user(
+        user_id,
+        username=data.get("username"),
+        email=data.get("email"),
+        phone=data.get("phone"),
+        is_admin=data.get("is_admin")
+    )
 
-        # Update user fields
-        user.username = new_username
-        user.phone = new_phone
-        user.email = new_email
+    return jsonify({"message": "User updated", "user": {
+        "id": updated_user.id,
+        "username": updated_user.username,
+        "email": updated_user.email,
+        "phone": updated_user.phone
+    }})
 
-        # Admin toggle logic
-        if make_admin and user.username not in current_admins:
-            db_instance.session.add(Admin(username=user.username, email=user.email))
-        elif not make_admin and user.username in current_admins:
-            db_instance.session.delete(current_admins[user.username])
 
-    db_instance.session.commit()
-    flash("User changes saved successfully.", "success")
-    return redirect(url_for("admin.user_management"))
+# ----------------------
+# PUT - Update admin status only
+# ----------------------
+@admin_bp.route("/users/<int:user_id>/admin", methods=["PUT"])
+@login_required
+def toggle_admin(user_id):
+    """
+    Toggle or set admin status for a specific user.
+    Request body: { "is_admin": true/false }
+    """
+    data = request.get_json()
+    if "is_admin" not in data:
+        return jsonify({"error": "Missing is_admin field"}), 400
+
+    is_admin = update_admin_status(user_id, data["is_admin"])
+    return jsonify({"message": "Admin status updated", "is_admin": is_admin})
+
+
+# ----------------------
+# DELETE - Remove a user
+# ----------------------
+@admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
+@login_required
+def remove_user(user_id):
+    """
+    Delete a user by ID (also removes admin entry if exists).
+    """
+    delete_user(user_id)
+    return jsonify({"message": f"User with ID {user_id} deleted"})
+
+
+# ----------------------
+# GET admin dashboard overview stats
+# ----------------------
+@admin_bp.route("/overview", methods=["GET"])
+@login_required
+def admin_overview():
+    """
+    Returns admin dashboard statistics as JSON.
+    URL: /admin/overview
+    """
+    service = DashboardService()
+    stats = service.get_overview_statistics()
+    return jsonify(stats)

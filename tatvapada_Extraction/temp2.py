@@ -11,7 +11,9 @@ KANNADA_NUM_MAP = {
 SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:–—]*\s*([೦-೯0-9]+)', re.IGNORECASE)
 VERSE_HEADER_RE = re.compile(r'^\s*([೦-೯0-9]+)(?:[\.\(]|\s+)\s*')
 
+
 SPECIAL_ENDINGS = ("||", "॥")
+
 
 # === HELPERS ===
 def normalize_para(text):
@@ -48,8 +50,8 @@ def valid_heading_line(line):
         return False
     if re.match(r'^[0-9೦-೯]', s):
         return False
-    # reject lines that are too long to be headings
-    if len(s.split()) > 5:
+    # NEW: reject lines that are too long to be headings
+    if len(s.split()) > 5:  # adjust threshold if needed
         return False
     return True
 
@@ -68,62 +70,22 @@ def load_authors_list(file_path="authors.txt"):
     return authors_set
 
 def is_author_name(candidate, authors_set):
-    """
-    True if candidate's first word matches any word in any author name,
-    and candidate has at least 2 words.
-    """
+    """True if candidate matches authors list (exact, partial, or first/last word match)."""
     cand = candidate.strip()
     if not cand or not valid_heading_line(cand):
         return False
-
-    cand_parts = cand.split()
-    if len(cand_parts) < 2:  # must have at least 2 parts
+    cand_words = cand.split()
+    if not cand_words:
         return False
-
-    cand_first = cand_parts[0]
     for auth in authors_set:
         auth_words = auth.split()
-        if cand_first in auth_words:
+        if auth in cand or cand in auth:
+            return True
+        if auth_words and (cand_words[0] == auth_words[0] or cand_words[-1] == auth_words[-1]):
             return True
     return False
 
 
-# === NEW HELPERS FOR AUTHOR/VIBHAG DETECTION ===
-def get_heading_lines_above(paras, index):
-    heading_lines = []
-    j = index - 1
-    while j >= 0 and len(heading_lines) < 2:
-        line = paras[j].strip()
-        if not line:
-            j -= 1
-            continue
-        if VERSE_HEADER_RE.match(line) or line.lower().startswith("ಸಂಪುಟ"):
-            break
-        if any(c in line for c in ('|', '।', '॥', ',', ';', ':')):
-            break
-        if not valid_heading_line(line):
-            break
-        heading_lines.insert(0, line)  # keep order top to bottom
-        j -= 1
-    return heading_lines
-
-def detect_author_vibhag(heading_lines, default_author, authors_set):
-    if len(heading_lines) == 2:
-        author = heading_lines[0] if is_author_name(heading_lines[0], authors_set) else default_author
-        vibhag = heading_lines[1]
-    elif len(heading_lines) == 1:
-        if is_author_name(heading_lines[0], authors_set):
-            author = heading_lines[0]
-            vibhag = "-"
-        else:
-            author = default_author
-            vibhag = heading_lines[0]
-    else:
-        author = default_author
-        vibhag = "-"
-    return author, vibhag
-
-# === CORE PARSER ===
 # === CORE PARSER ===
 def parse_document(paras, authors_set=None):
     if not paras:
@@ -143,7 +105,7 @@ def parse_document(paras, authors_set=None):
                 samputa_index = i
                 break
 
-    # Find sheershike (title)
+    # Find sheershike
     for j in range(samputa_index + 1, len(paras)):
         if paras[j]:
             tatvapadakosha_sheershike = paras[j]
@@ -167,32 +129,69 @@ def parse_document(paras, authors_set=None):
         num_int = kannada_to_int(raw_num)
         tatvapada_sankhye = str(num_int) if num_int else raw_num
 
-        # get up to 2 valid heading lines immediately above this verse
-        heading_lines = get_heading_lines_above(paras, i)
-        # detect author and vibhag using the new helper
-        author, vibhag = detect_author_vibhag(heading_lines, tatvapadakosha_sheershike, authors_set)
+        # === unified heading check for both first and subsequent verses ===
+        heading_lines = []
+        j = i - 1
+        non_empty_count = 0
+        while j >= 0 and non_empty_count < 2:
+            l = paras[j].strip()
+            if not l:
+                j -= 1
+                continue
+            non_empty_count += 1
+            if VERSE_HEADER_RE.match(l) or l.lower().startswith("ಸಂಪುಟ"):
+                break
+            # reject lines with punctuation/special characters
+            if any(c in l for c in ('|', '।', '॥', ',', ';', ':')):
+                break
+            if not valid_heading_line(l):
+                break
+            heading_lines.insert(0, l)
+            j -= 1
 
-        # sanitize vibhag
+        author, vibhag = current_author, current_vibhag
+
+        if len(heading_lines) >= 2:
+            # first line -> author?
+            if is_author_name(heading_lines[0], authors_set):
+                author = heading_lines[0]
+            elif tatvapada_sankhye == "1":
+                author = heading_lines[0]  # initial author if first verse
+            # second line
+            if is_author_name(heading_lines[1], authors_set):
+                vibhag = "-"
+            else:
+                vibhag = heading_lines[1]
+        elif len(heading_lines) == 1:
+            if is_author_name(heading_lines[0], authors_set):
+                author = heading_lines[0]
+                vibhag = current_vibhag if tatvapada_sankhye != "1" else "-"
+            else:
+                if tatvapada_sankhye == "1":
+                    author = tatvapadakosha_sheershike
+                vibhag = heading_lines[0]
+        else:
+            if tatvapada_sankhye == "1":
+                author, vibhag = tatvapadakosha_sheershike, "-"
+            else:
+                author, vibhag = current_author, current_vibhag
+
+        # sanitise vibhag
         if is_author_name(vibhag, authors_set) or not valid_heading_line(vibhag):
             vibhag = "-"
 
-        # carry forward vibhag if current vibhag is "-"
-        if vibhag == "-":
-            vibhag = last_vibhag
-        else:
-            last_vibhag = vibhag
-
         current_author = author if author.strip() else "-"
         current_vibhag = vibhag if vibhag.strip() else "-"
+        if current_vibhag != "-":
+            last_vibhag = current_vibhag
 
-        # collect verse block paragraphs until next verse header
+        # --- collect verse block
         block = []
         k = i + 1
         while k < len(paras) and not VERSE_HEADER_RE.match(paras[k]):
             block.append(paras[k])
             k += 1
 
-        # special sections extraction
         bhavanuvada, klishta_padagalu_artha, tippani = "-", "-", "-"
         remaining = []
         for para_text in block:
@@ -221,10 +220,9 @@ def parse_document(paras, authors_set=None):
             "klishta_padagalu_artha": klishta_padagalu_artha,
             "tippani": tippani
         })
-
         i = k
 
-    # normalize blanks and sort
+    # normalise blanks and sort
     for e in entries:
         if not e["tatvapadakarara_hesaru"].strip():
             e["tatvapadakarara_hesaru"] = "-"
@@ -235,13 +233,12 @@ def parse_document(paras, authors_set=None):
         entries.sort(key=lambda e: (float(e["samputa_sankhye"]), float(e["tatvapada_sankhye"])))
     except:
         pass
-
     return entries
 
+
 # === RUN FOLDER ===
-def process_folder(input_dir, authors_file="filters/authors.txt"):
+def process_folder(input_dir, authors_file="authors.txt"):
     authors_set = load_authors_list(authors_file)
-    print(f"author set count : {len(authors_set)}")
     base_dir = Path("output_csv")
     shutil.rmtree(base_dir, ignore_errors=True)
     out_dir = base_dir / "individual"

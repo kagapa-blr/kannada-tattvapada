@@ -2,79 +2,71 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard | ನಿರ್ವಾಹಕ ಫಲಕ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tatvapada Management Dashboard</title>
 
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS & JS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-  <!-- Custom -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_panel.css') }}">
+  <!-- CSS files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/update.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_tatvapada.css') }}">
 
-  <script defer src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+  <!-- Main Dashboard JS (imports all tab scripts) -->
+  <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
 </head>
 
-<body class="bg-light">
-  {% include 'navbar.html' %}
+<body>
 
-  <div class="d-flex" id="dashboard-wrapper">
-    <!-- Sidebar -->
-    <nav id="sidebar" class="bg-white border-end shadow-sm">
-      <div class="sidebar-header p-3">
-        <h4 class="mb-0 fw-bold">Admin</h4>
-        <small class="text-muted">ನಿರ್ವಾಹಕ ಫಲಕ</small>
-      </div>
-      <ul class="nav flex-column px-2">
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center {% if active_tab=='overview' %}active{% endif %}" href="#">
-            <span class="me-2">🏠</span> Overview
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center {% if active_tab=='users' %}active{% endif %}" href="{{ url_for('admin.user_management') }}">
-            <span class="me-2">👥</span> Manage Users &amp; Roles
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center {% if active_tab=='add' %}active{% endif %}" href="{{ url_for('tatvapada.tatvapada_add_form') }}">
-            <span class="me-2">➕</span> Add Tatvapada
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center {% if active_tab=='update' %}active{% endif %}" href="{{ url_for('tatvapada.update_tatvapda') }}">
-            <span class="me-2">✏️</span> Update Tatvapada
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center" href="#">
-            <span class="me-2">🗑️</span> Delete Tatvapada
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link d-flex align-items-center" href="#">
-            <span class="me-2">📈</span> Statistics
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- Main content -->
-    <div class="flex-grow-1">
-      <div class="container-fluid px-4 py-4">
-
-
-        <!-- Footer or additional panels could go here -->
+  <!-- Sidebar -->
+  <div class="admin-sidebar" id="admin-sidebar">
+    <button class="admin-toggle-btn" id="admin-toggle-btn">☰</button>
+    <h2 class="admin-title">Admin Panel</h2>
+    <div class="admin-sidebar-menu">
+      <a class="active" data-tab="admin-overview">📊 <span>Overview</span></a>
+      <a data-tab="admin-users">👤 <span>User Management</span></a>
+      <a data-tab="admin-add">➕ <span>Add Tatvapada</span></a>
+      <a data-tab="admin-update">✏️ <span>Update Tatvapada</span></a>
+      <a data-tab="admin-delete">🗑 <span>Delete Tatvapada</span></a>
+    </div>
+    <div class="admin-profile-section" id="admin-logout-btn">
+      <img src="{{ url_for('static', filename='icons/admin/admin-profile.png') }}" alt="Profile">
+      <div class="admin-profile-info">
+        <span>Admin User</span>
+        <small>Logout</small>
       </div>
     </div>
-  
-  
   </div>
 
-  {% include 'customLoader.html' %}
-  {% include 'footer.html' %}
+  <!-- Main -->
+  <div class="admin-main" id="admin-main">
+    <div class="admin-topbar">
+      <span>Tatvapada Management</span>
+    </div>
+    <div class="admin-content">
+      <div id="admin-overview" class="admin-tab-content active">
+        {% include "admin_tabs/overview.html" %}
+      </div>
+      <div id="admin-users" class="admin-tab-content">
+        {% include "admin_tabs/users.html" %}
+      </div>
+      <div id="admin-add" class="admin-tab-content">
+        {% include "admin_tabs/add.html" %}
+      </div>
+      <div id="admin-update" class="admin-tab-content">
+        {% include "admin_tabs/update.html" %}
+      </div>
+      <div id="admin-delete" class="admin-tab-content">
+        {% include "admin_tabs/delete.html" %}
+      </div>
+    </div>
+    <footer class="admin-footer">
+      © <span>2025</span> Tatvapada Management System | Designed by KAGAPA
+    </footer>
+  </div>
 
 </body>
 

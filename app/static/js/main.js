@@ -77,12 +77,21 @@ function loadSamputaOptions() {
     showLoader();
     apiClient.get(apiEndpoints.tatvapada.getSamputas)
         .then(samputas => {
-            const options = samputas.map(s => ({ value: s, label: `ಸಂಪುಟ ${s}` }));
+            // Sort numerically
+            const sortedSamputas = [...samputas].sort((a, b) => Number(a) - Number(b));
+
+            // Map to dropdown options
+            const options = sortedSamputas.map(s => ({
+                value: s,
+                label: `ಸಂಪುಟ ${s}`
+            }));
+
             updateChoices("samputa", options);
         })
         .catch(err => console.error("Samputa Load Error:", err))
         .finally(hideLoader);
 }
+
 
 // --------- Fetch Authors and Sankhyas ---------
 function fetchAuthorsAndSankhyas(samputa) {
@@ -113,10 +122,12 @@ function populateSankhyesForAuthor(authorId) {
         item => item.tatvapadakarara_id.toString() === authorId
     );
 
-    const sankhyes = filtered.map(item => ({
-        value: item.tatvapada_sankhye,
-        label: `ತತ್ವಪದ ${item.tatvapada_sankhye}`
-    }));
+    const sankhyes = filtered
+        .map(item => ({
+            value: item.tatvapada_sankhye,
+            label: `ತತ್ವಪದ ${item.tatvapada_sankhye}`
+        }))
+        .sort((a, b) => Number(a.value) - Number(b.value)); // Sort numerically
 
     resetDropdown("tatvapada_sankhye", "ತತ್ವಪದ ಸಂಖ್ಯೆ", false);
     updateChoices("tatvapada_sankhye", sankhyes);
