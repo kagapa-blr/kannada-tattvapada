@@ -1,8 +1,8 @@
 from sqlalchemy import func
-from app.models.tatvapada import Tatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
 from app.config.database import db_instance
+from app.models.tatvapada import Tatvapada
+from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 from app.models.user_management import Admin
 
 
@@ -12,16 +12,20 @@ class DashboardService:
 
     def get_overview_statistics(self) -> dict:
         try:
-            # Total Samputa (distinct samputa_sankhye)
+            # Total number of distinct Samputa
             total_samputa = db_instance.session.query(
                 func.count(func.distinct(Tatvapada.samputa_sankhye))
             ).scalar()
 
             # Total Tatvapada entries
-            total_tatvapada = db_instance.session.query(func.count(Tatvapada.id)).scalar()
+            total_tatvapada = db_instance.session.query(
+                func.count(Tatvapada.id)
+            ).scalar()
 
             # Total Authors
-            total_authors = db_instance.session.query(func.count(TatvapadaAuthorInfo.id)).scalar()
+            total_authors = db_instance.session.query(
+                func.count(TatvapadaAuthorInfo.id)
+            ).scalar()
 
             # Number of Tatvapada in each Samputa
             tatvapada_per_samputa = (
@@ -32,14 +36,15 @@ class DashboardService:
                 .group_by(Tatvapada.samputa_sankhye)
                 .all()
             )
-
             tatvapada_per_samputa_list = [
                 {"samputa_sankhye": s or "Unknown", "count": c}
                 for s, c in tatvapada_per_samputa
             ]
 
             # Total Admin Users
-            total_admins = db_instance.session.query(func.count(Admin.id)).scalar()
+            total_admins = db_instance.session.query(
+                func.count(Admin.id)
+            ).scalar()
 
             return {
                 "total_samputa": total_samputa,

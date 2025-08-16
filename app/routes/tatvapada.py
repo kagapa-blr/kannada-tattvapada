@@ -178,7 +178,7 @@ def update_tatvapada_by_composite_keys():
 
 
 @tatvapada_bp.route(
-    "/api/tatvapada/<int:samputa_sankhye>/<int:tatvapada_author_id>/<tatvapada_sankhye>",
+    "/api/tatvapada/<samputa_sankhye>/<tatvapada_author_id>/<tatvapada_sankhye>",
     methods=["GET"]
 )
 def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
@@ -203,7 +203,7 @@ def get_all_samputas():
     return jsonify(tatvapada_service.get_all_samputa_sankhye())
 
 
-@tatvapada_bp.route("/api/tatvapada/author-sankhyes-by-samputa/<int:samputa_sankhye>", methods=["GET"])
+@tatvapada_bp.route("/api/tatvapada/author-sankhyes-by-samputa/<samputa_sankhye>", methods=["GET"])
 def get_authors_and_sankhyes_by_samputa(samputa_sankhye):
     """Return authors and their tatvapada_sankhyes for given samputa."""
     results = tatvapada_service.get_sankhyes_with_author_by_samputa(samputa_sankhye)
@@ -214,7 +214,7 @@ def get_authors_and_sankhyes_by_samputa(samputa_sankhye):
     return jsonify(results)
 
 
-@tatvapada_bp.route("/api/tatvapada/samputa/<int:samputa_sankhye>", methods=["DELETE"])
+@tatvapada_bp.route("/api/tatvapada/samputa/<samputa_sankhye>", methods=["DELETE"])
 def delete_tatvapada_by_samputa(samputa_sankhye):
     """Delete all tatvapadas under a given samputa."""
     try:
