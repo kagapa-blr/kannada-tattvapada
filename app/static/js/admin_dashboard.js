@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
             bootstrap.Modal.getInstance(
                 document.getElementById("logoutConfirmModal")
             ).hide();
-            window.location.replace("/");
+            window.location.replace(`${BASE_URL}`);
         } catch (err) {
             console.error("Logout error:", err);
         }
