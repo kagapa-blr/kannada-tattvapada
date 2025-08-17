@@ -19,13 +19,24 @@ logger = setup_logger("auth", "auth.log")
 
 auth_bp = Blueprint("auth", __name__)
 
+# ------------------- Cache Control ------------------- #
+@auth_bp.after_app_request
+def add_cache_control(response):
+    """
+    Prevent browser caching of protected pages.
+    """
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
+
+# ------------------- Signup ------------------- #
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     try:
         logger.info("Signup request received")
         user_data = request.get_json()
-
         logger.debug(f"Signup data extracted: {user_data}")
 
         if not user_data or not all(user_data.values()):
@@ -41,6 +52,7 @@ def signup():
         return jsonify({"error": str(e)}), 400
 
 
+# ------------------- Admin Creation ------------------- #
 @auth_bp.route("/admin/create", methods=["POST"])
 def create_admin_route():
     try:
@@ -62,6 +74,7 @@ def create_admin_route():
         return jsonify({"error": str(e)}), 400
 
 
+# ------------------- Login ------------------- #
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
@@ -83,14 +96,13 @@ def login():
         user = User.query.filter_by(username=username).first()
         if not user or not bcrypt.check_password_hash(user.password_hash, password):
             logger.warning(f"Failed login attempt for user: {username}")
-            # --- IMPORTANT: English only in backend response ---
             return jsonify({"error": "Invalid username or password"}), 401
 
         user_type = "user"
         user_id = user.id
         logger.info(f"User '{username}' logged in successfully")
 
-    # JWT payload etc... [no changes needed here]
+    # JWT payload
     payload = {
         "user_id": user_id,
         "username": username,
@@ -112,13 +124,17 @@ def login():
         token,
         httponly=True,
         samesite="Lax",
-        secure=False  # Secure=True in production!
+        secure=False  # Set True in production with HTTPS
     )
     return response
 
 
+# ------------------- Logout ------------------- #
 @auth_bp.route("/logout")
 def logout():
+    """
+    Clear the JWT cookie and redirect to login.
+    """
     response = make_response(redirect(url_for("auth.login")))
     response.set_cookie("access_token", "", expires=0)
     response.set_cookie("logout_message", "logout successful", max_age=5)

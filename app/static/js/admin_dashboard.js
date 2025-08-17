@@ -68,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Logout action
     logoutBtn.addEventListener("click", () => {
-        alert("Logging out...");
-        // TODO: API call or redirect
+        fetch("/logout", { method: "GET", credentials: "include" })
+            .then(() => window.location.replace("/login"))
+            .catch(err => console.error("Logout error:", err));
     });
 });
