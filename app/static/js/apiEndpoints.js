@@ -32,7 +32,8 @@ const apiEndpoints = {
     admin: {
         users: "/admin/users",            // GET all users / POST new user if needed
         userById: (id) => `/admin/users/${id}`,  // GET, PUT, DELETE specific user
-        overview: "/admin/overview"
+        overview: "/admin/overview",
+        resetPassword: (id) => `/admin/users/${id}/reset-password`
     }
 };
 

@@ -138,7 +138,7 @@ def verify_user_credentials(username, password):
 # ----------------------
 # PASSWORD RESET
 # ----------------------
-def reset_user_password(user_id, new_password, bcrypt):
+def reset_user_password(user_id, new_password):
     """
     Securely reset a user's password.
     Can be used by admins or via a password reset workflow.

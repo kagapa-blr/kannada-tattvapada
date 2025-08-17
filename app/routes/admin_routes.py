@@ -1,11 +1,14 @@
 # app/routes/admin_routes.py
 from flask import request, render_template, Blueprint, jsonify
+from werkzeug.exceptions import BadRequest
+
+from app.config.database import db_instance
 from app.services.admin_dashboard import DashboardService
 from app.services.user_manage_service import (
     get_all_users_with_admin_status,
     update_user,
     update_admin_status,
-    delete_user
+    delete_user, reset_user_password
 )
 from app.utils.auth_decorator import login_required
 
@@ -111,3 +114,26 @@ def admin_overview():
     service = DashboardService()
     stats = service.get_overview_statistics()
     return jsonify(stats)
+
+@admin_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
+def admin_reset_password(user_id):
+    """
+    Admin endpoint to reset a user's password.
+    Takes the new password from request JSON.
+    """
+    try:
+        data = request.get_json()
+        new_password = data.get("new_password")
+
+        # if not new_password or len(new_password) < 6:
+        #     raise BadRequest("Password must be at least 6 characters long.")
+
+        reset_user_password(user_id, new_password)
+
+        return jsonify({
+            "success": True,
+            "message": f"Password reset successfully for user {user_id}."
+        })
+    except Exception as e:
+        db_instance.session.rollback()
+        raise BadRequest(str(e))

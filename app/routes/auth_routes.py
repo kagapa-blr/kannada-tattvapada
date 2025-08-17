@@ -81,26 +81,28 @@ def login():
         logger.info("Login page rendered")
         return render_template("login.html")
 
+    # --------- POST (authenticate) ---------
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+
     logger.info(f"Login attempt for username: {username}")
 
-    # Try admin first
-    admin = Admin.query.filter_by(username=username).first()
-    if admin:
-        user_type = "admin"
-        user_id = admin.id
-        logger.info(f"Admin '{username}' logged in successfully (password-less)")
-    else:
-        user = User.query.filter_by(username=username).first()
-        if not user or not bcrypt.check_password_hash(user.password_hash, password):
-            logger.warning(f"Failed login attempt for user: {username}")
-            return jsonify({"error": "Invalid username or password"}), 401
+    # Always authenticate against User table
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password, bcrypt):
+        logger.warning(f"Failed login attempt for user: {username}")
+        return jsonify({"error": "Invalid username or password"}), 401
 
-        user_type = "user"
-        user_id = user.id
-        logger.info(f"User '{username}' logged in successfully")
+    # Check if also admin
+    admin = Admin.query.filter_by(username=username).first()
+    user_type = "admin" if admin else "user"
+    user_id = admin.id if admin else user.id
+
+    logger.info(f"{user_type.capitalize()} '{username}' logged in successfully")
 
     # JWT payload
     payload = {
@@ -111,7 +113,6 @@ def login():
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-    logger.debug(f"JWT issued for '{username}' with user_type '{user_type}'")
 
     response = make_response(jsonify({
         "message": "Login successful",
@@ -127,7 +128,6 @@ def login():
         secure=False  # Set True in production with HTTPS
     )
     return response
-
 
 # ------------------- Logout ------------------- #
 @auth_bp.route("/logout")
@@ -160,3 +160,8 @@ def me():
         return jsonify({"error": "Token expired"}), 401
     except jwt.InvalidTokenError:
         return jsonify({"error": "Invalid token"}), 401
+
+
+
+
+
