@@ -31,13 +31,20 @@
       <a data-tab="admin-update">✏️ <span>Update Tatvapada</span></a>
       <a data-tab="admin-delete">🗑 <span>Delete Tatvapada</span></a>
     </div>
-    <div class="admin-profile-section" id="admin-logout-btn" style="cursor: pointer;">
-      <img src="{{ url_for('static', filename='icons/admin/admin-profile.png') }}" alt="Profile" />
-      <div class="admin-profile-info">
-        <span id="logged-username">Loading...</span>
-        <small>Logout</small>
+
+
+    <div id="admin-logout-btn" style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-top:auto;
+            background:#fff;border-top:1px solid #eee;cursor:pointer;transition:background 0.2s;">
+      <img src="{{ url_for('static', filename='icons/admin/admin-profile.png') }}" alt="Profile"
+        style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;">
+        <span id="logged-username" style="font-weight:600;font-size:0.95rem;color:#333;">
+          Loading...
+        </span>
+        <small style="font-size:0.8rem;color:#777;">Logout</small>
       </div>
     </div>
+
 
   </div>
 

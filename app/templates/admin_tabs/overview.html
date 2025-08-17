@@ -1,41 +1,65 @@
-<h2>📊 Overview</h2>
-<p>Welcome to the Tatvapada Management Dashboard. Here’s a quick snapshot of your system status:</p>
+<!-- Overview Section -->
+<section class="mt-4" id="admin-overview-section">
+    <h2 class="fw-bold mb-3">Overview</h2>
+    <p class="text-muted">Welcome to the Tatvapada Management Dashboard. Here’s a snapshot of your system status:</p>
 
-<!-- Stats Cards -->
-<div id="admin-overview-statsCards" class="admin-overview-statsCards">
-    <div class="admin-overview-card" id="card-total-samputa">
-        <h3>Total Samputa</h3>
-        <p class="admin-overview-card-number" id="totalSamputa">--</p>
+    <!-- Stats Cards -->
+    <div class="row g-3 mt-3" id="admin-overview-stats">
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 text-center h-100 admin-overview-card" style="border-radius: 12px;">
+                <div class="card-body">
+                    <h6 class="text-secondary">Total Samputa</h6>
+                    <h3 id="admin-overview-totalSamputa" class="fw-bold text-primary">--</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 text-center h-100 admin-overview-card" style="border-radius: 12px;">
+                <div class="card-body">
+                    <h6 class="text-secondary">Total Tatvapada</h6>
+                    <h3 id="admin-overview-totalTatvapada" class="fw-bold text-success">--</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 text-center h-100 admin-overview-card" style="border-radius: 12px;">
+                <div class="card-body">
+                    <h6 class="text-secondary">Total Authors</h6>
+                    <h3 id="admin-overview-totalAuthors" class="fw-bold text-info">--</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card shadow-sm border-0 text-center h-100 admin-overview-card" style="border-radius: 12px;">
+                <div class="card-body">
+                    <h6 class="text-secondary">Total Admins</h6>
+                    <h3 id="admin-overview-totalAdmins" class="fw-bold text-danger">--</h3>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="admin-overview-card" id="card-total-tatvapada">
-        <h3>Total Tatvapada</h3>
-        <p class="admin-overview-card-number" id="totalTatvapada">--</p>
+
+    <!-- Tatvapada per Samputa -->
+    <div class="mt-5" id="admin-overview-samputa-wrapper">
+        <h4 class="fw-bold mb-3">Tatvapada Count by Samputa</h4>
+        <div class="table-responsive shadow-sm" style="max-height: 400px; overflow-y: auto; border-radius: 8px;">
+            <table class="table table-striped table-hover align-middle mb-0 admin-overview-table">
+                <thead class="table-light" style="position: sticky; top: 0; z-index: 2; background: #f8f9fa;">
+                    <tr>
+                        <th scope="col">Samputa</th>
+                        <th scope="col">Tatvapada Count</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-overview-samputaTableBody">
+                    <!-- JS will populate rows -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="admin-overview-card" id="card-total-authors">
-        <h3>Total Authors</h3>
-        <p class="admin-overview-card-number" id="totalAuthors">--</p>
-    </div>
 
-    <div class="admin-overview-card" id="card-total-admins">
-        <h3>Total Admins</h3>
-        <p class="admin-overview-card-number" id="totalAdmins">--</p>
-    </div>
-</div>
-
-<!-- Tatvapada per Samputa -->
-<div class="admin-overview-samputa-table-wrapper">
-    <h3>📦 Tatvapada Count by Samputa</h3>
-    <table class="admin-overview-samputa-table">
-        <thead>
-            <tr>
-                <th>Samputa</th>
-                <th>Tatvapada Count</th>
-            </tr>
-        </thead>
-        <tbody id="samputaTableBody">
-            <!-- JS will fill rows here -->
-        </tbody>
-    </table>
-</div>
+</section>

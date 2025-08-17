@@ -93,33 +93,6 @@ body {
     display: none;
 }
 
-/* Profile section */
-.admin-profile-section {
-    padding: 15px 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s ease;
-    flex-shrink: 0;
-    gap: 10px;
-    background-color: #f8f9fa;
-    margin-top: auto;
-}
-
-.admin-profile-section:hover {
-    background-color: #ffecec;
-    /* Light red hover */
-    transform: translateY(-2px);
-    /* Slight lift effect */
-}
-
-.admin-profile-section img {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    margin: 0;
-}
 
 .admin-profile-info {
     display: flex;
