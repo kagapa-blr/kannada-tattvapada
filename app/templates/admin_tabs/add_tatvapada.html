@@ -121,47 +121,64 @@
     </form>
 
 
-    <hr class="my-5" />
 
-    <h2 class="mb-4 text-center">ಒಟ್ಟು ತತ್ತ್ವಪದ CSV ಮೂಲಕ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</h2>
-
-    <form id="bulk_upload_form" enctype="multipart/form-data" novalidate>
-        <div class="mb-3">
-            <label for="bulk_upload_file" class="form-label fw-bold">CSV ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ</label>
-            <input class="form-control" type="file" id="bulk_upload_file" name="file" accept=".csv" required />
-            <div class="form-text">
-                ಫೈಲ್ ಆವಶ್ಯಕ ಕOLUMನ್ ಗಳು: samputa_sankhye, tatvapadakosha_sheershike, tatvapadakarara_hesaru, vibhag,
-                tatvapada_sheershike, tatvapada_sankhye, tatvapada_first_line, tatvapada, bhavanuvada,
-                klishta_padagalu_artha, tippani
-            </div>
-        </div>
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary">CSV ಅಪ್ಪ್‌ಲೋಡ್ ಮಾಡಿ</button>
-        </div>
-    </form>
-
-    <!-- Success/Error modals for bulk upload -->
-    <div class="modal fade" id="bulk_upload_successModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-4 text-center">
-                <h5 class="text-success">ಅಪ್ಪ್‌ಲೋಡಿಂಗ್ ಯಶಸ್ವಿ</h5>
-                <p id="bulk_upload_successMessage"></p>
-                <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">ಸರಿ</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="bulk_upload_errorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-4 text-center">
-                <h5 class="text-danger">ಅಪ್ಪ್‌ಲೋಡ್ ವಿಫಲ</h5>
-                <p id="bulk_upload_errorMessage"></p>
-                <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
-            </div>
-        </div>
-    </div>
 
 </main>
+<div class="container my-5 csv-uploader-container">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Bulk Upload Tatvapada via CSV</h2>
+            <p class="text-center text-muted mb-4">
+                Upload your CSV file containing tatvapada entries. Ensure the required columns are included.
+            </p>
+
+            <form id="bulk_upload_form" enctype="multipart/form-data" novalidate>
+                <div class="mb-3">
+                    <label for="bulk_upload_file" class="form-label fw-bold">Select CSV File</label>
+                    <input class="form-control" type="file" id="bulk_upload_file" name="file" accept=".csv" required />
+                    <div class="form-text">
+                        Required columns: <code>samputa_sankhye, tatvapadakosha_sheershike, tatvapadakarara_hesaru, vibhag,
+                        tatvapada_sheershike, tatvapada_sankhye, tatvapada_first_line, tatvapada, bhavanuvada,
+                        klishta_padagalu_artha, tippani</code>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Upload CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="bulk_upload_successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="text-center">
+                    <h5 class="text-success">Upload Successful!</h5>
+                    <p id="bulk_upload_successMessage" class="mt-2"></p>
+                    <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="bulk_upload_errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="text-center">
+                    <h5 class="text-danger">Upload Failed!</h5>
+                    <p id="bulk_upload_errorMessage" class="mt-2"></p>
+                    <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Modals -->
 <div class="modal fade" id="add_tatvapada_successModal" tabindex="-1" aria-hidden="true">

@@ -436,7 +436,6 @@ function resetDropdown(dropdown, placeholder, disable = false) {
 
 
 
-
 function initializeBulkUploadHandler() {
     const bulkForm = document.getElementById('bulk_upload_form');
     if (!bulkForm) return;
@@ -449,32 +448,54 @@ function initializeBulkUploadHandler() {
             alert("CSV ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ");
             return;
         }
+
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
         showLoader();
+
         try {
-            const response = await fetch('/bulk-upload', {
+            const response = await fetch(apiEndpoints.tatvapada.bulkUploadUsingCSV, {
                 method: 'POST',
                 body: formData,
             });
-            const data = await response.json();
+
+            // Use clone() to safely read response body multiple times if needed
+            const clonedResponse = response.clone();
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                data = { success: false, message: await clonedResponse.text() };
+            }
+
             hideLoader();
+
             if (response.ok && data.success) {
                 let msg = data.message || "ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಪ್‌ಲೋಡ್ ಆಯಿತು.";
-                if (data.errors && data.errors.length) {
-                    msg += `<br><strong>ಚುಕ್ಕುಗಳು:</strong><ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+
+                // Show row-wise errors if any
+                if (data.errors && Array.isArray(data.errors) && data.errors.length) {
+                    msg += `<br><strong>ದೋಷಗಳು:</strong><ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
                 }
+
                 document.getElementById('bulk_upload_successMessage').innerHTML = msg;
                 new bootstrap.Modal(document.getElementById('bulk_upload_successModal')).show();
                 bulkForm.reset();
             } else {
-                document.getElementById('bulk_upload_errorMessage').textContent = data.message || data.error || "ಅಪ್ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.";
+                // Populate error modal with multiple errors if available
+                const errorContainer = document.getElementById('bulk_upload_errorMessage');
+                if (data.errors && Array.isArray(data.errors) && data.errors.length) {
+                    errorContainer.innerHTML = `<ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                } else {
+                    errorContainer.textContent = data.message || data.error || "ಅಪ್ಪ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.";
+                }
                 new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
             }
         } catch (err) {
             hideLoader();
-            document.getElementById('bulk_upload_errorMessage').textContent = "ಸರ್ವರ್ ದೋಷ: " + (err.message || '');
+            const errorContainer = document.getElementById('bulk_upload_errorMessage');
+            errorContainer.textContent = "ಸರ್ವರ್ ದೋಷ: " + (err.message || '');
             new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
         }
     });

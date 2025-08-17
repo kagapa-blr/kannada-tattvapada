@@ -22,7 +22,8 @@ const apiEndpoints = {
             `/delete-by-samputa/${samputa}`,
         deleteBySamputaAuthor: (samputa, authorName) =>
             `/delete-by-samputa-author/${samputa}/${encodeURIComponent(authorName)}`,
-        bulkDelete: "/bulk-delete"
+        bulkDelete: "/bulk-delete",
+        bulkUploadUsingCSV: "/bulk-upload"
     },
 
     auth: {
