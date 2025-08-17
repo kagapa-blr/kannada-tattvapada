@@ -1,11 +1,15 @@
+import csv
+import io
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 from typing import Optional
 
 from sqlalchemy import distinct
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada
+from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 from app.utils.logger import setup_logger
 
 
@@ -18,6 +22,12 @@ class TatvapadaService:
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
 
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
+        """
+        Insert a new Tatvapada entry with author management.
+
+        Returns the new Tatvapada instance on success.
+        Raises exceptions on errors.
+        """
         try:
             payload = data.copy()
 
@@ -51,7 +61,6 @@ class TatvapadaService:
         except IntegrityError as ie:
             db_instance.session.rollback()
             self.logger.warning(f"Duplicate Tatvapada insert attempt: {ie}")
-            # Return None or raise custom exception so API route can return 409
             raise IntegrityError("Duplicate Tatvapada entry", ie.params, ie.orig)
 
         except SQLAlchemyError as se:
@@ -65,12 +74,18 @@ class TatvapadaService:
             raise
 
     def update_by_composite_keys(
-            self,
-            samputa_sankhye: float,
-            tatvapada_sankhye: str,
-            tatvapada_author_id: int,
-            data: dict
+        self,
+        samputa_sankhye: float,
+        tatvapada_sankhye: str,
+        tatvapada_author_id: int,
+        data: dict
     ) -> Optional[Tatvapada]:
+        """
+        Update a Tatvapada entry identified by composite keys.
+
+        Updates allowed fields except immutable keys.
+        Raises ValueError on validation and unique constraint errors.
+        """
         try:
             # Step 1: Fetch the existing entry
             existing_entry = Tatvapada.query.filter_by(
@@ -88,11 +103,9 @@ class TatvapadaService:
             # Step 3: Remove immutable fields from the update set
             immutable_fields = ["samputa_sankhye", "tatvapada_sankhye", "tatvapada_author_id"]
             for field in immutable_fields:
-                if field in update_data:
-                    self.logger.debug(f"Ignoring update to immutable field: {field}")
-                    update_data.pop(field)
+                update_data.pop(field, None)
 
-            # Step 4: If author name is provided, update the shared author record
+            # Step 4: If author name is provided, update the author record
             author_name = update_data.pop("tatvapadakarara_hesaru", None)
             if author_name and author_name.strip():
                 if existing_entry.tatvapadakarara_hesaru:
@@ -115,12 +128,10 @@ class TatvapadaService:
             db_instance.session.rollback()
             error_str = str(e.orig)
 
-            # Handle duplicate author name case
             if "tatvapada_author_info.tatvapadakarara_hesaru" in error_str:
                 self.logger.warning(f"Duplicate author name attempted: {error_str}")
                 raise ValueError("The author name already exists. Please choose a different name.")
 
-            # Handle any other unique constraint violations
             if "uq_tatvapada_composite" in error_str:
                 self.logger.warning(f"Duplicate composite key attempted: {error_str}")
                 raise ValueError("A Tatvapada entry with the same samputa, sankhye, and author already exists.")
@@ -146,6 +157,7 @@ class TatvapadaService:
     def delete_tatvapada_by_samputa(self, samputa_sankhye: int) -> int:
         """
         Deletes all Tatvapada entries for a given samputa_sankhye.
+
         Returns the count of rows deleted.
         """
         try:
@@ -159,13 +171,17 @@ class TatvapadaService:
             raise
 
     def delete_by_composite_keys(
-            self,
-            samputa_sankhye: float,
-            tatvapada_sankhye: str,
-            tatvapada_author_id: int
+        self,
+        samputa_sankhye: float,
+        tatvapada_sankhye: str,
+        tatvapada_author_id: int
     ) -> bool:
+        """
+        Delete a specific Tatvapada entry given composite keys.
+
+        Returns True if deleted, False if not found.
+        """
         try:
-            # Step 1: Find the specific Tatvapada entry
             entry = Tatvapada.query.filter_by(
                 samputa_sankhye=samputa_sankhye,
                 tatvapada_sankhye=tatvapada_sankhye,
@@ -175,7 +191,6 @@ class TatvapadaService:
             if not entry:
                 raise ValueError("Tatvapada entry not found with the given composite keys.")
 
-            # Step 2: Delete only this Tatvapada record
             db_instance.session.delete(entry)
             db_instance.session.commit()
 
@@ -199,32 +214,12 @@ class TatvapadaService:
             self.logger.error(f"Unexpected error during delete: {ex}")
             raise ValueError("An unexpected error occurred while deleting the Tatvapada.")
 
-    def delete_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> bool:
+    def search_by_keyword(self, keyword: str) -> List[Tatvapada]:
         """
-        Deletes a specific Tatvapada entry identified by the composite key.
-        Returns True if deletion was successful, False if no record matched.
+        Search Tatvapada entries filtering by keyword in tatvapada text.
+
+        Returns matching Tatvapada list.
         """
-        try:
-            entry = Tatvapada.query.filter_by(
-                samputa_sankhye=samputa_sankhye,
-                tatvapada_author_id=tatvapada_author_id,
-                tatvapada_sankhye=tatvapada_sankhye
-            ).first()
-
-            if not entry:
-                return False
-
-            db_instance.session.delete(entry)
-            db_instance.session.commit()
-            self.logger.info(
-                f"Deleted Tatvapada with samputa={samputa_sankhye}, author_id={tatvapada_author_id}, sankhye={tatvapada_sankhye}")
-            return True
-        except SQLAlchemyError as e:
-            db_instance.session.rollback()
-            self.logger.error(f"Error deleting specific Tatvapada: {e}")
-            raise
-
-    def search_by_keyword(self, keyword: str) -> list:
         try:
             results = Tatvapada.query.filter(
                 Tatvapada.tatvapada.ilike(f"%{keyword}%")
@@ -243,30 +238,28 @@ class TatvapadaService:
             results = Tatvapada.query.with_entities(
                 distinct(Tatvapada.samputa_sankhye)
             ).all()
-            return [row[0] for row in results if row[0] is not None]
+            return [row[0] for row in results if row is not None]
         except SQLAlchemyError as e:
             self.logger.error(f"Error fetching all samputa_sankhye: {e}")
             return []
 
     def get_tatvapada_sankhye_by_samputa(self, samputa_sankhye: int) -> List[int]:
         """
-        Returns a list of tatvapada_sankhye (as integers) for a given samputa_sankhye.
+        Returns a list of tatvapada_sankhye integers for a given samputa_sankhye.
         """
         try:
             results = Tatvapada.query.filter_by(
                 samputa_sankhye=samputa_sankhye
             ).with_entities(Tatvapada.tatvapada_sankhye).distinct().all()
 
-            return [int(row[0]) for row in results if row[0] is not None]
+            return [int(row[0]) for row in results if row is not None]
         except SQLAlchemyError as e:
             self.logger.error(f"Error fetching tatvapada_sankhye by samputa {samputa_sankhye}: {e}")
             return []
 
-
     def get_sankhyes_with_author_by_samputa(self, samputa_sankhye: int) -> List[dict]:
         """
-        Returns a list of dicts with tatvapada_sankhye, author id, and author name (hesaru)
-        for a given samputa_sankhye.
+        Returns list of dicts containing tatvapada_sankhye, author id, and author name for a samputa.
         """
         try:
             results = (
@@ -295,15 +288,16 @@ class TatvapadaService:
             self.logger.error(f"Error fetching sankhyes with author for samputa {samputa_sankhye}: {e}")
             return []
 
-
-    def get_specific_tatvapada(self, samputa_sankhye: int, tatvapada_author_id: int, tatvapada_sankhye: str) -> \
-    Optional[Tatvapada]:
+    def get_specific_tatvapada(
+        self,
+        samputa_sankhye: int,
+        tatvapada_author_id: int,
+        tatvapada_sankhye: str
+    ) -> Optional[Tatvapada]:
         """
-        Fetches a specific Tatvapada entry based on the composite key:
-        samputa_sankhye, tatvapada_author_id, and tatvapada_sankhye.
+        Fetch a specific Tatvapada entry by composite keys.
 
-        Returns:
-            Tatvapada object if found, else None.
+        Returns Tatvapada object if found, else None.
         """
         try:
             return Tatvapada.query.filter_by(
@@ -313,19 +307,16 @@ class TatvapadaService:
             ).first()
         except SQLAlchemyError as e:
             self.logger.error(
-                f"Error fetching specific tatvapada (samputa: {samputa_sankhye}, "
-                f"author_id: {tatvapada_author_id}, sankhye: {tatvapada_sankhye}): {e}"
+                f"Error fetching specific tatvapada (samputa: {samputa_sankhye}, author_id: {tatvapada_author_id}, sankhye: {tatvapada_sankhye}): {e}"
             )
             return None
 
-
-#------------------------------------------DELETE ---------------
     @staticmethod
-    def get_all_delete_keys():
+    def get_all_delete_keys() -> dict:
         """
-        Optimized response: groups tatvapada_sankhyes by samputa and author.
+        Optimized response: groups tatvapada_sankhyes by samputa and author for delete keys.
+        Returns dict with key "delete_keys".
         """
-
         results = (
             db_instance.session.query(
                 Tatvapada.samputa_sankhye,
@@ -352,17 +343,6 @@ class TatvapadaService:
         return {"delete_keys": delete_keys}
 
 
-
-
-
-import csv
-import io
-
-from sqlalchemy.exc import IntegrityError
-from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
-
 BULK_UPLOAD_COLUMNS = [
     'samputa_sankhye',
     'tatvapadakosha_sheershike',
@@ -377,69 +357,90 @@ BULK_UPLOAD_COLUMNS = [
     'tippani'
 ]
 
+
 class BulkUploadService:
     def __init__(self, db_session=None):
         self.db = db_session or db_instance.session
 
-    def upload_csv_records(self, file_stream):
-        try:
-            # Use utf-8-sig to remove BOM if present
-            file_content = file_stream.read().decode('utf-8-sig')
-            #print(file_content)  # For debugging
+    def upload_csv_records(self, file_stream) -> Tuple[int, List[str]]:
+        """
+        Reads CSV from file_stream and inserts Tatvapada and author records in bulk.
 
+        Returns:
+            records_added (int): Number of records successfully added.
+            errors (List[str]): List of user-friendly errors encountered.
+        """
+        records_added = 0
+        errors: List[str] = []
+
+        try:
+            file_content = file_stream.read().decode('utf-8-sig')
             reader = csv.DictReader(io.StringIO(file_content))
-            # Normalize header
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
             header = [h.strip() for h in reader.fieldnames]
             missing_cols = set(BULK_UPLOAD_COLUMNS) - set(header)
             if missing_cols:
-                raise ValueError(f"Missing columns in CSV header: {', '.join(missing_cols)}")
-
-            records_added = 0
-            errors = []
+                return 0, [f"Missing columns in CSV header: {', '.join(missing_cols)}"]
 
             for i, row in enumerate(reader, 1):
-                # Normalize keys for each row
-                row = {k.strip(): v for k, v in row.items()}
+                try:
+                    row = {k.strip(): v for k, v in row.items()}
 
-                author_name = row.get('tatvapadakarara_hesaru', '').strip()
-                if not author_name:
-                    errors.append(f"Row {i}: author name missing")
-                    continue
+                    author_name = row.get('tatvapadakarara_hesaru', '').strip()
+                    if not author_name:
+                        errors.append(f"Row {i}: Author name missing.")
+                        continue
 
-                # Find or create author
-                author = TatvapadaAuthorInfo.query.filter_by(
-                    tatvapadakarara_hesaru=author_name
-                ).first()
-                if not author:
-                    author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
-                    self.db.add(author)
+                    author = TatvapadaAuthorInfo.query.filter_by(
+                        tatvapadakarara_hesaru=author_name
+                    ).first()
+                    if not author:
+                        author = TatvapadaAuthorInfo(tatvapadakarara_hesaru=author_name)
+                        self.db.add(author)
+                        try:
+                            self.db.flush()
+                        except IntegrityError:
+                            self.db.rollback()
+                            errors.append(f"Row {i}: Duplicate author '{author_name}' detected.")
+                            author = TatvapadaAuthorInfo.query.filter_by(
+                                tatvapadakarara_hesaru=author_name
+                            ).first()
+                            if not author:
+                                continue  # skip this row
+
+                    tatvapada = Tatvapada(
+                        samputa_sankhye=row.get('samputa_sankhye'),
+                        tatvapadakosha_sheershike=row.get('tatvapadakosha_sheershike'),
+                        tatvapada_author_id=author.id,
+                        vibhag=row.get('vibhag'),
+                        tatvapada_sheershike=row.get('tatvapada_sheershike'),
+                        tatvapada_sankhye=row.get('tatvapada_sankhye'),
+                        tatvapada_first_line=row.get('tatvapada_first_line'),
+                        tatvapada=row.get('tatvapada'),
+                        bhavanuvada=row.get('bhavanuvada'),
+                        klishta_padagalu_artha=row.get('klishta_padagalu_artha'),
+                        tippani=row.get('tippani')
+                    )
+                    self.db.add(tatvapada)
                     try:
                         self.db.flush()
+                        records_added += 1
                     except IntegrityError:
                         self.db.rollback()
-                        author = TatvapadaAuthorInfo.query.filter_by(
-                            tatvapadakarara_hesaru=author_name
-                        ).first()
-                        if not author:
-                            errors.append(f"Row {i}: Could not create author '{author_name}'.")
-                            continue
+                        errors.append(f"Row {i}: Duplicate Tatvapada detected (samputa '{row.get('samputa_sankhye')}', sankhye '{row.get('tatvapada_sankhye')}').")
 
-                tatvapada = Tatvapada(
-                    samputa_sankhye=row.get('samputa_sankhye'),
-                    tatvapadakosha_sheershike=row.get('tatvapadakosha_sheershike'),
-                    tatvapada_author_id=author.id,
-                    vibhag=row.get('vibhag'),
-                    tatvapada_sheershike=row.get('tatvapada_sheershike'),
-                    tatvapada_sankhye=row.get('tatvapada_sankhye'),
-                    tatvapada_first_line=row.get('tatvapada_first_line'),
-                    tatvapada=row.get('tatvapada'),
-                    bhavanuvada=row.get('bhavanuvada'),
-                    klishta_padagalu_artha=row.get('klishta_padagalu_artha'),
-                    tippani=row.get('tippani')
-                )
-                self.db.add(tatvapada)
-                records_added += 1
+                except Exception as row_err:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
 
             return records_added, errors
+
+        except UnicodeDecodeError:
+            return 0, ["Failed to decode CSV. Ensure the file is UTF-8 encoded."]
+        except csv.Error as csv_err:
+            return 0, [f"CSV parsing error: {str(csv_err)}"]
         except Exception as e:
-            return 0, [str(e)]
+            return 0, [f"Unexpected error: {str(e)}"]
