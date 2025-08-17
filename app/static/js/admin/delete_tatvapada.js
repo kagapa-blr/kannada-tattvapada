@@ -77,6 +77,7 @@ async function loadDeleteKeys() {
         });
 
         attachEventHandlers();
+        attachDeleteTableSearch();
 
     } catch (err) {
         showFailure("Failed to load Tatvapadas");
@@ -161,15 +162,36 @@ function attachEventHandlers() {
 
             if (!selected.length) return;
 
-            const { samputa, authorId, authorName } = selected[0];
-            const tatvapadaNumbers = selected.map(s => s.sankhya).join(", ");
+            // Group by author & samputa
+            const groups = {};
+            selected.forEach(item => {
+                const groupKey = `${item.samputa}|${item.authorId}|${item.authorName}`;
+                if (!groups[groupKey]) {
+                    groups[groupKey] = {
+                        samputa: item.samputa,
+                        authorId: item.authorId,
+                        authorName: item.authorName,
+                        sankhyas: []
+                    };
+                }
+                groups[groupKey].sankhyas.push(item.sankhya);
+            });
 
-            confirmMessage.innerHTML = `
-                <strong>Samputa:</strong> ${samputa} <br>
-                <strong>Author ID:</strong> ${authorId} <br>
-                <strong>Author Name:</strong> ${authorName} <br>
-                <strong>Selected Tatvapada(s):</strong> ${tatvapadaNumbers}
-            `;
+            // Build HTML
+            let html = '';
+            Object.values(groups).forEach(group => {
+                html += `
+            <div class="mb-1">
+                <strong>Samputa:</strong> ${group.samputa} <br>
+                <strong>Author ID:</strong> ${group.authorId} <br>
+                <strong>Author Name:</strong> ${group.authorName} <br>
+                <strong>Selected Tatvapada(s):</strong> ${group.sankhyas.join(", ")}
+            </div>
+            <hr>
+        `;
+            });
+
+            confirmMessage.innerHTML = html;
 
             pendingDeleteAction = async () => {
                 try {
@@ -186,6 +208,7 @@ function attachEventHandlers() {
 
             modal.show();
         });
+
     }
 }
 
@@ -198,4 +221,21 @@ function showSuccess(msg) {
 function showFailure(msg) {
     document.getElementById("deleteFailureMessage").textContent = msg;
     new bootstrap.Modal(document.getElementById("deleteFailureModal")).show();
+}
+
+function attachDeleteTableSearch() {
+    const searchInput = document.getElementById("deleteTatvapadaSearch");
+    if (!searchInput) return;
+
+    searchInput.addEventListener("input", function () {
+        const filter = this.value.trim().toLowerCase();
+        const tbody = document.querySelector("#deleteTatvapadaTable tbody");
+        if (!tbody) return;
+        Array.from(tbody.rows).forEach(row => {
+            const text = Array.from(row.cells).map(td =>
+                td.innerText || td.textContent || ""
+            ).join(" ").toLowerCase();
+            row.style.display = (!filter || text.includes(filter)) ? "" : "none";
+        });
+    });
 }

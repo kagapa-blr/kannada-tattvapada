@@ -1,17 +1,13 @@
 """
 Tatvapada Routes
 ----------------
-This module exposes two groups of routes:
-1. JSON API routes: CRUD operations over HTTP (consumed by frontend/clients).
-2. Web Form routes: Rendered templates for human-facing forms.
+This module organizes routes into 3 clear groups:
+1. JSON API routes (CRUD + search + utilities)
+2. Web Form routes (admin interaction templates)
+3. Bulk Upload routes (CSV import)
 """
 
-from flask import (
-    Blueprint,
-    request,
-    jsonify,
-    render_template
-)
+from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.inspection import inspect
 
@@ -20,21 +16,48 @@ from app.services.tatvapada_service import TatvapadaService, BulkUploadService
 from app.utils.helper import kannada_to_english_digits
 from app.utils.logger import setup_logger
 
-# ------------------------------------
+# ==========================================================
 # Setup
-# ------------------------------------
+# ==========================================================
 tatvapada_bp = Blueprint("tatvapada", __name__)
 logger = setup_logger("tatvapada_routes", "tatvapada_routes.log")
+
 tatvapada_service = TatvapadaService()
+bulk_upload_service = BulkUploadService(db_instance.session)
 
 
 # ==========================================================
-# JSON API ROUTES (CRUD operations, JSON requests/responses)
+# Helpers
+# ==========================================================
+def _serialize_tatvapada(t):
+    """Serialize Tatvapada SQLAlchemy object to dict for JSON response."""
+    return {
+        "id": t.id,
+        "samputa_sankhye": t.samputa_sankhye,
+        "tatvapadakosha_sheershike": t.tatvapadakosha_sheershike,
+        "tatvapada_author_id": t.tatvapada_author_id,
+        "tatvapadakarara_hesaru": (
+            t.tatvapadakarara_hesaru.tatvapadakarara_hesaru if t.tatvapadakarara_hesaru else None
+        ),
+        "vibhag": t.vibhag,
+        "tatvapada_sheershike": t.tatvapada_sheershike,
+        "tatvapada_sankhye": t.tatvapada_sankhye,
+        "tatvapada_first_line": t.tatvapada_first_line,
+        "tatvapada": t.tatvapada,
+        "bhavanuvada": t.bhavanuvada,
+        "klishta_padagalu_artha": t.klishta_padagalu_artha,
+        "tippani": t.tippani,
+    }
+
+
+# ==========================================================
+# JSON API ROUTES (CRUD + Search + Utilities)
 # ==========================================================
 
+# ---------- CREATE ----------
 @tatvapada_bp.route("/api/tatvapada/add", methods=["GET", "POST"])
 def add_tatvapada():
-    """Insert a new Tatvapada entry (form or API JSON)."""
+    """Insert a new Tatvapada entry."""
     if request.method == "GET":
         return render_template("add_tatvapada.html")
 
@@ -45,7 +68,7 @@ def add_tatvapada():
         return jsonify({"error": "No input data provided"}), 400
 
     try:
-        # Normalize numeric fields (store as string, since model expects String)
+        # Normalize numeric fields
         for key in ["samputa_sankhye", "tatvapada_sankhye"]:
             if key in data and isinstance(data[key], str):
                 normalized = kannada_to_english_digits(data[key]).strip()
@@ -59,7 +82,7 @@ def add_tatvapada():
             elif key not in data or data[key] is None:
                 data[key] = ""
 
-        # Author name required (id will be resolved in service)
+        # Author validation
         if not data.get("tatvapadakarara_hesaru"):
             return jsonify({"error": "tatvapadakarara_hesaru is required"}), 400
 
@@ -70,18 +93,16 @@ def add_tatvapada():
 
     except IntegrityError:
         return jsonify({
-            "error": (
-                "Tatvapada already exists with the same "
-                "samputa_sankhye, tatvapada_sankhye, and tatvapadakarara_hesaru."
-            )
+            "error": "Tatvapada already exists with the same samputa_sankhye, tatvapada_sankhye, and tatvapadakarara_hesaru."
         }), 409
     except SQLAlchemyError:
-        return jsonify({"error": "Database error occurred while inserting the Tatvapada."}), 500
-    except Exception as e:
+        return jsonify({"error": "Database error occurred while inserting"}), 500
+    except Exception:
         logger.error("Unexpected error in add_tatvapada", exc_info=True)
         return jsonify({"error": "Unexpected error occurred."}), 500
 
 
+# ---------- READ ----------
 @tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
 def search_tatvapada():
     """Search tatvapada entries by keyword."""
@@ -91,102 +112,15 @@ def search_tatvapada():
         return jsonify({"error": "Keyword is required"}), 400
 
     results = tatvapada_service.search_by_keyword(keyword)
-
-    def serialize_tatvapada(t):
-        return {
-            "id": t.id,
-            "samputa_sankhye": t.samputa_sankhye,
-            "tatvapadakosha_sheershike": t.tatvapadakosha_sheershike,
-            "tatvapada_author_id": t.tatvapada_author_id,
-            "tatvapadakarara_hesaru": (
-                t.tatvapadakarara_hesaru.tatvapadakarara_hesaru
-                if t.tatvapadakarara_hesaru else None
-            ),
-            "vibhag": t.vibhag,
-            "tatvapada_sheershike": t.tatvapada_sheershike,
-            "tatvapada_sankhye": t.tatvapada_sankhye,
-            "tatvapada_first_line": t.tatvapada_first_line,
-            "tatvapada": t.tatvapada,
-            "bhavanuvada": t.bhavanuvada,
-            "klishta_padagalu_artha": t.klishta_padagalu_artha,
-            "tippani": t.tippani,
-        }
-
-    return jsonify([serialize_tatvapada(t) for t in results])
+    return jsonify([_serialize_tatvapada(t) for t in results])
 
 
-@tatvapada_bp.route("/api/tatvapada/sankhyes-by-samputa", methods=["GET"])
-def get_tatvapada_sankhye_by_samputa():
-    """Fetch tatvapada_sankhyes for a given samputa_sankhye."""
-    try:
-        samputa_sankhye = int(request.args.get("samputa_sankhye", 0))
-    except (TypeError, ValueError):
-        return jsonify({"error": "Valid samputa_sankhye is required"}), 400
-
-    sankhyes = tatvapada_service.get_tatvapada_sankhye_by_samputa(samputa_sankhye)
-    if not sankhyes:
-        return jsonify({
-            "error": f"No tatvapada_sankhye found for samputa_sankhye={samputa_sankhye}"
-        }), 404
-
-    return jsonify(sankhyes)
-
-
-@tatvapada_bp.route("/api/tatvapada/update", methods=["PUT"])
-def update_tatvapada_by_composite_keys():
-    """Update a tatvapada entry using composite keys."""
-    try:
-        data = request.json
-        if not data:
-            return jsonify({"error": "No input data provided"}), 400
-
-        required_keys = ["samputa_sankhye", "tatvapada_sankhye", "tatvapada_author_id"]
-        for key in required_keys:
-            if key not in data:
-                return jsonify({"error": f"Missing required field: {key}"}), 400
-
-        updated_entry = tatvapada_service.update_by_composite_keys(
-            data["samputa_sankhye"], data["tatvapada_sankhye"], data["tatvapada_author_id"], data
-        )
-
-        return jsonify({
-            "message": "Tatvapada updated successfully",
-            "updated_entry": {
-                "tatvapadakosha_sheershike": updated_entry.tatvapadakosha_sheershike,
-                "tatvapada_sheershike": updated_entry.tatvapada_sheershike,
-                "tatvapada_author_id": updated_entry.tatvapada_author_id,
-                "tatvapadakarara_hesaru": (
-                    updated_entry.tatvapadakarara_hesaru.tatvapadakarara_hesaru
-                    if updated_entry.tatvapadakarara_hesaru else None
-                ),
-                "tatvapada_sankhye": updated_entry.tatvapada_sankhye,
-                "tatvapada_first_line": updated_entry.tatvapada_first_line,
-                "tatvapada": updated_entry.tatvapada,
-                "klishta_padagalu_artha": updated_entry.klishta_padagalu_artha,
-                "tippani": updated_entry.tippani,
-                "bhavanuvada": updated_entry.bhavanuvada,
-                "vibhag": updated_entry.vibhag,
-            }
-        })
-
-    except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
-    except SQLAlchemyError as db_err:
-        return jsonify({"error": f"Database error: {str(db_err)}"}), 500
-    except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
-
-
-@tatvapada_bp.route(
-    "/api/tatvapada/<samputa_sankhye>/<tatvapada_author_id>/<tatvapada_sankhye>",
-    methods=["GET"]
-)
+@tatvapada_bp.route("/api/tatvapada/<samputa_sankhye>/<tatvapada_author_id>/<tatvapada_sankhye>", methods=["GET"])
 def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
     """Fetch a single Tatvapada by composite keys."""
     tatvapada = tatvapada_service.get_specific_tatvapada(
         samputa_sankhye, tatvapada_author_id, tatvapada_sankhye
     )
-
     if tatvapada is None:
         return jsonify({"error": "Tatvapada not found"}), 404
 
@@ -197,6 +131,20 @@ def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankh
     return jsonify(data)
 
 
+@tatvapada_bp.route("/api/tatvapada/sankhyes-by-samputa", methods=["GET"])
+def get_tatvapada_sankhye_by_samputa():
+    """List tatvapada_sankhyes for a given samputa_sankhye."""
+    try:
+        samputa_sankhye = int(request.args.get("samputa_sankhye", 0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Valid samputa_sankhye is required"}), 400
+
+    sankhyes = tatvapada_service.get_tatvapada_sankhye_by_samputa(samputa_sankhye)
+    if not sankhyes:
+        return jsonify({"error": f"No tatvapada_sankhye found for samputa_sankhye={samputa_sankhye}"}), 404
+    return jsonify(sankhyes)
+
+
 @tatvapada_bp.route("/api/tatvapada/samputas", methods=["GET"])
 def get_all_samputas():
     """Return distinct list of all samputa_sankhyes."""
@@ -205,60 +153,70 @@ def get_all_samputas():
 
 @tatvapada_bp.route("/api/tatvapada/author-sankhyes-by-samputa/<samputa_sankhye>", methods=["GET"])
 def get_authors_and_sankhyes_by_samputa(samputa_sankhye):
-    """Return authors and their tatvapada_sankhyes for given samputa."""
+    """Return authors and their tatvapada_sankhyes for a samputa."""
     results = tatvapada_service.get_sankhyes_with_author_by_samputa(samputa_sankhye)
     if not results:
-        return jsonify({
-            "error": f"No entries found for samputa_sankhye={samputa_sankhye}"
-        }), 404
+        return jsonify({"error": f"No entries found for samputa_sankhye={samputa_sankhye}"}), 404
     return jsonify(results)
 
 
+# ---------- UPDATE ----------
+@tatvapada_bp.route("/api/tatvapada/update", methods=["PUT"])
+def update_tatvapada_by_composite_keys():
+    """Update a tatvapada entry using composite keys."""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No input data provided"}), 400
+
+        for key in ["samputa_sankhye", "tatvapada_sankhye", "tatvapada_author_id"]:
+            if key not in data:
+                return jsonify({"error": f"Missing required field: {key}"}), 400
+
+        updated_entry = tatvapada_service.update_by_composite_keys(
+            data["samputa_sankhye"], data["tatvapada_sankhye"], data["tatvapada_author_id"], data
+        )
+
+        return jsonify({"message": "Tatvapada updated successfully", "updated_entry": _serialize_tatvapada(updated_entry)})
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except SQLAlchemyError as db_err:
+        return jsonify({"error": f"Database error: {str(db_err)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
+# ---------- DELETE ----------
 @tatvapada_bp.route("/api/tatvapada/samputa/<samputa_sankhye>", methods=["DELETE"])
 def delete_tatvapada_by_samputa(samputa_sankhye):
-    """Delete all tatvapadas under a given samputa."""
+    """Delete all tatvapadas under a samputa."""
     try:
         deleted_count = tatvapada_service.delete_tatvapada_by_samputa(samputa_sankhye)
         if deleted_count > 0:
-            return jsonify({
-                "message": f"{deleted_count} Tatvapada entries deleted for samputa_sankhye = {samputa_sankhye}."
-            }), 200
-        return jsonify({
-            "message": f"No Tatvapada entries found for samputa_sankhye = {samputa_sankhye}."
-        }), 404
+            return jsonify({"message": f"{deleted_count} entries deleted for samputa={samputa_sankhye}."})
+        return jsonify({"message": f"No entries found for samputa={samputa_sankhye}."}), 404
     except Exception as e:
         return jsonify({"error": f"Failed to delete entries: {str(e)}"}), 500
 
 
-@tatvapada_bp.route(
-    "/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>",
-    methods=["DELETE"]
-)
+@tatvapada_bp.route("/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>", methods=["DELETE"])
 def delete_specific_tatvapada(samputa_sankhye, tatvapada_sankhye, tatvapada_author_id):
-    """Delete a specific tatvapada by composite keys."""
+    """Delete a single tatvapada by composite keys."""
     try:
-        try:
-            samputa_sankhye_val = float(samputa_sankhye)
-        except ValueError:
-            raise ValueError("Invalid samputa_sankhye. Must be a number.")
-
-        deleted = tatvapada_service.delete_by_composite_keys(
-            samputa_sankhye_val, tatvapada_sankhye, tatvapada_author_id
-        )
-
+        samputa_sankhye_val = float(samputa_sankhye)
+        deleted = tatvapada_service.delete_by_composite_keys(samputa_sankhye_val, tatvapada_sankhye, tatvapada_author_id)
         if deleted:
-            return jsonify({"message": "Tatvapada entry deleted successfully"}), 200
+            return jsonify({"message": "Tatvapada entry deleted successfully"})
         return jsonify({"error": "Tatvapada entry not found"}), 404
-
-    except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
+    except ValueError:
+        return jsonify({"error": "Invalid samputa_sankhye. Must be a number."}), 400
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 
 @tatvapada_bp.route("/api/tatvapada/delete-keys", methods=["GET"])
 def get_delete_keys():
-    """Return all delete keys (composite identifiers) for tatvapada entries."""
+    """Fetch all composite keys for deletion."""
     try:
         keys = tatvapada_service.get_all_delete_keys()
         return jsonify({"delete_keys": keys}), 200
@@ -268,28 +226,28 @@ def get_delete_keys():
 
 
 # ==========================================================
-# WEB FORM ROUTES (Template rendering for human interaction)
+# WEB FORM ROUTES (Admin templates)
 # ==========================================================
 
 @tatvapada_bp.route("/tatvapada/add", methods=["GET"])
 def tatvapada_add_form():
-    """Render web form for adding a Tatvapada."""
+    """Admin form: add a Tatvapada."""
     return render_template("admin_tabs/add_tatvapada.html")
 
 
 @tatvapada_bp.route("/tatvapada/update", methods=["GET", "POST"])
 def tatvapada_update_form():
-    """Render web form for updating a Tatvapada."""
+    """Admin form: update a Tatvapada."""
     return render_template("admin_tabs/update_tatvapada.html")
 
 
-bulk_upload_service = BulkUploadService(db_instance.session)
+# ==========================================================
+# BULK UPLOAD ROUTES
+# ==========================================================
 
 @tatvapada_bp.route("/bulk-upload", methods=["POST"])
 def bulk_upload():
-    """
-    Accept CSV file (in 'file' parameter), insert Tatvapada and author records.
-    """
+    """Handle CSV bulk upload of Tatvapada + authors."""
     if 'file' not in request.files:
         return jsonify({"success": False, "message": "No file part in request"}), 400
 
@@ -300,15 +258,7 @@ def bulk_upload():
     try:
         records_added, errors = bulk_upload_service.upload_csv_records(file)
         db_instance.session.commit()
-        return jsonify({
-            "success": True,
-            "message": f"{records_added} records added",
-            "errors": errors
-        }), 200
+        return jsonify({"success": True, "message": f"{records_added} records added", "errors": errors}), 200
     except Exception as e:
         db_instance.session.rollback()
-        return jsonify({
-            "success": False,
-            "message": "Failed to insert CSV records",
-            "error": str(e)
-        }), 500
+        return jsonify({"success": False, "message": "Failed to insert CSV records", "error": str(e)}), 500
