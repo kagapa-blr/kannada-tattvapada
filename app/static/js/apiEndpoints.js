@@ -22,7 +22,7 @@ const apiEndpoints = {
         deleteBySamputaAuthor: (samputa, authorName) =>
             `${BASE_URL}/tatvapada/delete-by-samputa-author/${samputa}/${encodeURIComponent(authorName)}`,
         bulkDelete: `${BASE_URL}/bulk-delete`,
-        bulkUploadUsingCSV: `${BASE_URL}/tatvapada/bulk-upload`
+        bulkUploadUsingCSV: `${BASE_URL}/bulk-upload`
     },
 
     auth: {
