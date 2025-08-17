@@ -8,7 +8,7 @@ import { initUpdateTab } from "./admin/update_tatvapada.js";
 import { initAddTab } from "./admin/add_tatvapada.js";
 import { initDeleteTab } from "./admin/delete_tatvapada.js";
 import { showLoader, hideLoader } from "./loader.js";
-
+import apiClient, { BASE_URL } from "./apiClient.js";
 document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------
     // DOM References
@@ -90,16 +90,18 @@ document.addEventListener("DOMContentLoaded", () => {
         ).show();
     });
 
-    document.getElementById("confirmLogoutBtn").addEventListener("click", () => {
-        fetch("/logout", { method: "GET", credentials: "include" })
-            .then(() => {
-                bootstrap.Modal.getInstance(
-                    document.getElementById("logoutConfirmModal")
-                ).hide();
-                window.location.replace("/login");
-            })
-            .catch(err => console.error("Logout error:", err));
+    document.getElementById("confirmLogoutBtn").addEventListener("click", async () => {
+        try {
+            await apiClient.get(`${BASE_URL}/logout`);
+            bootstrap.Modal.getInstance(
+                document.getElementById("logoutConfirmModal")
+            ).hide();
+            window.location.replace("/");
+        } catch (err) {
+            console.error("Logout error:", err);
+        }
     });
+
 
     // ----------------------------
     // Initialize User Info
@@ -108,19 +110,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
 // ---------------------------------------------------------
 // Fetch Logged-in User Info
 // ---------------------------------------------------------
 async function initUserFromServer() {
-
     try {
-        const res = await fetch("/me", { credentials: "include" });
-        if (!res.ok) throw new Error("User not logged in");
-        const user = await res.json();
+        // Use apiClient instead of raw fetch
+        const res = await apiClient.get(`${BASE_URL}/me`);
+        const user = res;
+
         document.getElementById("logged-username").textContent = user.username;
         document.getElementById("modal-logged-username").textContent = user.username;
     } catch (err) {
         console.warn("initUserFromServer: failed to fetch user info:", err.message);
-        window.location.href = "/login";
+        window.location.href = "`${BASE_URL}/login`";
     }
 }
