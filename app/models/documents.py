@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
+from sqlalchemy.dialects.mysql import LONGTEXT
 from datetime import datetime, timezone, timedelta
 from app.config.database import db_instance
 
@@ -32,7 +33,7 @@ class KannadaDocument(db_instance.Model):
     category = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
 
     # Content (Kannada text or HTML)
-    content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
+    content = Column(LONGTEXT(collation='utf8mb4_unicode_ci'), nullable=False)  # <-- changed to LONGTEXT
 
     # Timestamps (IST)
     created_at = Column(DateTime(timezone=True), default=current_ist_time)

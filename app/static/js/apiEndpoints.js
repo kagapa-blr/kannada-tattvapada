@@ -37,6 +37,13 @@ const apiEndpoints = {
         userById: (id) => `${BASE_URL}/admin/users/${id}`,
         overview: `${BASE_URL}/admin/overview`,
         resetPassword: (id) => `${BASE_URL}/admin/users/${id}/reset-password`
+    },
+    documents: {
+        list: `${BASE_URL}/api/documents`,                  // GET all
+        create: `${BASE_URL}/api/documents`,               // POST new
+        getById: (id) => `${BASE_URL}/api/documents/${id}`, // GET one
+        update: (id) => `${BASE_URL}/api/documents/${id}`,  // PUT
+        delete: (id) => `${BASE_URL}/api/documents/${id}`   // DELETE
     }
 };
 

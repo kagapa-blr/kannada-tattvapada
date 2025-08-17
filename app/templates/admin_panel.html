@@ -17,6 +17,10 @@
 
   <!-- Main Dashboard JS (imports all tab scripts) -->
   <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+
+  <script type="module" src="{{ url_for('static', filename='/cdn/quill/quill.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='/cdn/quill/quill.snow.css') }}" />
+
 </head>
 
 <body>
@@ -30,6 +34,8 @@
       <a data-tab="admin-add">➕ <span>Add Tatvapada</span></a>
       <a data-tab="admin-update">✏️ <span>Update Tatvapada</span></a>
       <a data-tab="admin-delete">🗑 <span>Delete Tatvapada</span></a>
+      <a data-tab="admin-documents">📄<span> Documents </span></a>
+
     </div>
 
 
@@ -68,6 +74,9 @@
       </div>
       <div id="admin-delete" class="admin-tab-content">
         {% include "admin_tabs/delete_tatvapada.html" %}
+      </div>
+      <div id="admin-documents" class="admin-tab-content">
+        {% include "admin_tabs/document.html" %}
       </div>
     </div>
     <footer class="admin-footer">
