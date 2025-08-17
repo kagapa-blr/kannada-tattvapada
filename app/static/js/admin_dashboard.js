@@ -1,3 +1,7 @@
+// ---------------------------------------------------------
+// Admin Dashboard Main Script
+// ---------------------------------------------------------
+
 import { initOverviewTab } from "./admin/overview.js";
 import { initUsersTab } from "./admin/users.js";
 import { initUpdateTab } from "./admin/update_tatvapada.js";
@@ -6,6 +10,9 @@ import { initDeleteTab } from "./admin/delete_tatvapada.js";
 import { showLoader, hideLoader } from "./loader.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // ----------------------------
+    // DOM References
+    // ----------------------------
     const links = document.querySelectorAll(".admin-sidebar a");
     const tabs = document.querySelectorAll(".admin-tab-content");
     const sidebar = document.getElementById("admin-sidebar");
@@ -13,6 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleBtn = document.getElementById("admin-toggle-btn");
     const logoutBtn = document.getElementById("admin-logout-btn");
 
+    // ----------------------------
+    // Tab Initializers
+    // ----------------------------
     const tabInitFunctions = {
         "admin-overview": initOverviewTab,
         "admin-users": initUsersTab,
@@ -21,33 +31,37 @@ document.addEventListener("DOMContentLoaded", () => {
         "admin-delete": initDeleteTab,
     };
 
-    // Helper: load a tab with loader
+    // ----------------------------
+    // Helpers
+    // ----------------------------
     function loadTab(target) {
         showLoader();
 
-        // Small timeout to ensure loader is visible even for quick loads
+        // Small timeout ensures loader is visible, even for fast loads
         setTimeout(() => {
+            // Switch active tab
             tabs.forEach(tab => tab.classList.remove("active"));
             const targetElement = document.getElementById(target);
-            if (targetElement) {
-                targetElement.classList.add("active");
-            }
+            if (targetElement) targetElement.classList.add("active");
+
+            // Run tab-specific init (if exists)
             if (tabInitFunctions[target]) {
-                // Allow async tab init (like fetching API data)
-                Promise.resolve(tabInitFunctions[target]()).finally(() => {
-                    hideLoader();
-                });
+                Promise.resolve(tabInitFunctions[target]())
+                    .finally(hideLoader);
             } else {
                 hideLoader();
             }
         }, 200);
     }
 
-    // Sidebar navigation tab switching
+    // ----------------------------
+    // Sidebar Navigation
+    // ----------------------------
     links.forEach(link => {
         link.addEventListener("click", () => {
             links.forEach(l => l.classList.remove("active"));
             link.classList.add("active");
+
             const target = link.getAttribute("data-tab");
             loadTab(target);
         });
@@ -56,45 +70,53 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load default active tab on page load
     const defaultActiveTab = document.querySelector(".admin-sidebar a.active");
     if (defaultActiveTab) {
-        const target = defaultActiveTab.getAttribute("data-tab");
-        loadTab(target);
+        loadTab(defaultActiveTab.getAttribute("data-tab"));
     }
 
-    // Sidebar collapse toggle
+    // ----------------------------
+    // Sidebar Toggle
+    // ----------------------------
     toggleBtn.addEventListener("click", () => {
         sidebar.classList.toggle("collapsed");
         main.classList.toggle("collapsed");
     });
 
-    // Logout action
+    // ----------------------------
+    // Logout Handling
+    // ----------------------------
     logoutBtn.addEventListener("click", () => {
-        // Show Bootstrap modal instead of immediate logout
-        new bootstrap.Modal(document.getElementById("logoutConfirmModal")).show();
+        new bootstrap.Modal(
+            document.getElementById("logoutConfirmModal")
+        ).show();
     });
 
-    // Confirm logout inside modal
     document.getElementById("confirmLogoutBtn").addEventListener("click", () => {
         fetch("/logout", { method: "GET", credentials: "include" })
             .then(() => {
-                bootstrap.Modal.getInstance(document.getElementById("logoutConfirmModal")).hide();
+                bootstrap.Modal.getInstance(
+                    document.getElementById("logoutConfirmModal")
+                ).hide();
                 window.location.replace("/login");
             })
             .catch(err => console.error("Logout error:", err));
     });
-    initUserFromServer();
 
+    // ----------------------------
+    // Initialize User Info
+    // ----------------------------
+    initUserFromServer();
 });
 
 
+// ---------------------------------------------------------
+// Fetch Logged-in User Info
+// ---------------------------------------------------------
 async function initUserFromServer() {
-    console.log("initUserFromServer: fetching user info from /me...");
+
     try {
         const res = await fetch("/me", { credentials: "include" });
         if (!res.ok) throw new Error("User not logged in");
-
         const user = await res.json();
-        console.log("initUserFromServer: user info received:", user);
-
         document.getElementById("logged-username").textContent = user.username;
         document.getElementById("modal-logged-username").textContent = user.username;
     } catch (err) {
