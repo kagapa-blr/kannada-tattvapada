@@ -4,11 +4,12 @@ from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 from app.models.user_management import Admin
+from app.utils.logger import setup_logger
 
 
 class DashboardService:
-    def __init__(self, logger=None):
-        self.logger = logger
+    def __init__(self):
+        self.logger = setup_logger(name='dashboard',log_file='dashboard')
 
     def get_overview_statistics(self) -> dict:
         try:
