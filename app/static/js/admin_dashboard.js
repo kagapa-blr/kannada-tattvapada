@@ -68,8 +68,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Logout action
     logoutBtn.addEventListener("click", () => {
+        // Show Bootstrap modal instead of immediate logout
+        new bootstrap.Modal(document.getElementById("logoutConfirmModal")).show();
+    });
+
+    // Confirm logout inside modal
+    document.getElementById("confirmLogoutBtn").addEventListener("click", () => {
         fetch("/logout", { method: "GET", credentials: "include" })
-            .then(() => window.location.replace("/login"))
+            .then(() => {
+                bootstrap.Modal.getInstance(document.getElementById("logoutConfirmModal")).hide();
+                window.location.replace("/login");
+            })
             .catch(err => console.error("Logout error:", err));
     });
+    initUserFromServer();
+
 });
+
+
+async function initUserFromServer() {
+    console.log("initUserFromServer: fetching user info from /me...");
+    try {
+        const res = await fetch("/me", { credentials: "include" });
+        if (!res.ok) throw new Error("User not logged in");
+
+        const user = await res.json();
+        console.log("initUserFromServer: user info received:", user);
+
+        document.getElementById("logged-username").textContent = user.username;
+        document.getElementById("modal-logged-username").textContent = user.username;
+    } catch (err) {
+        console.warn("initUserFromServer: failed to fetch user info:", err.message);
+        window.location.href = "/login";
+    }
+}

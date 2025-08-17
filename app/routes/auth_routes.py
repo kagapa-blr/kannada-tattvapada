@@ -140,3 +140,23 @@ def logout():
     response.set_cookie("logout_message", "logout successful", max_age=5)
     logger.info("User logged out and token cleared")
     return response
+
+
+
+@auth_bp.route("/me", methods=["GET"])
+def me():
+    token = request.cookies.get("access_token")
+    if not token:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jsonify({
+            "user_id": payload["user_id"],
+            "username": payload["username"],
+            "user_type": payload["user_type"]
+        })
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401

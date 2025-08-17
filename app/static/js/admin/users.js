@@ -1,34 +1,50 @@
-export function initUsersTab() {
-    console.log("Loading Users Tab...");
-    fetch('/admin/users')
-        .then(res => res.json())
-        .then(data => renderUsersTable(data))
-        .catch(err => console.error("Error fetching user list:", err));
+import apiClient from "../apiClient.js";
+import apiEndpoints from "../apiEndpoints.js";
+import { showLoader, hideLoader } from "../loader.js";
+
+// ---------------- Initialize Users Tab ----------------
+export async function initUsersTab() {
+    try {
+        showLoader();
+        const users = await apiClient.get(apiEndpoints.admin.users);
+        renderUsersTable(users);
+    } catch (err) {
+        console.error("Error fetching user list:", err);
+    } finally {
+        hideLoader();
+    }
 }
 
-// Render table rows
+// ---------------- Render Table Rows ----------------
 function renderUsersTable(users) {
     const tbody = document.querySelector("#userTable tbody");
     tbody.innerHTML = "";
 
-    users.forEach(user => {
+    users.forEach((user, index) => {
         const tr = document.createElement("tr");
-        tr.innerHTML += `<td>${user.username}</td>`;
-        tr.innerHTML += `<td>${user.email || ""}</td>`;
-        tr.innerHTML += `<td>${user.phone || ""}</td>`;
-        tr.innerHTML += `<td>${user.is_admin ? "✅" : "❌"}</td>`;
+
+        tr.innerHTML = `
+      <td class="text-center fw-semibold">${index + 1}</td>   <!-- Serial Number -->
+      <td>${user.username}</td>
+      <td>${user.email || ""}</td>
+      <td>${user.phone || ""}</td>
+      <td class="text-center">${user.is_admin ? "✅" : "❌"}</td>
+    `;
 
         const actionsTd = document.createElement("td");
+        actionsTd.className = "text-center";
 
+        // Edit button
         const editBtn = document.createElement("button");
         editBtn.className = "btn btn-sm btn-primary me-2";
-        editBtn.textContent = "Edit";
+        editBtn.innerHTML = "✏️ Edit";
         editBtn.addEventListener("click", () => openEditUserModal(user));
         actionsTd.appendChild(editBtn);
 
+        // Delete button
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "btn btn-sm btn-danger";
-        deleteBtn.textContent = "Delete";
+        deleteBtn.innerHTML = "🗑 Delete";
         deleteBtn.addEventListener("click", () => openDeleteUserModal(user));
         actionsTd.appendChild(deleteBtn);
 
@@ -37,7 +53,7 @@ function renderUsersTable(users) {
     });
 }
 
-// Modal: Edit User
+// ---------------- Edit User ----------------
 function openEditUserModal(user) {
     document.getElementById("editUserId").value = user.id;
     document.getElementById("editUsername").value = user.username;
@@ -48,7 +64,7 @@ function openEditUserModal(user) {
     new bootstrap.Modal(document.getElementById("editUserModal")).show();
 }
 
-document.getElementById("saveUserChangesBtn").addEventListener("click", () => {
+document.getElementById("saveUserChangesBtn").addEventListener("click", async () => {
     const id = document.getElementById("editUserId").value;
     const updatedUser = {
         username: document.getElementById("editUsername").value,
@@ -57,20 +73,19 @@ document.getElementById("saveUserChangesBtn").addEventListener("click", () => {
         is_admin: document.getElementById("editIsAdmin").checked
     };
 
-    fetch(`/admin/users/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUser)
-    })
-        .then(res => res.json())
-        .then(() => {
-            bootstrap.Modal.getInstance(document.getElementById("editUserModal")).hide();
-            initUsersTab();
-        })
-        .catch(err => console.error("Error updating user:", err));
+    try {
+        showLoader();
+        await apiClient.put(apiEndpoints.admin.userById(id), updatedUser);
+        bootstrap.Modal.getInstance(document.getElementById("editUserModal")).hide();
+        await initUsersTab(); // refresh after save
+    } catch (err) {
+        console.error("Error updating user:", err);
+    } finally {
+        hideLoader();
+    }
 });
 
-// Modal: Delete User
+// ---------------- Delete User ----------------
 function openDeleteUserModal(user) {
     document.getElementById("deleteUserId").value = user.id;
     document.getElementById("deleteUserName").textContent = user.username;
@@ -78,14 +93,17 @@ function openDeleteUserModal(user) {
     new bootstrap.Modal(document.getElementById("deleteUserModal")).show();
 }
 
-document.getElementById("confirmDeleteUserBtn").addEventListener("click", () => {
+document.getElementById("confirmDeleteUserBtn").addEventListener("click", async () => {
     const id = document.getElementById("deleteUserId").value;
 
-    fetch(`/admin/users/${id}`, { method: "DELETE" })
-        .then(res => res.json())
-        .then(() => {
-            bootstrap.Modal.getInstance(document.getElementById("deleteUserModal")).hide();
-            initUsersTab();
-        })
-        .catch(err => console.error("Error deleting user:", err));
+    try {
+        showLoader();
+        await apiClient.delete(apiEndpoints.admin.userById(id));
+        bootstrap.Modal.getInstance(document.getElementById("deleteUserModal")).hide();
+        await initUsersTab(); // refresh after delete
+    } catch (err) {
+        console.error("Error deleting user:", err);
+    } finally {
+        hideLoader();
+    }
 });

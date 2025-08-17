@@ -1,5 +1,3 @@
-// static/js/apiEndpoints.js
-
 const apiEndpoints = {
     tatvapada: {
         // 🔹 Existing
@@ -29,6 +27,11 @@ const apiEndpoints = {
     auth: {
         signup: "/signup",
         login: "/login"
+    },
+
+    admin: {
+        users: "/admin/users",            // GET all users / POST new user if needed
+        userById: (id) => `/admin/users/${id}`  // GET, PUT, DELETE specific user
     }
 };
 

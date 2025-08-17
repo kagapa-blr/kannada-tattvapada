@@ -336,3 +336,46 @@ body {
     background-color: #e74c3c;
     color: white;
 }
+
+
+
+
+
+
+/* Admin Profile Section (Logout Button area) */
+.admin-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    margin-top: auto;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.admin-profile-section:hover {
+    background-color: #ffecec;
+    /* Light red hover */
+    transform: translateY(-2px);
+    /* Slight lift effect */
+}
+
+.admin-profile-section img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.admin-profile-info span {
+    display: block;
+    font-weight: bold;
+    color: #333;
+}
+
+.admin-profile-info small {
+    color: #dc3545;
+    /* red highlight for logout */
+    font-size: 0.8rem;
+}

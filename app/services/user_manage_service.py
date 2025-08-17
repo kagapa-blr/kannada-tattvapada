@@ -135,6 +135,27 @@ def verify_user_credentials(username, password):
         return None
     return user
 
+# ----------------------
+# PASSWORD RESET
+# ----------------------
+def reset_user_password(user_id, new_password, bcrypt):
+    """
+    Securely reset a user's password.
+    Can be used by admins or via a password reset workflow.
+    """
+    user = User.query.get_or_404(user_id)
+
+    # Use the model's set_password method
+    user.set_password(new_password, bcrypt)
+
+    # Optional: update a "password_reset_at" timestamp if your User model has it
+    if hasattr(user, "password_reset_at"):
+        from datetime import datetime, timezone
+        user.password_reset_at = datetime.now(timezone.utc)
+
+    db_instance.session.commit()
+    return True
+
 def generate_jwt_token(user):
     payload = {
         "user_id": user.id,
