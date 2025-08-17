@@ -1,39 +1,42 @@
+// apiEndpoints.js
+import { BASE_URL } from "./apiClient.js";
+
 const apiEndpoints = {
     tatvapada: {
-        // 🔹 Existing
-        getSamputas: "/api/tatvapada/samputas",
+        getSamputas: `${BASE_URL}/api/tatvapada/samputas`,
         getAuthorSankhyasBySamputa: (samputaSankhye) =>
-            `/api/tatvapada/author-sankhyes-by-samputa/${samputaSankhye}`,
+            `${BASE_URL}/api/tatvapada/author-sankhyes-by-samputa/${samputaSankhye}`,
         getSpecificTatvapada: (samputa, authorId, sankhye) =>
-            `/api/tatvapada/${samputa}/${authorId}/${sankhye}`,
-        updateTatvapada: "/api/tatvapada/update",
-        addTatvapada: "/api/tatvapada/add",
-        searchByWord: "/api/tatvapada/search",
+            `${BASE_URL}/api/tatvapada/${samputa}/${authorId}/${sankhye}`,
+        updateTatvapada: `${BASE_URL}/api/tatvapada/update`,
+        addTatvapada: `${BASE_URL}/api/tatvapada/add`,
+        searchByWord: `${BASE_URL}/api/tatvapada/search`,
 
-        // 🔹 New delete endpoints
-        deleteKeys: "/api/tatvapada/delete-keys",
+        deleteKeys: `${BASE_URL}/api/tatvapada/delete-keys`,
         deleteByComposite: (samputa, sankhya, authorId) =>
-            `/delete/${samputa}/${sankhya}/${authorId}`,
+            `${BASE_URL}/tatvapada/delete/${samputa}/${sankhya}/${authorId}`,
         deleteByAuthor: (authorName) =>
-            `/delete-by-author/${encodeURIComponent(authorName)}`,
+            `${BASE_URL}/tatvapada/delete-by-author/${encodeURIComponent(authorName)}`,
         deleteBySamputa: (samputa) =>
-            `/delete-by-samputa/${samputa}`,
+            `${BASE_URL}/tatvapada/delete-by-samputa/${samputa}`,
         deleteBySamputaAuthor: (samputa, authorName) =>
-            `/delete-by-samputa-author/${samputa}/${encodeURIComponent(authorName)}`,
-        bulkDelete: "/bulk-delete",
-        bulkUploadUsingCSV: "/bulk-upload"
+            `${BASE_URL}/tatvapada/delete-by-samputa-author/${samputa}/${encodeURIComponent(authorName)}`,
+        bulkDelete: `${BASE_URL}/bulk-delete`,
+        bulkUploadUsingCSV: `${BASE_URL}/tatvapada/bulk-upload`
     },
 
     auth: {
-        signup: "/signup",
-        login: "/login"
+        signup: `${BASE_URL}/signup`,
+        login: `${BASE_URL}/login`,
+        logout: `${BASE_URL}/logout`,
+        me: `${BASE_URL}/me`
     },
 
     admin: {
-        users: "/admin/users",            // GET all users / POST new user if needed
-        userById: (id) => `/admin/users/${id}`,  // GET, PUT, DELETE specific user
-        overview: "/admin/overview",
-        resetPassword: (id) => `/admin/users/${id}/reset-password`
+        users: `${BASE_URL}/admin/users`,
+        userById: (id) => `${BASE_URL}/admin/users/${id}`,
+        overview: `${BASE_URL}/admin/overview`,
+        resetPassword: (id) => `${BASE_URL}/admin/users/${id}/reset-password`
     }
 };
 
