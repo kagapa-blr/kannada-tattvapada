@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>📄 Documents</title>
+
+    <!-- 1. Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+
+    <!-- 2. Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/right_section/userDocument.css') }}" />
+</head>
+
+<body>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
+
+    <!-- Main Container -->
+    <div class="container py-4">
+        <h4 class="user-document-title mb-4 text-center">📄 Available Documents</h4>
+
+        <!-- Document Cards Container -->
+        <div id="user-document-container" class="row g-3">
+            <!-- Document cards injected by JS -->
+        </div>
+
+        <!-- Pagination -->
+        <nav class="user-document-pagination-container mt-3">
+            <ul class="pagination justify-content-center" id="user-document-pagination">
+                <!-- Pagination buttons injected by JS -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Fullscreen Document Viewer Overlay -->
+    <div id="doc-viewer-overlay" class="doc-viewer-overlay" style="display:none;">
+
+        <!-- Top Navigation Bar -->
+        <div class="doc-viewer-navbar">
+            <div class="left-controls">
+                <button class="nav-btn" onclick="closeDocViewer()">✕ Close</button>
+                <button id="doc-prev" class="nav-btn">⟨ Prev</button>
+            </div>
+
+            <h4 id="doc-viewer-title" class="doc-title">Document Title</h4>
+
+            <div class="right-controls">
+                <button id="print-doc" class="nav-btn secondary">🖨 Print</button>
+                <button id="doc-next" class="nav-btn">Next ⟩</button>
+            </div>
+        </div>
+
+        <!-- Scrollable Document Body -->
+        <div class="doc-viewer-body" id="print-area">
+            <p><strong>Category:</strong> <span id="doc-viewer-category"></span></p>
+            <p><strong>Description:</strong></p>
+            <p id="doc-viewer-description"></p>
+            <hr />
+            <div id="doc-viewer-content" class="doc-viewer-content">
+                <!-- Document content injected dynamically -->
+            </div>
+        </div>
+
+
+        <!-- Floating Pagination Indicator -->
+        <div class="page-indicator" id="doc-page-indicator">Document 1 of 10</div>
+    </div>
+    <!-- Hidden print container for printing -->
+    <div id="print-container" style="display: none;"></div>
+
+    <!-- Custom Loader -->
+    {% include 'customLoader.html' %}
+
+    <!-- Footer -->
+    {% include 'footer.html' %}
+
+    <!-- 1. Bootstrap JS -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- 2. Custom JS -->
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/right_section/userDocument.js') }}"></script>
+</body>
+
+</html>
