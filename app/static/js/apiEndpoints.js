@@ -44,6 +44,16 @@ const apiEndpoints = {
         getById: (id) => `${BASE_URL}/api/documents/${id}`, // GET one
         update: (id) => `${BASE_URL}/api/documents/${id}`,  // PUT
         delete: (id) => `${BASE_URL}/api/documents/${id}`   // DELETE
+    },
+
+    rightSection: {
+        tatvapadaSuchi: `${BASE_URL}/tatvapada_suchi`,
+        arthakosha: `${BASE_URL}/arthakosha`,
+        tippani: `${BASE_URL}/tippani`,
+        tatvapadakaraVivarane: `${BASE_URL}/tatvapadakara_vivarane`,
+        pradhanaSampadakaruNudi: `${BASE_URL}/pradhana_sampadakaru_nudi`,
+        samputaSampadakaruNudi: `${BASE_URL}/user_document`,
+        paramarshanaSahitya: `${BASE_URL}/paramarshana_sahitya`
     }
 };
 

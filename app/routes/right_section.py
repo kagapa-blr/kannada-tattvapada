@@ -28,7 +28,7 @@ def pradhana_sampadakaru_nudi():
     return render_template('right_section/pradhana_sampadakaru_nudi.html')
 
 @right_section_bp.route('/user_document', methods=['GET'])
-def sampuṭa_sampadakaru_nudi():
+def samputa_sampadakaru_nudi():
     return render_template('right_section/user_document.html')
 
 @right_section_bp.route('/paramarshana_sahitya', methods=['GET'])

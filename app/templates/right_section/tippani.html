@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ಟಿಪ್ಪಣಿ </title>
+    <!-- 1. Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+
+    <!-- 2. Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+
+</head>
+
+<body>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
+    <div class="p-3">
+        <h3>📝 ಟಿಪ್ಪಣಿ</h3>
+        <p>ನಿಮ್ಮ ಟಿಪ್ಪಣಿಗಳನ್ನು ಇಲ್ಲಿ ಬರೆಯಬಹುದು ಮತ್ತು ವೀಕ್ಷಿಸಬಹುದು.</p>
+    </div>
+
+
+    <!-- Custom Loader -->
+    {% include 'customLoader.html' %}
+
+    <!-- Footer -->
+    {% include 'footer.html' %}
+
+    <!-- 1. Bootstrap JS -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- 2. Custom JS -->
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+
+</body>
+
+</html>

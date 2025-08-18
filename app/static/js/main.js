@@ -1,4 +1,3 @@
-// main.js
 import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
 import { showLoader, hideLoader } from "./loader.js";
@@ -10,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeDropdowns();
     setupEventListeners();
     loadSamputaOptions();
+    setupNavigation();   // ⬅️ NEW
 });
 
 // --------- Choices Initialization ---------
@@ -91,7 +91,6 @@ function loadSamputaOptions() {
         .catch(err => console.error("Samputa Load Error:", err))
         .finally(hideLoader);
 }
-
 
 // --------- Fetch Authors and Sankhyas ---------
 function fetchAuthorsAndSankhyas(samputa) {
@@ -185,4 +184,38 @@ function displayOtherFields(data) {
     document.getElementById('tippani_value').textContent = data.tippani || "";
     document.getElementById('tatvapada_first_line_value').textContent = data.tatvapada_first_line || "";
     document.getElementById('bhavanuvada_value').textContent = data.bhavanuvada || "";
+}
+
+
+
+function setupNavigation() {
+    const routes = {
+        btnIndex: apiEndpoints.rightSection.tatvapadaSuchi,
+        btnDictionary: apiEndpoints.rightSection.arthakosha,
+        btnNotes: apiEndpoints.rightSection.tippani,
+        btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
+        btnEditorNote: apiEndpoints.rightSection.pradhanaSampadakaruNudi,
+        btnVolumeEditor: apiEndpoints.rightSection.samputaSampadakaruNudi,
+        btnReferences: apiEndpoints.rightSection.paramarshanaSahitya
+    };
+
+    Object.entries(routes).forEach(([btnId, url]) => {
+        const button = document.getElementById(btnId);
+        if (!button) return;
+
+        button.addEventListener("click", async () => {
+            try {
+                const response = await apiClient.get(url, { responseType: "text" });
+                const container = document.getElementById("right-section-container");
+                if (container) {
+                    container.innerHTML = response;
+                } else {
+                    console.warn("right-section-container not found → falling back to redirect");
+                    window.location.href = url;
+                }
+            } catch (err) {
+                console.error(`Failed to fetch ${url}`, err);
+            }
+        });
+    });
 }
