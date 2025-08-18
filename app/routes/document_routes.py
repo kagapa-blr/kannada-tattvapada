@@ -11,7 +11,7 @@ documents_bp = Blueprint("kannada_documents", __name__, url_prefix="/api/documen
 
 
 # ---------------- CREATE ----------------
-@documents_bp.route("", methods=["POST"])
+@documents_bp.route("/", methods=["POST"])
 def create_doc():
     data = request.get_json()
     if not data or "title" not in data or "content" not in data:

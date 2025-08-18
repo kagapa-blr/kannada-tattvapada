@@ -39,11 +39,11 @@ const apiEndpoints = {
         resetPassword: (id) => `${BASE_URL}/admin/users/${id}/reset-password`
     },
     documents: {
-        list: `${BASE_URL}/api/documents`,                  // GET all
-        create: `${BASE_URL}/api/documents`,               // POST new
-        getById: (id) => `${BASE_URL}/api/documents/${id}`, // GET one
-        update: (id) => `${BASE_URL}/api/documents/${id}`,  // PUT
-        delete: (id) => `${BASE_URL}/api/documents/${id}`   // DELETE
+        list: `${BASE_URL}/api/documents/`,                  // must end with /
+        create: `${BASE_URL}/api/documents`,                 // no slash for POST
+        getById: (id) => `${BASE_URL}/api/documents/${id}`,
+        update: (id) => `${BASE_URL}/api/documents/${id}`,
+        delete: (id) => `${BASE_URL}/api/documents/${id}`
     },
 
     rightSection: {
