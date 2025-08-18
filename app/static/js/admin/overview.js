@@ -13,16 +13,20 @@ export async function initOverviewTab() {
         document.getElementById("admin-overview-totalAuthors").textContent = data.total_authors ?? "--";
         document.getElementById("admin-overview-totalAdmins").textContent = data.total_admins ?? "--";
 
-        // Populate samputa table
+        // Populate table
         const tbody = document.getElementById("admin-overview-samputaTableBody");
         tbody.innerHTML = "";
 
-        (data.tatvapada_per_samputa || []).forEach(item => {
+        (data.tatvapada_per_samputa || []).forEach((item, index) => {
             const tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            tr.onmouseover = () => (tr.style.backgroundColor = "#f1f5ff");
+            tr.onmouseout = () => (tr.style.backgroundColor = "");
             tr.innerHTML = `
-                <td class="px-3 py-2">${item.samputa_sankhye}</td>
-                <td class="px-3 py-2">${item.count}</td>
-            `;
+        <td class="px-3 py-2">${index + 1}</td>
+        <td class="px-3 py-2">${item.samputa_sankhye}</td>
+        <td class="px-3 py-2">${item.count}</td>
+      `;
             tbody.appendChild(tr);
         });
     } catch (err) {
