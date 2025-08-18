@@ -8,6 +8,7 @@ from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
 from app.routes.delete_tatvapada import delete_bp
 from app.routes.document_routes import documents_bp
+from app.routes.error_handling import errors_bp
 from app.routes.home import home_bp
 from app.routes.tatvapada import tatvapada_bp
 from app.utils.logger import setup_logger
@@ -49,6 +50,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp, url_prefix="/admin")
 app.register_blueprint(delete_bp)
 app.register_blueprint(documents_bp)
+app.register_blueprint(errors_bp)
 
 logger.info("Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp")
 

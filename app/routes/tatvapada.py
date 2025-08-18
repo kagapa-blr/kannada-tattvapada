@@ -55,11 +55,11 @@ def _serialize_tatvapada(t):
 # ==========================================================
 
 # ---------- CREATE ----------
-@tatvapada_bp.route("/api/tatvapada/add", methods=["GET", "POST"])
+@tatvapada_bp.route("/api/tatvapada/add", methods=["POST"])
 def add_tatvapada():
     """Insert a new Tatvapada entry."""
-    if request.method == "GET":
-        return render_template("add_tatvapada.html")
+    # if request.method == "GET":
+    #     return render_template("add_tatvapada.html")
 
     data = request.get_json()
     logger.info(f"Received JSON request: {data}")

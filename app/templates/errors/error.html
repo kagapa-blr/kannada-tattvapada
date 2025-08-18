@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="kn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ code }} - {{ message }}</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .error-card {
+      background-color: #fff;
+      padding: 3rem 2rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(-20px);}
+      100% { opacity: 1; transform: translateY(0);}
+    }
+
+    .error-code {
+      font-size: 8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: {% if code == 404 %}#dc3545{% elif code == 405 %}#ffc107{% else %}#6c757d{% endif %};
+    }
+
+    .error-message {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .error-description {
+      font-size: 1.1rem;
+      color: #6c757d;
+      margin-bottom: 2rem;
+    }
+
+    .btn-home {
+      font-size: 1.1rem;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-home:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    @media (max-width: 480px) {
+      .error-code { font-size: 5rem; }
+      .error-message { font-size: 1.3rem; }
+      .error-description { font-size: 1rem; }
+      .btn-home { font-size: 1rem; padding: 0.6rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="error-card">
+    <div class="error-code">{{ code }}</div>
+    <div class="error-message">{{ message }}</div>
+    <div class="error-description">
+      {% if description %}
+        {{ description }}
+      {% else %}
+        ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಪುಟವನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.
+      {% endif %}
+    </div>
+    <button class="btn {% if code == 404 %}btn-danger{% elif code == 405 %}btn-warning{% else %}btn-secondary{% endif %} btn-home" onclick="goHome()">
+      ಮೇಲಿನ ಹೋಮ್ ಪುಟಕ್ಕೆ ಹಿಂತಿರುಗಿ
+    </button>
+  </div>
+
+  <!-- External JS for Go Home -->
+  <script type="module" src="{{ url_for('static', filename='js/errorHandling.js') }}"></script>
+</body>
+</html>
