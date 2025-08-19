@@ -2,6 +2,7 @@ import apiEndpoints from "../apiEndpoints.js";
 import apiClient from "../apiClient.js";
 import { showLoader, hideLoader } from "../loader.js";
 
+// Track action awaiting user confirmation
 let pendingDeleteAction = null;
 
 export async function initDeleteTab() {
@@ -17,14 +18,15 @@ async function loadDeleteKeys() {
         if (!tbody) return;
 
         tbody.innerHTML = "";
-        const deleteKeys = Array.isArray(data.delete_keys) ? data.delete_keys : (data.delete_keys?.delete_keys || []);
-
+        // Flatten delete keys (your backend ensures array shape)
+        const deleteKeys = Array.isArray(data.delete_keys)
+            ? data.delete_keys
+            : (data.delete_keys?.delete_keys || []);
         deleteKeys.forEach(entry => {
             const row = document.createElement("tr");
-
             row.innerHTML = `
                 <td>
-                  <input type="checkbox" class="row-author-select" data-samputa="${entry.samputa_sankhye}" data-author="${entry.tatvapada_author_id}">
+                    <input type="checkbox" class="row-author-select" data-samputa="${entry.samputa_sankhye}" data-author="${entry.tatvapada_author_id}">
                 </td>
                 <td>${entry.samputa_sankhye}</td>
                 <td>${entry.tatvapadakarara_hesaru}</td>
@@ -34,18 +36,17 @@ async function loadDeleteKeys() {
                     <div class="sankhya-scrollable mt-1" style="display:none; max-height:150px; overflow-y:auto;"></div>
                 </td>
                 <td>
-                  <button class="btn btn-danger btn-sm delete-btn" 
-                    data-samputa="${entry.samputa_sankhye}" 
-                    data-author="${entry.tatvapada_author_id}" 
-                    data-author-name="${entry.tatvapadakarara_hesaru}">
-                    Delete All
-                  </button>
+                    <button class="btn btn-danger btn-sm delete-btn"
+                        data-samputa="${entry.samputa_sankhye}"
+                        data-author="${entry.tatvapada_author_id}"
+                        data-author-name="${entry.tatvapadakarara_hesaru}">
+                        Delete All
+                    </button>
                 </td>
             `;
-
             tbody.appendChild(row);
 
-            // Populate Sankhya checkboxes (sorted numerically)
+            // Populate Tatvapada Sankhya checkboxes inside scrollable block
             const sankhyaContainer = row.querySelector(".sankhya-scrollable");
             entry.tatvapada_sankhyes
                 .sort((a, b) => parseInt(a) - parseInt(b))
@@ -64,14 +65,13 @@ async function loadDeleteKeys() {
                 });
 
             // Toggle Sankhya display
-            const toggleBtn = row.querySelector(".toggle-sankhya-btn");
-            toggleBtn.addEventListener("click", () => {
+            row.querySelector(".toggle-sankhya-btn").addEventListener("click", function () {
                 if (sankhyaContainer.style.display === "none") {
                     sankhyaContainer.style.display = "block";
-                    toggleBtn.textContent = "Hide";
+                    this.textContent = "Hide";
                 } else {
                     sankhyaContainer.style.display = "none";
-                    toggleBtn.textContent = "Show";
+                    this.textContent = "Show";
                 }
             });
         });
@@ -87,14 +87,15 @@ async function loadDeleteKeys() {
     }
 }
 
-
 function attachEventHandlers() {
+    // Confirmation modal setup
     const modal = new bootstrap.Modal(document.getElementById("deleteConfirmModal"));
     const confirmBtn = document.getElementById("confirmDeleteBtn");
     const confirmMessage = document.getElementById("deleteConfirmMessage");
     const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
     const selectAll = document.getElementById("selectAll");
 
+    // -- Confirm Modal: perform deletion action
     confirmBtn.onclick = async () => {
         if (pendingDeleteAction) {
             await pendingDeleteAction();
@@ -103,38 +104,38 @@ function attachEventHandlers() {
         modal.hide();
     };
 
-    // Single Delete All
+    // -- "Delete All" button per row/author: delete all Tatvapadas for author in samputa (by samputa+authorid)
     document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const samputa = btn.dataset.samputa;
             const authorId = btn.dataset.author;
             const authorName = btn.dataset.authorName;
-
             confirmMessage.innerHTML = `
                 <strong>Samputa:</strong> ${samputa} <br>
                 <strong>Author ID:</strong> ${authorId} <br>
                 <strong>Author Name:</strong> ${authorName} <br>
                 <span class="text-danger">This will delete <strong>ALL</strong> Tatvapada(s) for this author.</span>
             `;
-
             pendingDeleteAction = async () => {
                 try {
                     showLoader();
-                    const result = await apiClient.delete(apiEndpoints.tatvapada.deleteBySamputaAuthor(samputa, authorName));
+                    // Note: backend expects authorId, not authorName!
+                    const result = await apiClient.delete(
+                        apiEndpoints.tatvapada.deleteBySamputaAuthor(samputa, authorId)
+                    );
                     showSuccess(result.message || "Deleted successfully");
                     await loadDeleteKeys();
                 } catch (err) {
-                    showFailure(err.message || "Delete failed");
+                    showFailure((err && err.message) || "Delete failed");
                 } finally {
                     hideLoader();
                 }
             };
-
             modal.show();
         });
     });
 
-    // Select All master checkbox
+    // -- "Select All" master checkbox
     if (selectAll) {
         selectAll.addEventListener("change", () => {
             const checkboxes = document.querySelectorAll(".row-select");
@@ -142,15 +143,17 @@ function attachEventHandlers() {
             bulkDeleteBtn.disabled = !selectAll.checked;
         });
     }
-
-    // Enable/disable bulk delete
+    // -- Per-row enable/disable bulk delete
     document.querySelectorAll(".row-select").forEach(cb => {
         cb.addEventListener("change", () => {
-            bulkDeleteBtn.disabled = document.querySelectorAll(".row-select:checked").length === 0;
+            const anyChecked = document.querySelectorAll(".row-select:checked").length > 0;
+            bulkDeleteBtn.disabled = !anyChecked;
+            // If any .row-select is unchecked, uncheck "Select All"
+            if (!cb.checked && selectAll.checked) selectAll.checked = false;
         });
     });
 
-    // Bulk delete selected
+    // -- Bulk delete selected Tatvapada Sankhyes
     if (bulkDeleteBtn) {
         bulkDeleteBtn.addEventListener("click", () => {
             const selected = Array.from(document.querySelectorAll(".row-select:checked")).map(cb => ({
@@ -159,60 +162,60 @@ function attachEventHandlers() {
                 authorName: cb.dataset.authorName,
                 sankhya: cb.dataset.sankhya
             }));
-
             if (!selected.length) return;
 
-            // Group by author & samputa
+            // Show grouped info for user confirmation
             const groups = {};
             selected.forEach(item => {
-                const groupKey = `${item.samputa}|${item.authorId}|${item.authorName}`;
-                if (!groups[groupKey]) {
-                    groups[groupKey] = {
+                const key = `${item.samputa}|${item.authorId}|${item.authorName}`;
+                if (!groups[key]) {
+                    groups[key] = {
                         samputa: item.samputa,
                         authorId: item.authorId,
                         authorName: item.authorName,
                         sankhyas: []
                     };
                 }
-                groups[groupKey].sankhyas.push(item.sankhya);
+                groups[key].sankhyas.push(item.sankhya);
             });
-
-            // Build HTML
             let html = '';
             Object.values(groups).forEach(group => {
                 html += `
-            <div class="mb-1">
-                <strong>Samputa:</strong> ${group.samputa} <br>
-                <strong>Author ID:</strong> ${group.authorId} <br>
-                <strong>Author Name:</strong> ${group.authorName} <br>
-                <strong>Selected Tatvapada(s):</strong> ${group.sankhyas.join(", ")}
-            </div>
-            <hr>
-        `;
+                    <div class="mb-1">
+                        <strong>Samputa:</strong> ${group.samputa} <br>
+                        <strong>Author ID:</strong> ${group.authorId} <br>
+                        <strong>Author Name:</strong> ${group.authorName} <br>
+                        <strong>Selected Tatvapada(s):</strong> ${group.sankhyas.join(", ")}
+                    </div>
+                    <hr>
+                `;
             });
-
             confirmMessage.innerHTML = html;
 
             pendingDeleteAction = async () => {
                 try {
                     showLoader();
-                    const result = await apiClient.delete(apiEndpoints.tatvapada.bulkDelete, { items: selected });
+                    // Only send required keys to API (samputa, authorId, sankhya)
+                    const apiItems = selected.map(item => ({
+                        samputa: item.samputa,
+                        authorId: item.authorId,
+                        sankhya: item.sankhya
+                    }));
+                    const result = await apiClient.delete(apiEndpoints.tatvapada.bulkDelete, { items: apiItems });
                     showSuccess(result.message || "Selected Tatvapada(s) deleted");
                     await loadDeleteKeys();
                 } catch (err) {
-                    showFailure(err.message || "Delete failed");
+                    showFailure((err && err.message) || "Bulk delete failed");
                 } finally {
                     hideLoader();
                 }
             };
-
             modal.show();
         });
-
     }
 }
 
-// Utility: show success/failure modals
+// Modal handlers for status feedback
 function showSuccess(msg) {
     document.getElementById("deleteSuccessMessage").textContent = msg;
     new bootstrap.Modal(document.getElementById("deleteSuccessModal")).show();
@@ -223,10 +226,10 @@ function showFailure(msg) {
     new bootstrap.Modal(document.getElementById("deleteFailureModal")).show();
 }
 
+// Table search filter
 function attachDeleteTableSearch() {
     const searchInput = document.getElementById("deleteTatvapadaSearch");
     if (!searchInput) return;
-
     searchInput.addEventListener("input", function () {
         const filter = this.value.trim().toLowerCase();
         const tbody = document.querySelector("#deleteTatvapadaTable tbody");

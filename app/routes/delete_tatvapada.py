@@ -60,12 +60,14 @@ def delete_by_samputa(samputa):
         return error(str(e), 500)
 
 
-@delete_bp.route("/delete-by-samputa-author/<samputa>/<author_name>", methods=["DELETE"])
-def delete_by_samputa_and_author(samputa, author_name):
+@delete_bp.route("/delete-by-samputa-author/<samputa>/<int:author_id>", methods=["DELETE"])
+def delete_by_samputa_and_author(samputa, author_id):
     try:
-        deleted, author = delete_service.delete_by_samputa_and_author(samputa, author_name)
-        if not author:
-            return error(f"Author '{author_name}' not found", 404)
+        deleted, author_name = delete_service.delete_by_samputa_and_author(samputa, author_id)
+
+        if not author_name:
+            return error(f"Author with ID {author_id} not found", 404)
+
         if deleted == 0:
             return error(f"No Tatvapadas found for {author_name} in Samputa {samputa}", 404)
 
@@ -75,6 +77,7 @@ def delete_by_samputa_and_author(samputa, author_name):
     except Exception as e:
         db_instance.session.rollback()
         return error(str(e), 500)
+
 
 
 @delete_bp.route("/bulk-delete", methods=["DELETE"])

@@ -66,22 +66,20 @@ class DeleteService:
 
         return deleted
 
-    def delete_by_samputa_and_author(self, samputa, author_name):
-        author = TatvapadaAuthorInfo.query.filter_by(
-            tatvapadakarara_hesaru=author_name
-        ).first()
+    def delete_by_samputa_and_author(self, samputa, author_id):
+        author = TatvapadaAuthorInfo.query.get(author_id)
         if not author:
             return 0, None
 
         deleted = Tatvapada.query.filter_by(
             samputa_sankhye=samputa,
-            tatvapada_author_id=author.id
+            tatvapada_author_id=author_id
         ).delete(synchronize_session=False)
 
         if deleted > 0:
-            self.cleanup_author_if_unused(author.id)
+            self.cleanup_author_if_unused(author_id)
 
-        return deleted, author
+        return deleted, author.tatvapadakarara_hesaru
 
     def bulk_delete(self, items):
         total_deleted = 0
