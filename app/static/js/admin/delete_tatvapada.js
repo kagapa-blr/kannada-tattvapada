@@ -27,8 +27,8 @@ async function loadDeleteKeys() {
                   <input type="checkbox" class="row-author-select" data-samputa="${entry.samputa_sankhye}" data-author="${entry.tatvapada_author_id}">
                 </td>
                 <td>${entry.samputa_sankhye}</td>
-                <td>${entry.tatvapada_author_id}</td>
                 <td>${entry.tatvapadakarara_hesaru}</td>
+                <td>${entry.tatvapada_sankhyes.length}</td>
                 <td class="col-sankhya">
                     <button class="btn btn-sm btn-outline-primary toggle-sankhya-btn">Show</button>
                     <div class="sankhya-scrollable mt-1" style="display:none; max-height:150px; overflow-y:auto;"></div>
