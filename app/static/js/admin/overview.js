@@ -17,16 +17,21 @@ export async function initOverviewTab() {
         const tbody = document.getElementById("admin-overview-samputaTableBody");
         tbody.innerHTML = "";
 
-        (data.tatvapada_per_samputa || []).forEach((item, index) => {
+        // ✅ Sort by samputa_sankhye (convert to number for correct sorting)
+        const sortedSamputas = (data.tatvapada_per_samputa || []).sort(
+            (a, b) => Number(a.samputa_sankhye) - Number(b.samputa_sankhye)
+        );
+
+        sortedSamputas.forEach((item, index) => {
             const tr = document.createElement("tr");
             tr.style.cursor = "pointer";
             tr.onmouseover = () => (tr.style.backgroundColor = "#f1f5ff");
             tr.onmouseout = () => (tr.style.backgroundColor = "");
             tr.innerHTML = `
-        <td class="px-3 py-2">${index + 1}</td>
-        <td class="px-3 py-2">${item.samputa_sankhye}</td>
-        <td class="px-3 py-2">${item.count}</td>
-      `;
+                <td class="px-3 py-2">${index + 1}</td>
+                <td class="px-3 py-2">ಸಂಪುಟ ${item.samputa_sankhye}</td>
+                <td class="px-3 py-2">${item.count}</td>
+            `;
             tbody.appendChild(tr);
         });
     } catch (err) {
