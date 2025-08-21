@@ -45,16 +45,22 @@ const apiEndpoints = {
         update: (id) => `${BASE_URL}/api/documents/${id}`,
         delete: (id) => `${BASE_URL}/api/documents/${id}`
     },
+    rightSectionUI: {
+        tatvapadaSuchi: `${BASE_URL}/right-section/tatvapada_suchi`,
+    },
 
     rightSection: {
-        tatvapadaSuchi: `${BASE_URL}/tatvapada_suchi`,
+        tatvapadaSuchi: `${BASE_URL}/api/v1/right-section/tatvapadasuchi`,
+        getTatvapada: (samputa, authorId, sankhye) =>
+            `${BASE_URL}/api/v1/right-section/tatvapada?samputa_sankhye=${samputa}&tatvapada_author_id=${authorId}&tatvapada_sankhye=${sankhye}`,
         arthakosha: `${BASE_URL}/arthakosha`,
         tippani: `${BASE_URL}/tippani`,
         tatvapadakaraVivarane: `${BASE_URL}/tatvapadakara_vivarane`,
         pradhanaSampadakaruNudi: `${BASE_URL}/pradhana_sampadakaru_nudi`,
         samputaSampadakaruNudi: `${BASE_URL}/user_document`,
         paramarshanaSahitya: `${BASE_URL}/paramarshana_sahitya`
-    }
+    },
+
 };
 
 export default apiEndpoints;

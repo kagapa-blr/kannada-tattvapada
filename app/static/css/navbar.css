@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "NudiParijatha";
+  src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --navbar-primary-bg: #4b49ac;
   --navbar-nav-bg: #000000;
@@ -130,6 +138,7 @@
     display: block;
     margin-right: auto;
   }
+
   .navbar-nav__links {
     width: 100%;
     flex-direction: column;
@@ -141,13 +150,16 @@
     border-radius: var(--navbar-radius);
     background: #1a1a1a;
   }
+
   .navbar-nav__link {
     padding: 12px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
+
   .navbar-nav__link:last-child {
     border-bottom: none;
   }
+
   .navbar-nav__links.expanded {
     max-height: 1000px;
   }
@@ -157,10 +169,12 @@
 .navbar-nav__toggle[aria-expanded="true"] .navbar-nav__hamburger {
   background: transparent;
 }
+
 .navbar-nav__toggle[aria-expanded="true"] .navbar-nav__hamburger::before {
   transform: rotate(45deg) translate(5px, 5px);
   top: 0;
 }
+
 .navbar-nav__toggle[aria-expanded="true"] .navbar-nav__hamburger::after {
   transform: rotate(-45deg) translate(5px, -5px);
   top: 0;

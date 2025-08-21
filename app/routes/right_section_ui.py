@@ -2,7 +2,8 @@ from flask import Blueprint, render_template
 
 right_section_bp = Blueprint(
     'right_section', __name__,
-    template_folder='templates/right_section'
+    template_folder='templates/right_section',
+    url_prefix='/right-section'  # ✅ Add prefix here
 )
 
 # ===== Routes with specific methods =====

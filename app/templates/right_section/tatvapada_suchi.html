@@ -1,39 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tatvapada suchi</title>
-    <!-- 1. Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+  <meta charset="UTF-8">
+  <title>ತತ್ವಪದ ಸೂಚಿ</title>
 
-    <!-- 2. Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+  <!-- ✅ CSS Dependencies -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/right_section/tatvapada_suchi.css') }}">
 
 </head>
 
 <body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
 
-    <div class="p-3">
-        <h3>📋 ತತ್ತ್ವಪದ ಸೂಚಿ</h3>
-        <p>ಇಲ್ಲಿ ತತ್ತ್ವಪದಗಳ ಸೂಚಿ ತೋರಿಸಲಾಗುತ್ತದೆ.</p>
+  {% include 'navbar.html' %}
+
+  <div class="container mt-4">
+    <h2>📖 ತತ್ವಪದ ಸೂಚಿ</h2>
+
+    <!-- ✅ Kannada letters grid -->
+    <div class="letters-container">
+      <div class="letters-grid" id="letters-grid"></div>
+      <button class="clear-btn" id="clearSearch">🔄 ಹುಡುಕಾಟ ಅಳಿಸಿ</button>
     </div>
 
+    <table id="tatvapadaTable" class="display stripe hover table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
+          <th>ತತ್ವಪದ ಸಂಖ್ಯೆ</th>
+          <th>ಪ್ರಥಮ ಸಾಲು</th>
+          <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <!-- Custom Loader -->
-    {% include 'customLoader.html' %}
+  <div class="modal fade" id="tatvapadaModal" tabindex="-1" aria-labelledby="tatvapadaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="tatvapadaModalLabel">ತತ್ವಪದ ವಿವರಗಳು</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-section">
+            <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="modalSamputa"></span></p>
+            <p><strong>ತತ್ವಪದ ಸಂಖ್ಯೆ:</strong> <span id="modalTatvapadaNumber"></span></p>
+            <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="modalAuthor"></span></p>
+            <p><strong>ಪ್ರಥಮ ಸಾಲು:</strong> <span id="modalFirstLine"></span></p>
+          </div>
+          <hr>
+          <div class="modal-section">
+            <p><strong>ತತ್ವಪದ:</strong></p>
+            <p id="modalTatvapada" class="modal-text"></p>
+          </div>
+          <hr>
+          <div class="modal-section">
+            <p><strong>ಭವಾನುವದ:</strong></p>
+            <p id="modalBhavanuvada" class="modal-text"></p>
+          </div>
+          <hr>
+          <div class="modal-section">
+            <p><strong>ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ:</strong></p>
+            <p id="modalKlishta" class="modal-text"></p>
+          </div>
+          <hr>
+          <div class="modal-section">
+            <p><strong>ಟಿಪ್ಪಣಿ:</strong></p>
+            <p id="modalTippani" class="modal-text"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Footer -->
-    {% include 'footer.html' %}
 
-    <!-- 1. Bootstrap JS -->
-    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- 2. Custom JS -->
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+  {% include 'footer.html' %}
+
+  <!-- ✅ JS Dependencies -->
+  <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+
+  <!-- ✅ External JS -->
+  <script type="module" src="{{ url_for('static', filename='js/right_section/tatvapadaSuchi.js') }}"></script>
 
 </body>
 

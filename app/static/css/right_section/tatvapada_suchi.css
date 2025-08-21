@@ -1,0 +1,180 @@
+body {
+    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    background: #f7f9fb;
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 600;
+    margin: 20px 0;
+}
+
+#tatvapadaTable {
+    border-radius: 10px;
+    background: #fff;
+    font-size: 28px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    table-layout: fixed;
+    /* To help control column widths */
+}
+
+/* Narrower widths for first two columns */
+#tatvapadaTable thead th:nth-child(1),
+#tatvapadaTable tbody td:nth-child(1),
+#tatvapadaTable thead th:nth-child(2),
+#tatvapadaTable tbody td:nth-child(2) {
+    width: 10%;
+    max-width: 10%;
+    white-space: nowrap;
+}
+
+/* Wider widths for remaining columns */
+#tatvapadaTable thead th:nth-child(n+3),
+#tatvapadaTable tbody td:nth-child(n+3) {
+    width: 40%;
+    max-width: 40%;
+}
+
+#tatvapadaTable thead th {
+    background-color: #2c3e50 !important;
+    color: #fff !important;
+    text-align: center;
+    font-weight: 600;
+    padding: 16px;
+    font-size: 22px;
+}
+
+#tatvapadaTable tbody td {
+    text-align: center;
+    padding: 14px;
+    font-size: 22px;
+    word-wrap: break-word;
+}
+
+#tatvapadaTable tbody tr:nth-child(odd) {
+    background-color: #fafafa;
+}
+
+#tatvapadaTable tbody tr:hover {
+    background-color: #eef5ff;
+    transition: 0.2s;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 6px;
+    padding: 10px 16px;
+    border: 1px solid #bbb;
+    font-size: 20px;
+    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 6px rgba(44, 62, 80, 0.4);
+}
+
+.letters-container {
+    text-align: center;
+    margin: 25px auto;
+}
+
+.letters-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 8px;
+    max-width: 950px;
+    margin: auto;
+}
+
+.letter-box {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    background: #2c3e50;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+.letter-box:hover {
+    background: #34495e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.clear-btn {
+    margin-top: 18px;
+    padding: 10px 24px;
+    background: #e74c3c;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    transition: 0.2s;
+}
+
+.clear-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.modal-section {
+    margin-bottom: 15px;
+}
+
+.modal-text {
+    background: #f7f9fb;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    font-size: 19px;
+    white-space: pre-line;
+    word-wrap: break-word;
+}
+
+.modal-header {
+    font-size: 20px;
+}
+
+.modal-dialog-scrollable .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    font-size: 20px;
+}
+
+.btn-close {
+    width: 28px;
+    height: 28px;
+}
+
+/* Simple & clean DataTable search box */
+.dt-search {
+    font-size: 20px;
+    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    padding: 8px 12px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.dt-search:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 6px rgba(44, 62, 80, 0.4);
+}
+
+.dt-layout-row {
+    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-size: 20px;
+}

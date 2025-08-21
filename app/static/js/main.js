@@ -190,7 +190,7 @@ function displayOtherFields(data) {
 
 function setupNavigation() {
     const routes = {
-        btnIndex: apiEndpoints.rightSection.tatvapadaSuchi,
+        right_section_tatvapadasuchi: apiEndpoints.rightSectionUI.tatvapadaSuchi,
         btnDictionary: apiEndpoints.rightSection.arthakosha,
         btnNotes: apiEndpoints.rightSection.tippani,
         btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
