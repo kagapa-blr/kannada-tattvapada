@@ -8,8 +8,9 @@ import { initUpdateTab } from "./admin/update_tatvapada.js";
 import { initAddTab } from "./admin/add_tatvapada.js";
 import { initDeleteTab } from "./admin/delete_tatvapada.js";
 import { showLoader, hideLoader } from "./loader.js";
-import {initDocumentsTab} from './admin/documents.js'
+import { initDocumentsTab } from './admin/documents.js'
 import apiClient, { BASE_URL } from "./apiClient.js";
+import { initTippaniManageTab } from './admin/manageTippani.js'
 document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------
     // DOM References
@@ -30,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "admin-update": initUpdateTab,
         "admin-add": initAddTab,
         "admin-delete": initDeleteTab,
-        "admin-documents": initDocumentsTab,  // <-- NEW
+        "admin-documents": initDocumentsTab,
+        "admin-tippani":initTippaniManageTab, // <-- instantiate the class
     };
 
     // ----------------------------

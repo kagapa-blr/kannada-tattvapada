@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint,Float
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.config.database import db_instance
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
@@ -43,3 +43,17 @@ class Tatvapada(db_instance.Model):
     bhavanuvada = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
     klishta_padagalu_artha = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
     tippani = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
+
+
+class TatvapadaTippani(db_instance.Model):
+    __tablename__ = "tatvapada_tippani"
+    __table_args__ = (
+        UniqueConstraint('samputa_sankhye', 'tatvapada_author_id', name='uq_tippani_unique'),
+    )
+
+    tippani_id = Column(Integer, primary_key=True, autoincrement=True)
+    tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
+    samputa_sankhye = Column(String(255), nullable=False)
+    tippani_content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)  # large content
+
+    author = relationship(TatvapadaAuthorInfo, backref="tippanigalu")

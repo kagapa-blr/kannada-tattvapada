@@ -192,7 +192,7 @@ function setupNavigation() {
     const routes = {
         right_section_tatvapadasuchi: apiEndpoints.rightSectionUI.tatvapadaSuchi,
         btnDictionary: apiEndpoints.rightSection.arthakosha,
-        btnNotes: apiEndpoints.rightSection.tippani,
+        right_section_tippani: apiEndpoints.rightSectionUI.tippani,
         btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
         btnEditorNote: apiEndpoints.rightSection.pradhanaSampadakaruNudi,
         btnVolumeEditor: apiEndpoints.rightSection.samputaSampadakaruNudi,

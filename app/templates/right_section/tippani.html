@@ -1,38 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ಟಿಪ್ಪಣಿ </title>
-    <!-- 1. Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+  <meta charset="UTF-8">
+  <title>ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</title>
 
-    <!-- 2. Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
-
+  <!-- ✅ CSS Dependencies -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
 </head>
 
 <body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
-    <div class="p-3">
-        <h3>📝 ಟಿಪ್ಪಣಿ</h3>
-        <p>ನಿಮ್ಮ ಟಿಪ್ಪಣಿಗಳನ್ನು ಇಲ್ಲಿ ಬರೆಯಬಹುದು ಮತ್ತು ವೀಕ್ಷಿಸಬಹುದು.</p>
+
+  {% include 'navbar.html' %}
+
+  <div class="container mt-4">
+    <h2>📖 ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</h2>
+
+    <table id="tippaniTable" class="display stripe hover table table-bordered" style="width:100%">
+      <thead>
+        <tr>
+          <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
+          <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
+          <th>ಟಿಪ್ಪಣಿ ಐಡಿ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ✅ Modal for Tippani Details -->
+  <div class="modal fade" id="tippaniModal" tabindex="-1" aria-labelledby="tippaniModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="tippaniModalLabel">ಟಿಪ್ಪಣಿ ವಿವರಗಳು</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="modalSamputa"></span></p>
+          <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="modalAuthor"></span></p>
+          <p><strong>ಟಿಪ್ಪಣಿ ಐಡಿ:</strong> <span id="modalId"></span></p>
+          <hr>
+          <p><strong>ಟಿಪ್ಪಣಿ ವಿಷಯ:</strong></p>
+          <p id="modalContent" class="modal-text"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
+  </div>
 
+  {% include 'footer.html' %}
 
-    <!-- Custom Loader -->
-    {% include 'customLoader.html' %}
+  <!-- ✅ JS Dependencies -->
+  <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 
-    <!-- Footer -->
-    {% include 'footer.html' %}
+  <!-- ✅ Script -->
+  <script type="module">
+    import apiClient from "{{ url_for('static', filename='js/apiClient.js') }}";
 
-    <!-- 1. Bootstrap JS -->
-    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const data = await apiClient.get("api/v1/right-section/all/tippani");
 
-    <!-- 2. Custom JS -->
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+        if (!data.results || data.results.length === 0) {
+          console.warn("No Tippanis found");
+          return;
+        }
+
+        const table = $("#tippaniTable").DataTable({
+          data: data.results,
+          columns: [
+            { data: "samputa_sankhye", title: "ಸಂಪುಟ ಸಂಖ್ಯೆ" },
+            { data: "tatvapadakarara_hesaru", title: "ತತ್ವಪದಕಾರರ ಹೆಸರು" },
+            { data: "tippani_id", title: "ಟಿಪ್ಪಣಿ ಐಡಿ" }
+          ],
+          destroy: true,
+          searching: true,
+          paging: true,
+          language: {
+            emptyTable: "ಟಿಪ್ಪಣಿ ಲಭ್ಯವಿಲ್ಲ"
+          }
+        });
+
+        // ✅ Row click → open modal with details
+        $('#tippaniTable tbody').on('click', 'tr', function () {
+          const rowData = table.row(this).data();
+          if (!rowData) return;
+
+          document.getElementById("modalSamputa").textContent = rowData.samputa_sankhye;
+          document.getElementById("modalAuthor").textContent = rowData.tatvapadakarara_hesaru;
+          document.getElementById("modalId").textContent = rowData.tippani_id;
+          document.getElementById("modalContent").textContent = rowData.tippani_content || "—";
+
+          const modal = new bootstrap.Modal(document.getElementById("tippaniModal"));
+          modal.show();
+        });
+      } catch (err) {
+        console.error("Error loading Tippani list:", err);
+      }
+    });
+  </script>
 
 </body>
 

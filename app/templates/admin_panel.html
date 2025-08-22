@@ -35,6 +35,8 @@
       <a data-tab="admin-update">✏️ <span>Update Tatvapada</span></a>
       <a data-tab="admin-delete">🗑 <span>Delete Tatvapada</span></a>
       <a data-tab="admin-documents">📄<span> Documents </span></a>
+      <a data-tab="admin-tippani">📝 <span>Manage Tippani</span></a>
+
 
     </div>
 
@@ -77,6 +79,9 @@
       </div>
       <div id="admin-documents" class="admin-tab-content">
         {% include "admin_tabs/document.html" %}
+      </div>
+      <div id="admin-tippani" class="admin-tab-content">
+        {% include "admin_tabs/manage_tippani.html" %}
       </div>
     </div>
     <footer class="admin-footer"

@@ -36,7 +36,13 @@ const apiEndpoints = {
         users: `${BASE_URL}/admin/users`,
         userById: (id) => `${BASE_URL}/admin/users/${id}`,
         overview: `${BASE_URL}/admin/overview`,
-        resetPassword: (id) => `${BASE_URL}/admin/users/${id}/reset-password`
+        resetPassword: (id) => `${BASE_URL}/admin/users/${id}/reset-password`,
+
+        //---------------------
+        samputaAuthor: `${BASE_URL}/api/v1/right-section/samputa-authors`,
+        manageTippani: `${BASE_URL}/api/v1/right-section/tippani`
+
+
     },
     documents: {
         list: `${BASE_URL}/api/documents/`,                  // must end with /
@@ -47,6 +53,7 @@ const apiEndpoints = {
     },
     rightSectionUI: {
         tatvapadaSuchi: `${BASE_URL}/right-section/tatvapada_suchi`,
+        tippani: `${BASE_URL}/right-section/tippani`,
     },
 
     rightSection: {
