@@ -43,8 +43,6 @@ class Tatvapada(db_instance.Model):
     bhavanuvada = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
     klishta_padagalu_artha = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
     tippani = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
-
-
 class TatvapadaTippani(db_instance.Model):
     __tablename__ = "tatvapada_tippani"
 
@@ -58,3 +56,26 @@ class TatvapadaTippani(db_instance.Model):
     tippani_content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
 
     author = relationship(TatvapadaAuthorInfo, backref="tippanigalu")
+class Arthakosha(db_instance.Model):
+    """
+    ಅರ್ಥಕೋಶ (Arthakosha) table for storing Kannada glossary words and meanings.
+    Linked to TatvapadaAuthorInfo for author metadata.
+    """
+    __tablename__ = "arthakosha"
+    __table_args__ = (
+        UniqueConstraint('samputa', 'author_id', 'id', name='uq_arthakosha_per_author_per_samputa'),
+        {
+            'mysql_engine': 'InnoDB',
+            'mysql_charset': 'utf8mb4',
+            'mysql_collate': 'utf8mb4_unicode_ci'
+        }
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    samputa = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
+    author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
+    author = relationship(TatvapadaAuthorInfo, backref="arthakoshas")
+    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)  # New title column
+    word = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
+    meaning = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
+    notes = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)

@@ -3,14 +3,14 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada, TatvapadaTippani
+from app.models.tatvapada import Tatvapada, TatvapadaTippani, Arthakosha
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
 
 class RightSection:
     def __init__(self):
         pass
-
+    #--------------Tatvapada suchi -------------------
     def get_tatvapada_suchi(self, offset=0, limit=10, search=""):
         """
         Fetch paginated list of Tatvapada entries.
@@ -101,7 +101,7 @@ class RightSection:
             # Propagate exception for route handling
             raise e
 
-    #---------------------------------------------------
+    #---------------------TIPPANI------------------------------
     def get_all_tippanis(self, offset=0, limit=10, search=""):
         """
         Fetch paginated Tippanis with samputa, author id, author name, tippani_id.
@@ -312,5 +312,119 @@ class RightSection:
         if not tippani:
             return False
         db_instance.session.delete(tippani)
+        db_instance.session.commit()
+        return True
+
+
+# --------------------- ARTHAKOSHA -------------------------
+
+    # ---------------- CREATE ----------------
+    @staticmethod
+    def create_arthakosha(samputa: str, author_id: int, title: str, word: str, meaning: str, notes: str = None):
+        if not samputa or not author_id or not word or not meaning:
+            raise ValueError("samputa, author_id, word, and meaning are required")
+
+        entry = Arthakosha(
+            samputa=str(samputa).strip(),
+            author_id=int(author_id),
+            title=str(title).strip() if title else None,
+            word=str(word).strip(),
+            meaning=str(meaning).strip(),
+            notes=str(notes).strip() if notes else None
+        )
+        db_instance.session.add(entry)
+        db_instance.session.commit()
+
+        return {
+            "id": entry.id,
+            "samputa": entry.samputa,
+            "author_id": entry.author_id,
+            "title": entry.title,
+            "word": entry.word,
+            "meaning": entry.meaning,
+            "notes": entry.notes
+        }
+
+    # ---------------- READ / LIST ----------------
+    # ---------------- LIST ARTHAKOSHAS ----------------
+    @staticmethod
+    def list_arthakoshas(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
+        query = Arthakosha.query.join(Arthakosha.author)  # join to get author info
+        if samputa:
+            query = query.filter(Arthakosha.samputa == samputa)
+        if author_id:
+            query = query.filter(Arthakosha.author_id == author_id)
+        if search:
+            search_term = f"%{search.strip()}%"
+            query = query.filter(Arthakosha.word.ilike(search_term) | Arthakosha.meaning.ilike(search_term))
+
+        total = query.count()
+        rows = query.offset(offset).limit(limit).all()
+
+        results = [
+            {
+                "id": r.id,
+                "samputa": r.samputa,
+                "author_id": r.author_id,
+                "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
+                "title": r.title,
+                "word": r.word,
+                "meaning": r.meaning,
+                "notes": r.notes
+            }
+            for r in rows
+        ]
+        return {"total": total, "offset": offset, "limit": limit, "results": results}
+
+    # ---------------- GET SINGLE ARTHAKOSHA ----------------
+    @staticmethod
+    def get_arthakosha(samputa: str, author_id: int, arthakosha_id: int):
+        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
+        if not entry:
+            return None
+        return {
+            "id": entry.id,
+            "samputa": entry.samputa,
+            "author_id": entry.author_id,
+            "author_name": entry.author.tatvapadakarara_hesaru if entry.author else None,
+            "title": entry.title,
+            "word": entry.word,
+            "meaning": entry.meaning,
+            "notes": entry.notes
+        }
+
+    # ---------------- UPDATE ----------------
+    @staticmethod
+    def update_arthakosha(samputa: str, author_id: int, arthakosha_id: int, title: str = None, word: str = None,
+                          meaning: str = None, notes: str = None):
+        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
+        if not entry:
+            return None
+        if title is not None:
+            entry.title = str(title).strip()
+        if word is not None:
+            entry.word = str(word).strip()
+        if meaning is not None:
+            entry.meaning = str(meaning).strip()
+        if notes is not None:
+            entry.notes = str(notes).strip()
+        db_instance.session.commit()
+        return {
+            "id": entry.id,
+            "samputa": entry.samputa,
+            "author_id": entry.author_id,
+            "title": entry.title,
+            "word": entry.word,
+            "meaning": entry.meaning,
+            "notes": entry.notes
+        }
+
+    # ---------------- DELETE ----------------
+    @staticmethod
+    def delete_arthakosha(samputa: str, author_id: int, arthakosha_id: int):
+        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
+        if not entry:
+            return False
+        db_instance.session.delete(entry)
         db_instance.session.commit()
         return True

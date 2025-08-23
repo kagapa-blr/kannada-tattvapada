@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-
+from flask import Blueprint, request, jsonify
 right_section_bp = Blueprint(
     'right_section', __name__,
     template_folder='templates/right_section',
@@ -35,3 +35,5 @@ def samputa_sampadakaru_nudi():
 @right_section_bp.route('/paramarshana_sahitya', methods=['GET'])
 def paramarshana_sahitya():
     return render_template('right_section/paramarshana_sahitya.html')
+
+

@@ -231,3 +231,103 @@ def delete_tippani(tippani_id):
     if deleted:
         return jsonify({"success": True, "message": "Tippani deleted successfully"})
     return jsonify({"success": False, "message": "Tippani not found"}), 404
+
+
+
+
+# ---------------- Arthakosha Routes ----------------
+@right_section_impl_bp.route('/arthakosha', methods=['POST'])
+def create_arthakosha():
+    data = request.json or {}
+    required_fields = ['samputa', 'author_id', 'word', 'meaning']
+    if not all(field in data for field in required_fields):
+        return jsonify({"error": "samputa, author_id, word, and meaning are required"}), 400
+
+    try:
+        entry = right_section.create_arthakosha(
+            samputa=str(data['samputa']).strip(),
+            author_id=int(data['author_id']),
+            title=str(data.get('title')).strip() if data.get('title') else None,
+            word=str(data['word']).strip(),
+            meaning=str(data['meaning']).strip(),
+            notes=str(data.get('notes')).strip() if data.get('notes') else None
+        )
+        return jsonify(entry), 201
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@right_section_impl_bp.route('/arthakosha', methods=['GET'])
+def list_arthakoshas():
+    try:
+        offset = int(request.args.get('offset', 0))
+        limit = int(request.args.get('limit', 10))
+        search = request.args.get('search')
+        samputa = request.args.get('samputa')
+        author_id = request.args.get('author_id')
+        if author_id:
+            author_id = int(author_id)
+    except ValueError:
+        return jsonify({"error": "Invalid offset, limit, or author_id"}), 400
+
+    data = right_section.list_arthakoshas(
+        samputa=str(samputa).strip() if samputa else None,
+        author_id=int(author_id) if author_id else None,
+        offset=offset,
+        limit=limit,
+        search=str(search).strip() if search else None
+    )
+    return jsonify(data)
+
+
+@right_section_impl_bp.route('/arthakosha/<samputa>/<author_id>/<arthakosha_id>', methods=['GET'])
+def get_arthakosha(samputa, author_id, arthakosha_id):
+    try:
+        author_id = int(author_id)
+        arthakosha_id = int(arthakosha_id)
+    except ValueError:
+        return jsonify({"error": "author_id and arthakosha_id must be integers"}), 400
+
+    entry = right_section.get_arthakosha(str(samputa).strip(), author_id, arthakosha_id)
+    if not entry:
+        return jsonify({"error": "Word not found"}), 404
+    return jsonify(entry)
+
+
+@right_section_impl_bp.route('/arthakosha/<samputa>/<author_id>/<arthakosha_id>', methods=['PUT'])
+def update_arthakosha(samputa, author_id, arthakosha_id):
+    data = request.json or {}
+    try:
+        author_id = int(author_id)
+        arthakosha_id = int(arthakosha_id)
+    except ValueError:
+        return jsonify({"error": "author_id and arthakosha_id must be integers"}), 400
+
+    entry = right_section.update_arthakosha(
+        samputa=str(samputa).strip(),
+        author_id=author_id,
+        arthakosha_id=arthakosha_id,
+        title=str(data.get('title')).strip() if data.get('title') else None,
+        word=str(data.get('word')).strip() if data.get('word') else None,
+        meaning=str(data.get('meaning')).strip() if data.get('meaning') else None,
+        notes=str(data.get('notes')).strip() if data.get('notes') else None
+    )
+    if not entry:
+        return jsonify({"error": "Word not found"}), 404
+    return jsonify({"message": "Updated successfully", "entry": entry})
+
+
+@right_section_impl_bp.route('/arthakosha/<samputa>/<author_id>/<arthakosha_id>', methods=['DELETE'])
+def delete_arthakosha(samputa, author_id, arthakosha_id):
+    try:
+        author_id = int(author_id)
+        arthakosha_id = int(arthakosha_id)
+    except ValueError:
+        return jsonify({"error": "author_id and arthakosha_id must be integers"}), 400
+
+    success = right_section.delete_arthakosha(str(samputa).strip(), author_id, arthakosha_id)
+    if not success:
+        return jsonify({"error": "Word not found"}), 404
+    return jsonify({"message": "Deleted successfully"})
