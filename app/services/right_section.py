@@ -16,75 +16,90 @@ class RightSection:
         Fetch paginated list of Tatvapada entries.
         Supports optional search by first line.
         """
-        query = (
-            Tatvapada.query
-            .join(TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id)
-            .with_entities(
-                Tatvapada.samputa_sankhye,
-                Tatvapada.tatvapada_sankhye,
-                Tatvapada.tatvapada_author_id,
-                Tatvapada.tatvapada_first_line,
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru,
+        try:
+            query = (
+                Tatvapada.query
+                .join(TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id)
+                .with_entities(
+                    Tatvapada.samputa_sankhye,
+                    Tatvapada.tatvapada_sankhye,
+                    Tatvapada.tatvapada_author_id,
+                    Tatvapada.tatvapada_first_line,
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru,
+                )
             )
-        )
 
-        if search:
-            query = query.filter(Tatvapada.tatvapada_first_line.ilike(f"{search.strip()}%"))
+            if search:
+                query = query.filter(Tatvapada.tatvapada_first_line.ilike(f"{search.strip()}%"))
 
-        total = query.count()
-        rows = query.offset(offset).limit(limit).all()
+            total = query.count()
+            rows = query.offset(offset).limit(limit).all()
 
-        results = [
-            {
-                "samputa_sankhye": row.samputa_sankhye,
-                "tatvapada_sankhye": row.tatvapada_sankhye,
-                "tatvapada_author_id": row.tatvapada_author_id,
-                "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
-                "tatvapada_first_line": row.tatvapada_first_line,
-            }
-            for row in rows
-        ]
+            results = [
+                {
+                    "samputa_sankhye": getattr(row, "samputa_sankhye", None),
+                    "tatvapada_sankhye": getattr(row, "tatvapada_sankhye", None),
+                    "tatvapada_author_id": getattr(row, "tatvapada_author_id", None),
+                    "tatvapadakarara_hesaru": getattr(row, "tatvapadakarara_hesaru", None),
+                    "tatvapada_first_line": getattr(row, "tatvapada_first_line", None),
+                }
+                for row in rows
+            ]
 
-        return {"total": total, "results": results}
+            return {"total": total, "results": results}
+
+        except Exception as e:
+            # Log error or raise for route to handle
+            raise e
+
     def get_tatvapada_details(self, samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
         """
         Fetch a specific Tatvapada entry by (samputa, author_id, tatvapada_sankhye).
-        Returns dict if found, else None.
+        Returns dict if found, else None. Handles missing relationships safely.
         """
-        row = (
-            Tatvapada.query
-            .filter(
-                func.trim(Tatvapada.samputa_sankhye) == str(samputa_sankhye).strip(),
-                Tatvapada.tatvapada_author_id == int(tatvapada_author_id),
-                func.trim(Tatvapada.tatvapada_sankhye) == str(tatvapada_sankhye).strip(),
+        try:
+            row = (
+                Tatvapada.query
+                .filter(
+                    func.trim(Tatvapada.samputa_sankhye) == str(samputa_sankhye).strip(),
+                    Tatvapada.tatvapada_author_id == int(tatvapada_author_id),
+                    func.trim(Tatvapada.tatvapada_sankhye) == str(tatvapada_sankhye).strip(),
+                )
+                .first()
             )
-            .first()
-        )
 
-        if not row:
-            return None
+            if not row:
+                return None
 
-        return {
-            "id": row.id,
-            "samputa_sankhye": row.samputa_sankhye,
-            "tatvapada_sankhye": row.tatvapada_sankhye,
-            "tatvapada_first_line": row.tatvapada_first_line,
-            "tatvapada": row.tatvapada,
-            "tatvapada_author_id": row.tatvapada_author_id,
-            "tatvapadakarara_hesaru": (
-                row.tatvapadakarara_hesaru.tatvapadakarara_hesaru
-                if row.tatvapadakarara_hesaru else None
-            ),
-            "bhavanuvada": row.bhavanuvada,
-            "klishta_padagalu_artha": row.klishta_padagalu_artha,
-            "tippanis": [
+            # Safe access for author name
+            author_name = getattr(row.tatvapadakarara_hesaru, "tatvapadakarara_hesaru", None) \
+                if getattr(row, "tatvapadakarara_hesaru", None) else None
+
+            # Safe access for tippanis
+            tippanis = [
                 {
-                    "tippani_id": t.tippani_id,
-                    "content": t.tippani_content,
+                    "tippani_id": getattr(t, "tippani_id", None),
+                    "content": getattr(t, "tippani_content", None),
                 }
-                for t in row.tippanigalu
-            ],
-        }
+                for t in getattr(row, "tippanigalu", []) or []
+            ]
+
+            return {
+                "id": getattr(row, "id", None),
+                "samputa_sankhye": getattr(row, "samputa_sankhye", None),
+                "tatvapada_sankhye": getattr(row, "tatvapada_sankhye", None),
+                "tatvapada_first_line": getattr(row, "tatvapada_first_line", None),
+                "tatvapada": getattr(row, "tatvapada", None),
+                "tatvapada_author_id": getattr(row, "tatvapada_author_id", None),
+                "tatvapadakarara_hesaru": author_name,
+                "bhavanuvada": getattr(row, "bhavanuvada", None),
+                "klishta_padagalu_artha": getattr(row, "klishta_padagalu_artha", None),
+                "tippanis": tippanis,
+            }
+
+        except Exception as e:
+            # Propagate exception for route handling
+            raise e
 
     #---------------------------------------------------
     def get_all_tippanis(self, offset=0, limit=10, search=""):

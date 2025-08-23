@@ -7,7 +7,8 @@ right_section_impl_bp = Blueprint("right_section_impl", __name__, url_prefix="/a
 # Service instance
 right_section = RightSection()
 # ----------------- Tatvapada Routes ----------------- #
-# 1. List all Tatvapadas (paginated, optional search)
+
+# 1️⃣ List all Tatvapadas (paginated, optional search)
 @right_section_impl_bp.route("/tatvapadasuchi", methods=["GET"])
 def list_tatvapadas():
     """
@@ -22,10 +23,16 @@ def list_tatvapadas():
         MAX_LIMIT = 100
         if limit > MAX_LIMIT:
             limit = MAX_LIMIT
+
     except ValueError:
         return jsonify({"error": "Invalid offset or limit"}), 400
 
-    data = right_section.get_tatvapada_suchi(offset=offset, limit=limit, search=search)
+    try:
+        data = right_section.get_tatvapada_suchi(offset=offset, limit=limit, search=search)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Server error", "details": str(e)}), 500
 
     next_offset = offset + limit if (offset + limit) < data["total"] else None
     prev_offset = offset - limit if offset - limit >= 0 else None
@@ -39,7 +46,9 @@ def list_tatvapadas():
         "prev_offset": prev_offset,
         "data": data["results"]
     })
-# 2. Get a specific Tatvapada by samputa, author, and number (with Tippanis)
+
+
+# 2️⃣ Get a specific Tatvapada by samputa, author, and number (with Tippanis)
 @right_section_impl_bp.route("/tatvapada", methods=["GET"])
 def get_tatvapada():
     """
@@ -58,16 +67,26 @@ def get_tatvapada():
     except ValueError:
         return jsonify({"error": "tatvapada_author_id must be an integer"}), 400
 
-    record = right_section.get_tatvapada_details(
-        samputa_sankhye=samputa,
-        tatvapada_author_id=author_id,
-        tatvapada_sankhye=number,
-    )
+    try:
+        record = right_section.get_tatvapada_details(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            tatvapada_sankhye=number,
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Server error", "details": str(e)}), 500
 
     if not record:
         return jsonify({"error": "Tatvapada not found"}), 404
 
     return jsonify(record)
+
+
+
+
+
 
 # ----------------- Tippani Routes ----------------- #
 

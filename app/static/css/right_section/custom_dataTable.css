@@ -147,3 +147,7 @@ table.dataTable tbody tr:hover {
     width: 28px;
     height: 28px;
 }
+
+.dt-search .dt-length .dt-info .dt-paging {
+    font-size: 25px;
+}
