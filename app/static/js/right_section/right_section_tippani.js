@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "ಶ", "ಷ", "ಸ", "ಹ", "ಳ"
     ];
 
-    // Render DataTable
+    // Initialize DataTable with default pagination and info enabled
     const table = new DataTable("#right_section_tippaniTable", {
         processing: true,
         serverSide: true,
@@ -20,7 +20,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const search = data.search.value || "";
 
             try {
-                const res = await apiClient.get(`${apiEndpoints.rightSection.tippaniApi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`);
+                const res = await apiClient.get(
+                    `${apiEndpoints.rightSection.tippaniApi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`
+                );
 
                 callback({
                     recordsTotal: res.total || 0,
@@ -39,9 +41,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             { data: "tippani_title" },
             { data: "tatvapada_author_id", visible: false }
         ],
-        language: { search: "🔍 ಹುಡುಕಿ:" },
+        language: {
+            search: "🔍 ಹುಡುಕಿ:",
+            lengthMenu: "_MENU_ ದಾಖಲೆಗಳನ್ನು ತೋರಿಸು",
+            info: "ಒಟ್ಟು _TOTAL_ ದಾಖಲೆಗಳಿಂದ _START_ ರಿಂದ _END_ ಸಂಕ್ಲಿಷ್ಟಿಸಲಾಗಿದೆ",
+            infoEmpty: "ಯಾವುದೇ ದಾಖಲೆಗಳಿಲ್ಲ",
+            infoFiltered: "(ಮೊತ್ತದಲ್ಲಿ _MAX_ ದಾಖಲೆಗಳಲ್ಲಿ ಫಿಲ್ಟರ್ ಆಗಿವೆ)",
+            paginate: {
+                first: "ಮೊದಲ",
+                last: "ಕೊನೆಯ",
+                next: "ಮುಂದೆ",
+                previous: "ಹಿಂದೆ"
+            }
+        },
         pageLength: 50,
-        stripeClasses: ["odd-row", "even-row"]
+        stripeClasses: ["odd-row", "even-row"],
+        paging: true,   // Ensure paging enabled
+        info: true      // Ensure info display enabled
     });
 
     // Row click → fetch Tippani details
