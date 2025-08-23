@@ -11,7 +11,7 @@ KANNADA_NUM_MAP = {
     '೦': '0', '೧': '1', '೨': '2', '೩': '3', '೪': '4',
     '೫': '5', '೬': '6', '೭': '7', '೮': '8', '೯': '9'
 }
-SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:–—]*\s*([೦-೯0-9]+)', re.IGNORECASE)
+SAMPUTA_RE = re.compile(r'^\s*ಸಂಪುಟ\s*[-:–—]*\s*([೦-೯0-9.]+)',re.IGNORECASE)
 VERSE_HEADER_RE = re.compile(r'^\s*([೦-೯0-9]+)(?:[\.\(]|\s+)\s*')
 SPECIAL_ENDINGS = ("||", "॥")
 
@@ -21,8 +21,13 @@ def normalize_para(text):
 
 def kannada_to_number(s):
     trans = ''.join(KANNADA_NUM_MAP.get(ch, ch) for ch in s)
-    if re.match(r'^\d+(\.\d+)?$', trans):
-        return trans
+
+    # check if it's a valid numeric string (int or float, with optional leading/trailing decimal)
+    if re.match(r'^\d*\.?\d*$', trans) and trans not in ("", ".",):
+        # normalize: convert to float, then cast to int if it's whole
+        num = float(trans)
+        return int(num) if num.is_integer() else num
+
     return None
 
 def kannada_to_int(s):
