@@ -40,7 +40,8 @@ const apiEndpoints = {
 
         //---------------------
         samputaAuthor: `${BASE_URL}/api/v1/right-section/samputa-authors`,
-        manageTippani: `${BASE_URL}/api/v1/right-section/tippani`
+        manageTippani: `${BASE_URL}/api/v1/right-section/tippani`,
+        manageArthakosha: `${BASE_URL}/api/v1/right-section/arthakosha`
 
 
     },

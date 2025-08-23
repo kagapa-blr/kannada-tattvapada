@@ -1,0 +1,135 @@
+<div class="arthakosha_manage_management p-3">
+    <h3>Manage Arthakosha</h3>
+
+    <!-- Existing Arthakosha Management -->
+    <div class="card mb-4">
+        <div class="card-header">Edit / Delete Arthakosha</div>
+        <div class="card-body">
+            <!-- Cascading Dropdowns -->
+            <div class="row mb-3 g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Samputa</label>
+                    <select id="manage_arthakosha_samputaSelect" class="form-select">
+                        <option value="">-- Select Samputa --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Author</label>
+                    <select id="manage_arthakosha_authorSelect" class="form-select" disabled>
+                        <option value="">-- Select Author --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Arthakosha Entry</label>
+                    <select id="manage_arthakoshaSelect" class="form-select" disabled>
+                        <option value="">-- Select Entry --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div id="manage_arthakosha_form" style="display:none;">
+                <input type="hidden" id="manage_arthakosha_id" />
+
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="manage_arthakosha_title" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Word</label>
+                    <input type="text" id="manage_arthakosha_word" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Meaning</label>
+                    <textarea id="manage_arthakosha_meaning" class="form-control" rows="6"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea id="manage_arthakosha_notes" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button id="manage_arthakosha_saveBtn" class="btn btn-success">Update</button>
+                <button id="manage_arthakosha_deleteBtn" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Arthakosha -->
+    <div class="card">
+        <div class="card-header">Add New Arthakosha</div>
+        <div class="card-body">
+            <div class="row mb-3 g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Samputa</label>
+                    <select id="add_arthakosha_samputaSelect" class="form-select">
+                        <option value="">-- Select Samputa --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Author</label>
+                    <select id="add_arthakosha_authorSelect" class="form-select" disabled>
+                        <option value="">-- Select Author --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="add_arthakosha_form" style="display:none;">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="add_arthakosha_title" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Word</label>
+                    <input type="text" id="add_arthakosha_word" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Meaning</label>
+                    <textarea id="add_arthakosha_meaning" class="form-control" rows="6"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea id="add_arthakosha_notes" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button id="add_arthakosha_saveBtn" class="btn btn-primary">Save New Entry</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal fade" id="arthakosha_infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body" id="arthakosha_infoModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="arthakosha_deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this Arthakosha entry?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="arthakosha_confirmDeleteBtn" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
