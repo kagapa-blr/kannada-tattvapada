@@ -87,17 +87,26 @@ def get_tippani():
             # Author-specific request
             data = right_section.get_tippanis_by_samputa_author(samputa, author_id)
             return jsonify({"success": True, "data": data})
-        else:
-            # Paginated list request
-            offset = int(request.args.get("offset", 0))
-            limit = int(request.args.get("limit", 10))
-            search = request.args.get("search", "")
-            results = right_section.get_all_tippanis(offset=offset, limit=limit, search=search)
 
-            if not results["results"]:
-                return jsonify({"success": False, "message": "No Tippanis found", **results}), 404
+        # Paginated list request
+        offset = int(request.args.get("offset", 0))
+        limit = int(request.args.get("limit", 10))
+        search = request.args.get("search", "")
 
-            return jsonify({"success": True, **results})
+        results = right_section.get_all_tippanis(offset=offset, limit=limit, search=search)
+
+        # Always return 200; frontend handles empty results
+        if not results.get("results"):
+            return jsonify({
+                "success": False,
+                "message": "No Tippanis found",
+                "results": [],
+                "offset": offset,
+                "limit": limit,
+                "total": 0
+            }), 200
+
+        return jsonify({"success": True, **results})
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500

@@ -90,7 +90,7 @@ class RightSection:
     def get_all_tippanis(self, offset=0, limit=10, search=""):
         """
         Fetch paginated Tippanis with samputa, author id, author name, tippani_id.
-        Optional search by Tippani title OR Author name.
+        Optional search by Tippani title OR Author name (starts with search string).
         """
         query = (
             db_instance.session.query(
@@ -104,7 +104,7 @@ class RightSection:
         )
 
         if search:
-            search_str = f"%{search.strip()}%"
+            search_str = f"{search.strip()}%"  # match only from start
             query = query.filter(
                 TatvapadaTippani.tippani_title.ilike(search_str) |
                 TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_str)
