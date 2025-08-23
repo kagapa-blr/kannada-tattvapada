@@ -1,69 +1,114 @@
 <div class="tippani_manage_management p-3">
-    <h3>Manage Tippani</h3>
-    <p>Select Samputa to see corresponding authors and fetch the Tippani entry.</p>
+    <h3>Manage Tippanis</h3>
 
-    <!-- Filters -->
-    <div class="row mb-3 g-3">
-        <div class="col-md-4">
-            <label for="tippani_manage_samputaSelect" class="form-label">Samputa</label>
-            <select id="tippani_manage_samputaSelect" class="form-select">
-                <option value="" selected>-- Select Samputa --</option>
-            </select>
-        </div>
+    <!-- Existing Tippani Management -->
+    <div class="card mb-4">
+        <div class="card-header">Edit / Delete Tippani</div>
+        <div class="card-body">
+            <!-- Cascading Dropdowns -->
+            <div class="row mb-3 g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Samputa</label>
+                    <select id="manage_samputaSelect" class="form-select">
+                        <option value="">-- Select Samputa --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Author</label>
+                    <select id="manage_authorSelect" class="form-select" disabled>
+                        <option value="">-- Select Author --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tippani</label>
+                    <select id="manage_tippaniSelect" class="form-select" disabled>
+                        <option value="">-- Select Tippani --</option>
+                    </select>
+                </div>
+            </div>
 
-        <div class="col-md-4">
-            <label for="tippani_manage_authorSelect" class="form-label">Author</label>
-            <select id="tippani_manage_authorSelect" class="form-select" disabled>
-                <option value="" selected>-- Select Author --</option>
-            </select>
+            <!-- Form -->
+            <div id="manage_form" style="display:none;">
+                <input type="hidden" id="manage_tippani_id" />
+
+                <div class="mb-3">
+                    <label class="form-label">Tippani Title</label>
+                    <input type="text" id="manage_tippani_title" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tippani Content</label>
+                    <textarea id="manage_tippani_content" class="form-control" rows="6"></textarea>
+                </div>
+
+                <button id="manage_saveBtn" class="btn btn-success">Update</button>
+                <button id="manage_deleteBtn" class="btn btn-danger">Delete</button>
+            </div>
         </div>
     </div>
 
-    <!-- Tippani Form -->
-    <div id="tippani_manage_form" style="display:none;">
-        <input type="hidden" id="tippani_manage_id">
-        <div class="mb-3">
-            <label for="tippani_manage_content" class="form-label">Tippani Content</label>
-            <textarea id="tippani_manage_content" class="form-control" rows="6"
-                placeholder="Tippani content..."></textarea>
-        </div>
-        <button id="tippani_manage_saveBtn" class="btn btn-success">Save Tippani</button>
-        <button id="tippani_manage_deleteBtn" class="btn btn-danger">Delete Tippani</button>
-    </div>
-</div>
+    <!-- Add New Tippani -->
+    <div class="card">
+        <div class="card-header">Add New Tippani</div>
+        <div class="card-body">
+            <div class="row mb-3 g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Samputa</label>
+                    <select id="add_samputaSelect" class="form-select">
+                        <option value="">-- Select Samputa --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Author</label>
+                    <select id="add_authorSelect" class="form-select" disabled>
+                        <option value="">-- Select Author --</option>
+                    </select>
+                </div>
+            </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="tippani_manage_deleteModal" tabindex="-1" aria-labelledby="tippani_manage_deleteModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tippani_manage_deleteModalLabel">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this Tippani?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button id="tippani_manage_confirmDeleteBtn" type="button" class="btn btn-danger">Delete</button>
+            <div id="add_form" style="display:none;">
+                <div class="mb-3">
+                    <label class="form-label">Tippani Title</label>
+                    <input type="text" id="add_tippani_title" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tippani Content</label>
+                    <textarea id="add_tippani_content" class="form-control" rows="6"></textarea>
+                </div>
+
+                <button id="add_saveBtn" class="btn btn-primary">Save New Tippani</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Info Modal -->
-<div class="modal fade" id="tippani_manage_infoModal" tabindex="-1" aria-labelledby="tippani_manage_infoModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="tippani_infoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body" id="tippani_infoModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="tippani_deleteModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="tippani_manage_infoModalLabel">Notification</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="tippani_manage_infoModalBody"></div>
+            <div class="modal-body">
+                Are you sure you want to delete this Tippani?
+            </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="tippani_confirmDeleteBtn" class="btn btn-danger">Delete</button>
             </div>
         </div>
     </div>

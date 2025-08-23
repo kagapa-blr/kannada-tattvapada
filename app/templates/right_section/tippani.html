@@ -5,10 +5,11 @@
   <meta charset="UTF-8">
   <title>ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</title>
 
-  <!-- ✅ CSS Dependencies -->
+  <!-- CSS Dependencies -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/right_section/custom_dataTable.css') }}">
 </head>
 
 <body>
@@ -18,33 +19,47 @@
   <div class="container mt-4">
     <h2>📖 ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</h2>
 
-    <table id="tippaniTable" class="display stripe hover table table-bordered" style="width:100%">
+    <!-- ✅ Kannada letters grid -->
+    <div class="letters-container">
+      <div class="letters-grid" id="letters-grid"></div>
+      <button class="clear-btn" id="clearSearch">🔄 ಹುಡುಕಾಟ ಅಳಿಸಿ</button>
+    </div>
+
+
+
+    <table id="right_section_tippaniTable" class="display stripe hover table table-bordered" style="width:100%;">
       <thead>
         <tr>
           <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
           <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
           <th>ಟಿಪ್ಪಣಿ ಐಡಿ</th>
+          <th>ಟಿಪ್ಪಣಿ ಶೀರ್ಷಿಕೆ</th>
+          <th>Author ID (hidden)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <!-- ✅ Modal for Tippani Details -->
-  <div class="modal fade" id="tippaniModal" tabindex="-1" aria-labelledby="tippaniModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+  <!-- Modal for Tippani Details -->
+  <div class="modal fade" id="right_section_tippaniModal" tabindex="-1"
+    aria-labelledby="right_section_tippaniModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="tippaniModalLabel">ಟಿಪ್ಪಣಿ ವಿವರಗಳು</h5>
+          <h5 class="modal-title" id="right_section_tippaniModalLabel">ಟಿಪ್ಪಣಿ ವಿವರಗಳು</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
-          <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="modalSamputa"></span></p>
-          <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="modalAuthor"></span></p>
-          <p><strong>ಟಿಪ್ಪಣಿ ಐಡಿ:</strong> <span id="modalId"></span></p>
+        <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
+          <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="right_section_modalSamputa"></span></p>
+          <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="right_section_modalAuthor"></span></p>
+          <p><strong>ಟಿಪ್ಪಣಿ ಐಡಿ:</strong> <span id="right_section_modalId"></span></p>
+          <p><strong>ಟಿಪ್ಪಣಿ ಶೀರ್ಷಿಕೆ:</strong> <span id="right_section_modalTitle"></span></p>
           <hr>
           <p><strong>ಟಿಪ್ಪಣಿ ವಿಷಯ:</strong></p>
-          <p id="modalContent" class="modal-text"></p>
+          <div id="right_section_modalContent"
+            style="white-space:pre-wrap; border:1px solid #ddd; padding:1rem; background-color:#f8f9fa; border-radius:0.25rem;">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">Close</button>
@@ -55,58 +70,12 @@
 
   {% include 'footer.html' %}
 
-  <!-- ✅ JS Dependencies -->
+  <!-- JS Dependencies -->
   <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
   <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-
-  <!-- ✅ Script -->
-  <script type="module">
-    import apiClient from "{{ url_for('static', filename='js/apiClient.js') }}";
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const data = await apiClient.get("api/v1/right-section/all/tippani");
-
-        if (!data.results || data.results.length === 0) {
-          console.warn("No Tippanis found");
-          return;
-        }
-
-        const table = $("#tippaniTable").DataTable({
-          data: data.results,
-          columns: [
-            { data: "samputa_sankhye", title: "ಸಂಪುಟ ಸಂಖ್ಯೆ" },
-            { data: "tatvapadakarara_hesaru", title: "ತತ್ವಪದಕಾರರ ಹೆಸರು" },
-            { data: "tippani_id", title: "ಟಿಪ್ಪಣಿ ಐಡಿ" }
-          ],
-          destroy: true,
-          searching: true,
-          paging: true,
-          language: {
-            emptyTable: "ಟಿಪ್ಪಣಿ ಲಭ್ಯವಿಲ್ಲ"
-          }
-        });
-
-        // ✅ Row click → open modal with details
-        $('#tippaniTable tbody').on('click', 'tr', function () {
-          const rowData = table.row(this).data();
-          if (!rowData) return;
-
-          document.getElementById("modalSamputa").textContent = rowData.samputa_sankhye;
-          document.getElementById("modalAuthor").textContent = rowData.tatvapadakarara_hesaru;
-          document.getElementById("modalId").textContent = rowData.tippani_id;
-          document.getElementById("modalContent").textContent = rowData.tippani_content || "—";
-
-          const modal = new bootstrap.Modal(document.getElementById("tippaniModal"));
-          modal.show();
-        });
-      } catch (err) {
-        console.error("Error loading Tippani list:", err);
-      }
-    });
-  </script>
+  <script type="module" src="{{ url_for('static', filename='js/right_section/right_section_tippani.js') }}"></script>
 
 </body>
 

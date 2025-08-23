@@ -47,13 +47,14 @@ class Tatvapada(db_instance.Model):
 
 class TatvapadaTippani(db_instance.Model):
     __tablename__ = "tatvapada_tippani"
-    __table_args__ = (
-        UniqueConstraint('samputa_sankhye', 'tatvapada_author_id', name='uq_tippani_unique'),
-    )
 
     tippani_id = Column(Integer, primary_key=True, autoincrement=True)
     tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     samputa_sankhye = Column(String(255), nullable=False)
-    tippani_content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)  # large content
+    # New field for Tippani title
+    tippani_title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+
+    # Large content field
+    tippani_content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
 
     author = relationship(TatvapadaAuthorInfo, backref="tippanigalu")

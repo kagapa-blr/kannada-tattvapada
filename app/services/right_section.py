@@ -46,8 +46,6 @@ class RightSection:
         ]
 
         return {"total": total, "results": results}
-
-
     def get_tatvapada_details(self, samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
         """
         Fetch a specific Tatvapada entry by (samputa, author_id, tatvapada_sankhye).
@@ -89,19 +87,18 @@ class RightSection:
         }
 
     #---------------------------------------------------
-
-    def get_tippanis(self, offset=0, limit=10, search=""):
+    def get_all_tippanis(self, offset=0, limit=10, search=""):
         """
-        Fetch paginated Tippanis with samputa, author id, author name, tippani content, and tippani_id.
-        Optional search by Tippani content OR Author name.
+        Fetch paginated Tippanis with samputa, author id, author name, tippani_id.
+        Optional search by Tippani title OR Author name.
         """
         query = (
             db_instance.session.query(
                 TatvapadaTippani.tippani_id,
                 TatvapadaTippani.samputa_sankhye,
                 TatvapadaTippani.tatvapada_author_id,
-                TatvapadaTippani.tippani_content,
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru,
+                TatvapadaTippani.tippani_title
             )
             .join(TatvapadaAuthorInfo, TatvapadaTippani.tatvapada_author_id == TatvapadaAuthorInfo.id)
         )
@@ -109,12 +106,14 @@ class RightSection:
         if search:
             search_str = f"%{search.strip()}%"
             query = query.filter(
-                TatvapadaTippani.tippani_content.ilike(search_str) |
+                TatvapadaTippani.tippani_title.ilike(search_str) |
                 TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_str)
             )
 
-        total = query.count()
-        rows = query.offset(offset).limit(limit).all()
+        total = query.count()  # total matching rows
+
+        # Apply pagination
+        rows = query.order_by(TatvapadaTippani.tippani_id).offset(offset).limit(limit).all()
 
         results = [
             {
@@ -122,12 +121,43 @@ class RightSection:
                 "samputa_sankhye": row.samputa_sankhye,
                 "tatvapada_author_id": row.tatvapada_author_id,
                 "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
-                "tippani_content": row.tippani_content
+                "tippani_title": row.tippani_title
             }
             for row in rows
         ]
 
-        return {"total": total, "results": results}
+        return {
+            "total": total,
+            "offset": offset,
+            "limit": limit,
+            "results": results
+        }
+
+    @staticmethod
+    def get_tippanis_by_samputa_author(samputa: str, author_id: int):
+        """
+        Fetch all Tippani IDs for a given samputa and author_id.
+        Returns:
+        [
+            {"tippani_id": 1},
+            {"tippani_id": 2},
+            ...
+        ]
+        """
+        if not samputa or not author_id:
+            return []
+
+        query = (
+            db_instance.session.query(TatvapadaTippani.tippani_id)
+            .filter(
+                TatvapadaTippani.samputa_sankhye == samputa,
+                TatvapadaTippani.tatvapada_author_id == author_id,
+            )
+            .order_by(TatvapadaTippani.tippani_id.asc())
+            .all()
+        )
+
+        return [{"tippani_id": row.tippani_id} for row in query]
 
     @staticmethod
     def get_samputa_with_authors():
@@ -166,26 +196,36 @@ class RightSection:
 
         return samputa_list
 
-
     @staticmethod
-    def get_tippani_by_samputa_author(samputa: str, author_id: int):
+    def get_tippani(samputa: str, author_id: int, tippani_id: int):
         """
-        Fetch Tippani entry for a given Samputa and Author ID.
-        Returns dict with tippani_id and tippani_content or None.
+        Fetch a specific Tippani entry by Samputa, Author ID, and Tippani ID.
+        Returns dict with full details or None.
         """
         tippani = (
             db_instance.session.query(TatvapadaTippani)
-            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+            .filter_by(
+                samputa_sankhye=samputa,
+                tatvapada_author_id=author_id,
+                tippani_id=tippani_id
+            )
             .first()
         )
         if tippani:
-            return {"id": tippani.tippani_id, "content": tippani.tippani_content}
+            return {
+                "id": tippani.tippani_id,
+                "samputa": tippani.samputa_sankhye,
+                "author_id": tippani.tatvapada_author_id,
+                "title": tippani.tippani_title,
+                "content": tippani.tippani_content,
+            }
         return None
 
+
     @staticmethod
-    def create_tippani(samputa: str, author_id: int, content: str):
+    def create_tippani(samputa: str, author_id: int, content: str, title: str = None):
         """
-        Create a new Tippani entry with given Samputa and Author.
+        Create a new Tippani entry with given Samputa, Author, Title, and Content.
         Ensures proper types and not null values.
         """
         if not samputa or not author_id or not content:
@@ -199,6 +239,7 @@ class RightSection:
         new_tippani = TatvapadaTippani(
             samputa_sankhye=str(samputa).strip(),
             tatvapada_author_id=author_id,
+            tippani_title=str(title).strip() if title else None,
             tippani_content=str(content).strip()
         )
 
@@ -207,29 +248,50 @@ class RightSection:
 
         return {
             "id": new_tippani.tippani_id,
+            "samputa": new_tippani.samputa_sankhye,
+            "author_id": new_tippani.tatvapada_author_id,
+            "title": new_tippani.tippani_title,
             "content": new_tippani.tippani_content
         }
 
-    @staticmethod
-    def update_tippani(tippani_id: int, content: str):
-        """
-        Update existing Tippani by ID.
-        """
-        tippani = db_instance.session.query(TatvapadaTippani).get(tippani_id)
-        if not tippani:
-            return None
-        tippani.tippani_content = content
-        db_instance.session.commit()
-        return {"id": tippani.tippani_id, "content": tippani.tippani_content}
 
     @staticmethod
-    def delete_tippani(samputa: str, author_id: int):
+    def update_tippani(samputa: str, author_id: int, tippani_id: int, content: str, title: str = None):
         """
-        Delete Tippani by Samputa + Author.
+        Update existing Tippani by Samputa, Author, and Tippani ID.
         """
         tippani = (
             db_instance.session.query(TatvapadaTippani)
-            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id, tippani_id=tippani_id)
+            .first()
+        )
+        if not tippani:
+            return None
+
+        if content:
+            tippani.tippani_content = str(content).strip()
+        if title is not None:
+            tippani.tippani_title = str(title).strip()
+
+        db_instance.session.commit()
+
+        return {
+            "id": tippani.tippani_id,
+            "samputa": tippani.samputa_sankhye,
+            "author_id": tippani.tatvapada_author_id,
+            "title": tippani.tippani_title,
+            "content": tippani.tippani_content
+        }
+
+
+    @staticmethod
+    def delete_tippani(samputa: str, author_id: int, tippani_id: int):
+        """
+        Delete Tippani by Samputa, Author, and Tippani ID.
+        """
+        tippani = (
+            db_instance.session.query(TatvapadaTippani)
+            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id, tippani_id=tippani_id)
             .first()
         )
         if not tippani:
