@@ -194,10 +194,9 @@ function setupNavigation() {
         btnDictionary: apiEndpoints.rightSection.arthakosha,
         right_section_tippani: apiEndpoints.rightSectionUI.tippani,
         right_section_arthakosha: apiEndpoints.rightSectionUI.arthakosha,
+        right_section_sampadakara_nudi: apiEndpoints.rightSectionUI.sampadakaraNudi,
         btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
-        btnEditorNote: apiEndpoints.rightSection.pradhanaSampadakaruNudi,
-        btnVolumeEditor: apiEndpoints.rightSection.samputaSampadakaruNudi,
-        btnReferences: apiEndpoints.rightSection.paramarshanaSahitya
+
     };
 
     Object.entries(routes).forEach(([btnId, url]) => {

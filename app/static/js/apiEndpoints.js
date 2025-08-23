@@ -46,8 +46,8 @@ const apiEndpoints = {
 
     },
     documents: {
-        list: `${BASE_URL}/api/documents/`,                  // must end with /
-        create: `${BASE_URL}/api/documents`,                 // no slash for POST
+        list: `${BASE_URL}/api/documents/`,
+        create: `${BASE_URL}/api/documents`,
         getById: (id) => `${BASE_URL}/api/documents/${id}`,
         update: (id) => `${BASE_URL}/api/documents/${id}`,
         delete: (id) => `${BASE_URL}/api/documents/${id}`
@@ -56,6 +56,7 @@ const apiEndpoints = {
         tatvapadaSuchi: `${BASE_URL}/right-section/tatvapada_suchi`,
         tippani: `${BASE_URL}/right-section/tippani`,
         arthakosha: `${BASE_URL}/right-section/arthakosha`,
+        sampadakaraNudi: `${BASE_URL}/right-section/user_document`,
     },
 
     rightSection: {
