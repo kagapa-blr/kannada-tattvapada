@@ -193,6 +193,7 @@ function setupNavigation() {
         right_section_tatvapadasuchi: apiEndpoints.rightSectionUI.tatvapadaSuchi,
         btnDictionary: apiEndpoints.rightSection.arthakosha,
         right_section_tippani: apiEndpoints.rightSectionUI.tippani,
+        right_section_arthakosha: apiEndpoints.rightSectionUI.arthakosha,
         btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
         btnEditorNote: apiEndpoints.rightSection.pradhanaSampadakaruNudi,
         btnVolumeEditor: apiEndpoints.rightSection.samputaSampadakaruNudi,

@@ -1,38 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>arthakosha</title>
-    <!-- 1. Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+    <title>ಅರ್ಥಕೋಶ</title>
 
-    <!-- 2. Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
-
+    <!-- ✅ CSS Dependencies -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/right_section/custom_dataTable.css') }}">
 </head>
 
 <body>
-    <!-- Navbar -->
+
     {% include 'navbar.html' %}
 
-    <div class="p-3">
-        <h3>📖 ಅರ್ಥಕೋಶ</h3>
-        <p>ಪದಗಳ ಅರ್ಥ ಮತ್ತು ವ್ಯಾಖ್ಯಾನಗಳನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.</p>
+    <div class="container mt-4">
+        <h2>ಅರ್ಥಕೋಶ</h2>
+
+        <!-- ✅ Kannada letters grid -->
+        <div class="letters-container">
+            <div class="letters-grid" id="arthakosha-letters-grid"></div>
+            <button class="clear-btn" id="arthakosha-clearSearch">🔄 ಹುಡುಕಾಟ ಅಳಿಸಿ</button>
+        </div>
+
+        <table id="arthakoshaTable" class="display stripe hover table table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ಸಂಪುಟ</th>
+                    <th>ಲೇಖಕ</th>
+                    <th>ಶಬ್ದ</th>
+                    <th>ಅರ್ಥ</th>
+                    <th>ಶೀರ್ಷಿಕೆ</th>
+                </tr>
+            </thead>
+        </table>
+
     </div>
 
-    <!-- Custom Loader -->
-    {% include 'customLoader.html' %}
 
-    <!-- Footer -->
+
+    <div class="modal fade" id="arthakoshaModal" tabindex="-1" aria-labelledby="arthakoshaModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <!-- Modal Header with Close Button -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="arthakoshaModalLabel">ಅರ್ಥಕೋಶ Entry Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>ಸಂಪುಟ:</strong> <span id="arthakosha_modalSamputa"></span>
+                        </li>
+                        <li class="list-group-item"><strong>ಲೇಖಕ:</strong> <span id="arthakosha_modalAuthor"></span>
+                        </li>
+                        <li class="list-group-item"><strong>ID:</strong> <span id="arthakosha_modalId"></span></li>
+                        <li class="list-group-item"><strong>ಶೀರ್ಷಿಕೆ:</strong> <span id="arthakosha_modalTitle"></span>
+                        </li>
+                        <li class="list-group-item"><strong>ಶಬ್ದ:</strong> <span id="arthakosha_modalWord"></span></li>
+                        <li class="list-group-item"><strong>ಅರ್ಥ:</strong> <span id="arthakosha_modalMeaning"></span>
+                        </li>
+                        <li class="list-group-item"><strong>Notes:</strong> <span id="arthakosha_modalNotes"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Optional Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
     {% include 'footer.html' %}
 
-    <!-- 1. Bootstrap JS -->
+    <!-- ✅ JS Dependencies -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-    <!-- 2. Custom JS -->
     <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+
+    <!-- ✅ External JS -->
+    <script type="module" src="{{ url_for('static', filename='js/right_section/arthakosha.js') }}"></script>
 
 </body>
 

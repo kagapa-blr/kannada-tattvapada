@@ -54,10 +54,12 @@ const apiEndpoints = {
     rightSectionUI: {
         tatvapadaSuchi: `${BASE_URL}/right-section/tatvapada_suchi`,
         tippani: `${BASE_URL}/right-section/tippani`,
+        arthakosha: `${BASE_URL}/right-section/arthakosha`,
     },
 
     rightSection: {
         tippaniApi: `${BASE_URL}/api/v1/right-section/tippani`,
+        arthakoshaApi: `${BASE_URL}/api/v1/right-section/arthakosha`,
         tatvapadaSuchi: `${BASE_URL}/api/v1/right-section/tatvapadasuchi`,
         getTatvapada: (samputa, authorId, sankhye) =>
             `${BASE_URL}/api/v1/right-section/tatvapada?samputa_sankhye=${samputa}&tatvapada_author_id=${authorId}&tatvapada_sankhye=${sankhye}`,

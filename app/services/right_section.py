@@ -345,7 +345,7 @@ class RightSection:
             "notes": entry.notes
         }
 
-    # ---------------- READ / LIST ----------------
+
     # ---------------- LIST ARTHAKOSHAS ----------------
     @staticmethod
     def list_arthakoshas(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
@@ -355,8 +355,12 @@ class RightSection:
         if author_id:
             query = query.filter(Arthakosha.author_id == author_id)
         if search:
-            search_term = f"%{search.strip()}%"
-            query = query.filter(Arthakosha.word.ilike(search_term) | Arthakosha.meaning.ilike(search_term))
+            search_term = search.strip()
+            query = query.filter(
+                Arthakosha.word.ilike(f"{search_term}%") |
+                Arthakosha.meaning.ilike(f"{search_term}%") |
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"{search_term}%")
+            )
 
         total = query.count()
         rows = query.offset(offset).limit(limit).all()
