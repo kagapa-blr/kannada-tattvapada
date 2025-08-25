@@ -1,11 +1,15 @@
 from flask import Blueprint, request, jsonify
-from app.services.right_section import RightSection
+
+from app.config.database import db_instance
+from app.services.right_section import RightSection, RightSectionBulkService
+from app.utils.auth_decorator import login_required
 
 # Blueprint with url_prefix for API versioning
 right_section_impl_bp = Blueprint("right_section_impl", __name__, url_prefix="/api/v1/right-section")
 
-# Service instance
+
 right_section = RightSection()
+right_section_bulk_service = RightSectionBulkService(db_instance.session)
 # ----------------- Tatvapada Routes ----------------- #
 
 # 1️⃣ List all Tatvapadas (paginated, optional search)
@@ -331,3 +335,62 @@ def delete_arthakosha(samputa, author_id, arthakosha_id):
     if not success:
         return jsonify({"error": "Word not found"}), 404
     return jsonify({"message": "Deleted successfully"})
+
+
+
+
+
+@right_section_impl_bp.route("/upload-tippani", methods=["POST"])
+@login_required
+def bulk_upload_tippani():
+    """Handle CSV bulk upload of Tatvapada Tippani."""
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file part in request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    try:
+        records_added, errors = right_section_bulk_service.upload_tippani_records(file)
+        db_instance.session.commit()
+        return jsonify({
+            "success": True,
+            "message": f"{records_added} Tippani records added",
+            "errors": errors
+        }), 200
+    except Exception as e:
+        db_instance.session.rollback()
+        return jsonify({
+            "success": False,
+            "message": "Failed to insert Tippani CSV records",
+            "error": str(e)
+        }), 500
+
+
+@right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
+@login_required
+def bulk_upload_arthakosha():
+    """Handle CSV bulk upload of Arthakosha entries."""
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file part in request"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    try:
+        records_added, errors = right_section_bulk_service.upload_arthakosha_records(file)
+        db_instance.session.commit()
+        return jsonify({
+            "success": True,
+            "message": f"{records_added} Arthakosha records added",
+            "errors": errors
+        }), 200
+    except Exception as e:
+        db_instance.session.rollback()
+        return jsonify({
+            "success": False,
+            "message": "Failed to insert Arthakosha CSV records",
+            "error": str(e)
+        }), 500

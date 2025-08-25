@@ -1,5 +1,9 @@
+import csv
+import io
+from typing import Tuple, List
+
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
@@ -432,3 +436,94 @@ class RightSection:
         db_instance.session.delete(entry)
         db_instance.session.commit()
         return True
+
+
+
+
+
+
+class RightSectionBulkService:
+    def __init__(self, db_session=None):
+        self.db = db_session or db_instance.session
+
+
+    def upload_tippani_records(self, file_stream) -> Tuple[int, List[str]]:
+        """
+        Reads CSV from file_stream and inserts Tippani records in bulk.
+        Expected columns: tatvapada_id, tippani, tippani_author
+        """
+        records_added = 0
+        errors: List[str] = []
+        try:
+            file_content = file_stream.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(file_content))
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
+            required_cols = {"tatvapada_id", "tippani", "tippani_author"}
+            missing_cols = required_cols - set(reader.fieldnames)
+            if missing_cols:
+                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
+
+            for i, row in enumerate(reader, 1):
+                try:
+                    tippani = TatvapadaTippani(
+                        tatvapada_id=row.get("tatvapada_id"),
+                        tippani=row.get("tippani"),
+                        tippani_author=row.get("tippani_author")
+                    )
+                    self.db.add(tippani)
+                    self.db.flush()
+                    records_added += 1
+                except IntegrityError:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: Duplicate Tippani or invalid tatvapada_id")
+                except Exception as row_err:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
+
+            return records_added, errors
+        except Exception as e:
+            return 0, [f"Unexpected error: {str(e)}"]
+
+    def upload_arthakosha_records(self, file_stream) -> Tuple[int, List[str]]:
+        """
+        Reads CSV from file_stream and inserts Arthakosha records in bulk.
+        Expected columns: pada, artha, example
+        """
+        records_added = 0
+        errors: List[str] = []
+        try:
+            file_content = file_stream.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(file_content))
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
+            required_cols = {"pada", "artha", "example"}
+            missing_cols = required_cols - set(reader.fieldnames)
+            if missing_cols:
+                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
+
+            for i, row in enumerate(reader, 1):
+                try:
+                    arthakosha = Arthakosha(
+                        pada=row.get("pada"),
+                        artha=row.get("artha"),
+                        example=row.get("example")
+                    )
+                    self.db.add(arthakosha)
+                    self.db.flush()
+                    records_added += 1
+                except IntegrityError:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: Duplicate pada '{row.get('pada')}'")
+                except Exception as row_err:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
+
+            return records_added, errors
+        except Exception as e:
+            return 0, [f"Unexpected error: {str(e)}"]
+
