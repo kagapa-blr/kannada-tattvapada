@@ -11,11 +11,18 @@
                 Tatvapada(s).</li>
             <li><strong>Delete all Tatvapadas of an author:</strong> Use the "Delete All" button in the last column of
                 each row.</li>
+            <li><strong>Delete entire samputa:</strong> Enter the samputa number below and click "Delete Samputa".</li>
             <li><strong>Select All:</strong> Use the top-left "Select All" checkbox to quickly select all visible
                 Tatvapadas.</li>
             <li>All delete actions require confirmation via a modal to prevent accidental deletion.</li>
             <li>Success and failure notifications will appear in pop-up modals after each operation.</li>
         </ul>
+    </div>
+
+    <!-- Delete Entire Samputa Input + Button -->
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <input type="text" id="deleteSamputaInput" class="form-control" placeholder="Enter samputa number to delete">
+        <button id="deleteSamputaBtn" class="btn btn-danger">Delete Samputa</button>
     </div>
 
     <!-- Search Bar -->
@@ -48,7 +55,6 @@
     </table>
 </div>
 
-<!-- Modals -->
 <!-- Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 900px;">
@@ -57,12 +63,7 @@
                 <h5 class="modal-title">Confirm Delete</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="
-                    max-height: 400px; 
-                    overflow-y: auto; 
-                    min-width: 500px;
-                    font-size: 1rem;
-                ">
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto; min-width: 500px; font-size: 1rem;">
                 <p id="deleteConfirmMessage" class="mb-0"></p>
             </div>
             <div class="modal-footer">
@@ -72,7 +73,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Success Modal -->
 <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-hidden="true">

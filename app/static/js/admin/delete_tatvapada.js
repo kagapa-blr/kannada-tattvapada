@@ -5,10 +5,12 @@ import { showLoader, hideLoader } from "../loader.js";
 // Track action awaiting user confirmation
 let pendingDeleteAction = null;
 
+// Initialization: Load the delete keys and render UI table
 export async function initDeleteTab() {
     await loadDeleteKeys();
 }
 
+// Load all delete keys and build delete table
 async function loadDeleteKeys() {
     try {
         showLoader();
@@ -18,10 +20,12 @@ async function loadDeleteKeys() {
         if (!tbody) return;
 
         tbody.innerHTML = "";
-        // Flatten delete keys (your backend ensures array shape)
+
+        // Flatten delete keys array depending on backend shape
         const deleteKeys = Array.isArray(data.delete_keys)
             ? data.delete_keys
             : (data.delete_keys?.delete_keys || []);
+
         deleteKeys.forEach(entry => {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -46,7 +50,7 @@ async function loadDeleteKeys() {
             `;
             tbody.appendChild(row);
 
-            // Populate Tatvapada Sankhya checkboxes inside scrollable block
+            // Add sankhya checkboxes inside scrollable div
             const sankhyaContainer = row.querySelector(".sankhya-scrollable");
             entry.tatvapada_sankhyes
                 .sort((a, b) => parseInt(a) - parseInt(b))
@@ -64,7 +68,7 @@ async function loadDeleteKeys() {
                     sankhyaContainer.appendChild(div);
                 });
 
-            // Toggle Sankhya display
+            // Toggle show/hide sankhya list
             row.querySelector(".toggle-sankhya-btn").addEventListener("click", function () {
                 if (sankhyaContainer.style.display === "none") {
                     sankhyaContainer.style.display = "block";
@@ -87,15 +91,16 @@ async function loadDeleteKeys() {
     }
 }
 
+// Attach all event handlers for delete actions and UI controls
 function attachEventHandlers() {
-    // Confirmation modal setup
+    // Bootstrap modal references
     const modal = new bootstrap.Modal(document.getElementById("deleteConfirmModal"));
     const confirmBtn = document.getElementById("confirmDeleteBtn");
     const confirmMessage = document.getElementById("deleteConfirmMessage");
     const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
     const selectAll = document.getElementById("selectAll");
 
-    // -- Confirm Modal: perform deletion action
+    // Perform the pending delete action on confirmation modal confirm button
     confirmBtn.onclick = async () => {
         if (pendingDeleteAction) {
             await pendingDeleteAction();
@@ -104,22 +109,23 @@ function attachEventHandlers() {
         modal.hide();
     };
 
-    // -- "Delete All" button per row/author: delete all Tatvapadas for author in samputa (by samputa+authorid)
+    // Delete all Tatvapadas for one author in a samputa ("Delete All" buttons)
     document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const samputa = btn.dataset.samputa;
             const authorId = btn.dataset.author;
             const authorName = btn.dataset.authorName;
+
             confirmMessage.innerHTML = `
                 <strong>Samputa:</strong> ${samputa} <br>
                 <strong>Author ID:</strong> ${authorId} <br>
                 <strong>Author Name:</strong> ${authorName} <br>
                 <span class="text-danger">This will delete <strong>ALL</strong> Tatvapada(s) for this author.</span>
             `;
+
             pendingDeleteAction = async () => {
                 try {
                     showLoader();
-                    // Note: backend expects authorId, not authorName!
                     const result = await apiClient.delete(
                         apiEndpoints.tatvapada.deleteBySamputaAuthor(samputa, authorId)
                     );
@@ -131,11 +137,12 @@ function attachEventHandlers() {
                     hideLoader();
                 }
             };
+
             modal.show();
         });
     });
 
-    // -- "Select All" master checkbox
+    // Select/Deselect all sankhya checkboxes
     if (selectAll) {
         selectAll.addEventListener("change", () => {
             const checkboxes = document.querySelectorAll(".row-select");
@@ -143,17 +150,17 @@ function attachEventHandlers() {
             bulkDeleteBtn.disabled = !selectAll.checked;
         });
     }
-    // -- Per-row enable/disable bulk delete
+
+    // Enable/disable bulk delete button based on any sankhya checkbox checked
     document.querySelectorAll(".row-select").forEach(cb => {
         cb.addEventListener("change", () => {
             const anyChecked = document.querySelectorAll(".row-select:checked").length > 0;
             bulkDeleteBtn.disabled = !anyChecked;
-            // If any .row-select is unchecked, uncheck "Select All"
             if (!cb.checked && selectAll.checked) selectAll.checked = false;
         });
     });
 
-    // -- Bulk delete selected Tatvapada Sankhyes
+    // Bulk deletion of checked Tatvapadas
     if (bulkDeleteBtn) {
         bulkDeleteBtn.addEventListener("click", () => {
             const selected = Array.from(document.querySelectorAll(".row-select:checked")).map(cb => ({
@@ -164,7 +171,7 @@ function attachEventHandlers() {
             }));
             if (!selected.length) return;
 
-            // Show grouped info for user confirmation
+            // Group selected sankhyas by samputa and author for confirmation display
             const groups = {};
             selected.forEach(item => {
                 const key = `${item.samputa}|${item.authorId}|${item.authorName}`;
@@ -178,6 +185,7 @@ function attachEventHandlers() {
                 }
                 groups[key].sankhyas.push(item.sankhya);
             });
+
             let html = '';
             Object.values(groups).forEach(group => {
                 html += `
@@ -190,12 +198,13 @@ function attachEventHandlers() {
                     <hr>
                 `;
             });
+
             confirmMessage.innerHTML = html;
 
             pendingDeleteAction = async () => {
                 try {
                     showLoader();
-                    // Only send required keys to API (samputa, authorId, sankhya)
+                    // Prepare keys for backend bulk deletion API call
                     const apiItems = selected.map(item => ({
                         samputa: item.samputa,
                         authorId: item.authorId,
@@ -210,23 +219,62 @@ function attachEventHandlers() {
                     hideLoader();
                 }
             };
+
+            modal.show();
+        });
+    }
+
+    // --- New: Delete entire samputa by input ---
+
+    const deleteSamputaBtn = document.getElementById("deleteSamputaBtn");
+    const deleteSamputaInput = document.getElementById("deleteSamputaInput");
+
+    if (deleteSamputaBtn && deleteSamputaInput) {
+        deleteSamputaBtn.addEventListener("click", () => {
+            const samputaNumber = deleteSamputaInput.value.trim();
+            if (!samputaNumber) {
+                alert("Please enter a samputa number to delete.");
+                return;
+            }
+
+            confirmMessage.innerHTML = `
+                <strong>Samputa Number:</strong> ${samputaNumber} <br>
+                <span class="text-danger">This will delete <strong>ALL</strong> Tatvapada entries under this samputa. This action is irreversible.</span>
+            `;
+
+            pendingDeleteAction = async () => {
+                try {
+                    showLoader();
+                    const result = await apiClient.delete(apiEndpoints.tatvapada.deleteBySamputa(samputaNumber));
+                    showSuccess(result.message || "Samputa deleted successfully");
+                    await loadDeleteKeys();
+                } catch (err) {
+                    showFailure((err && err.message) || "Delete failed");
+                } finally {
+                    hideLoader();
+                }
+            };
+
             modal.show();
         });
     }
 }
 
-// Modal handlers for status feedback
+// Show success notification modal
 function showSuccess(msg) {
+    const modal = new bootstrap.Modal(document.getElementById("deleteSuccessModal"));
     document.getElementById("deleteSuccessMessage").textContent = msg;
-    new bootstrap.Modal(document.getElementById("deleteSuccessModal")).show();
+    modal.show();
 }
 
+// Show failure notification modal
 function showFailure(msg) {
+    const modal = new bootstrap.Modal(document.getElementById("deleteFailureModal"));
     document.getElementById("deleteFailureMessage").textContent = msg;
-    new bootstrap.Modal(document.getElementById("deleteFailureModal")).show();
+    modal.show();
 }
 
-// Table search filter
+// Attach live search filter to delete table
 function attachDeleteTableSearch() {
     const searchInput = document.getElementById("deleteTatvapadaSearch");
     if (!searchInput) return;

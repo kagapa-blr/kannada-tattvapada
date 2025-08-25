@@ -358,7 +358,7 @@ BULK_UPLOAD_COLUMNS = [
 ]
 
 
-class BulkUploadService:
+class BulkService:
     def __init__(self, db_session=None):
         self.db = db_session or db_instance.session
 
