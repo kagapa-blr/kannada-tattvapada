@@ -446,22 +446,21 @@ class RightSectionBulkService:
     def __init__(self, db_session=None):
         self.db = db_session or db_instance.session
 
-
     def upload_tippani_records(self, file_stream) -> Tuple[int, List[str]]:
         """
         Reads CSV from file_stream and inserts Tippani records in bulk.
-        Expected columns: tatvapada_id, tippani, tippani_author
+        Expected columns: tatvapada_author_id, samputa_sankhye, tippani_title, tippani_content
         """
         records_added = 0
         errors: List[str] = []
         try:
-            file_content = file_stream.read().decode('utf-8-sig')
+            file_content = file_stream.read().decode("utf-8-sig")
             reader = csv.DictReader(io.StringIO(file_content))
 
             if not reader.fieldnames:
                 return 0, ["CSV file has no header row."]
 
-            required_cols = {"tatvapada_id", "tippani", "tippani_author"}
+            required_cols = {"tatvapada_author_id", "samputa_sankhye", "tippani_title", "tippani_content"}
             missing_cols = required_cols - set(reader.fieldnames)
             if missing_cols:
                 return 0, [f"Missing columns: {', '.join(missing_cols)}"]
@@ -469,16 +468,17 @@ class RightSectionBulkService:
             for i, row in enumerate(reader, 1):
                 try:
                     tippani = TatvapadaTippani(
-                        tatvapada_id=row.get("tatvapada_id"),
-                        tippani=row.get("tippani"),
-                        tippani_author=row.get("tippani_author")
+                        tatvapada_author_id=row.get("tatvapada_author_id"),
+                        samputa_sankhye=row.get("samputa_sankhye"),
+                        tippani_title=row.get("tippani_title"),
+                        tippani_content=row.get("tippani_content"),
                     )
                     self.db.add(tippani)
                     self.db.flush()
                     records_added += 1
                 except IntegrityError:
                     self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate Tippani or invalid tatvapada_id")
+                    errors.append(f"Row {i}: Duplicate entry or invalid tatvapada_author_id")
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
@@ -490,18 +490,18 @@ class RightSectionBulkService:
     def upload_arthakosha_records(self, file_stream) -> Tuple[int, List[str]]:
         """
         Reads CSV from file_stream and inserts Arthakosha records in bulk.
-        Expected columns: pada, artha, example
+        Expected columns: samputa, author_id, title, word, meaning, notes
         """
         records_added = 0
         errors: List[str] = []
         try:
-            file_content = file_stream.read().decode('utf-8-sig')
+            file_content = file_stream.read().decode("utf-8-sig")
             reader = csv.DictReader(io.StringIO(file_content))
 
             if not reader.fieldnames:
                 return 0, ["CSV file has no header row."]
 
-            required_cols = {"pada", "artha", "example"}
+            required_cols = {"samputa", "author_id", "title", "word", "meaning", "notes"}
             missing_cols = required_cols - set(reader.fieldnames)
             if missing_cols:
                 return 0, [f"Missing columns: {', '.join(missing_cols)}"]
@@ -509,16 +509,19 @@ class RightSectionBulkService:
             for i, row in enumerate(reader, 1):
                 try:
                     arthakosha = Arthakosha(
-                        pada=row.get("pada"),
-                        artha=row.get("artha"),
-                        example=row.get("example")
+                        samputa=row.get("samputa"),
+                        author_id=row.get("author_id"),
+                        title=row.get("title"),
+                        word=row.get("word"),
+                        meaning=row.get("meaning"),
+                        notes=row.get("notes"),
                     )
                     self.db.add(arthakosha)
                     self.db.flush()
                     records_added += 1
                 except IntegrityError:
                     self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate pada '{row.get('pada')}'")
+                    errors.append(f"Row {i}: Duplicate entry for word '{row.get('word')}'")
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
@@ -526,4 +529,3 @@ class RightSectionBulkService:
             return records_added, errors
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
-

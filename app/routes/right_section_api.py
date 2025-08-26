@@ -343,12 +343,16 @@ def delete_arthakosha(samputa, author_id, arthakosha_id):
 @right_section_impl_bp.route("/upload-tippani", methods=["POST"])
 @login_required
 def bulk_upload_tippani():
-    """Handle CSV bulk upload of Tatvapada Tippani."""
-    if 'file' not in request.files:
+    """
+    Handle CSV bulk upload of Tatvapada Tippani.
+    Expected CSV columns:
+    tatvapada_author_id, samputa_sankhye, tippani_title, tippani_content
+    """
+    if "file" not in request.files:
         return jsonify({"success": False, "message": "No file part in request"}), 400
 
-    file = request.files['file']
-    if file.filename == '':
+    file = request.files["file"]
+    if file.filename == "":
         return jsonify({"success": False, "message": "No file selected"}), 400
 
     try:
@@ -356,7 +360,7 @@ def bulk_upload_tippani():
         db_instance.session.commit()
         return jsonify({
             "success": True,
-            "message": f"{records_added} Tippani records added",
+            "message": f"{records_added} Tippani record(s) added successfully",
             "errors": errors
         }), 200
     except Exception as e:
@@ -371,12 +375,16 @@ def bulk_upload_tippani():
 @right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
 @login_required
 def bulk_upload_arthakosha():
-    """Handle CSV bulk upload of Arthakosha entries."""
-    if 'file' not in request.files:
+    """
+    Handle CSV bulk upload of Arthakosha entries.
+    Expected CSV columns:
+    samputa, author_id, title, word, meaning, notes
+    """
+    if "file" not in request.files:
         return jsonify({"success": False, "message": "No file part in request"}), 400
 
-    file = request.files['file']
-    if file.filename == '':
+    file = request.files["file"]
+    if file.filename == "":
         return jsonify({"success": False, "message": "No file selected"}), 400
 
     try:
@@ -384,7 +392,7 @@ def bulk_upload_arthakosha():
         db_instance.session.commit()
         return jsonify({
             "success": True,
-            "message": f"{records_added} Arthakosha records added",
+            "message": f"{records_added} Arthakosha record(s) added successfully",
             "errors": errors
         }), 200
     except Exception as e:
