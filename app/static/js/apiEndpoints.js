@@ -61,6 +61,7 @@ const apiEndpoints = {
 
     rightSection: {
         tippaniApi: `${BASE_URL}/api/v1/right-section/tippani`,
+        tippaniApiUpload: `${BASE_URL}/api/v1/right-section/upload-tippani`,
         arthakoshaApi: `${BASE_URL}/api/v1/right-section/arthakosha`,
         tatvapadaSuchi: `${BASE_URL}/api/v1/right-section/tatvapadasuchi`,
         getTatvapada: (samputa, authorId, sankhye) =>

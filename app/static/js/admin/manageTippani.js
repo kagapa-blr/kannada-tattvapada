@@ -146,6 +146,121 @@ export async function initTippaniManageTab() {
         showInfo(resp.success ? "Created successfully!" : "Failed to create.");
     });
 
+
+    function downloadTippaniTemplateCSV() {
+        if (!samputaAuthors.length) {
+            showInfo("No samputa-author data loaded yet. Please reload the page.");
+            return;
+        }
+
+        let csvRows = [];
+        // Headers
+        csvRows.push([
+            "tatvapada_author_id",
+            "tatvapadakarara_hesaru",
+            "samputa_sankhye",
+            "tippani_title",
+            "tippani_content"
+        ].join(","));
+
+        // Prefill rows
+        samputaAuthors.forEach(item => {
+            item.authors.forEach(author => {
+                csvRows.push([
+                    `"${author.id}"`,
+                    `"${author.name}"`,   // Kannada name preserved in UTF-8
+                    `"${item.samputa}"`,
+                    "", // empty title
+                    ""  // empty content
+                ].join(","));
+            });
+        });
+
+        const csvContent = "\uFEFF" + csvRows.join("\n"); // Add UTF-8 BOM
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "tippani_template.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+
+
+    // ----------------- CSV Upload ----------------- //
+    async function uploadTippaniCSV(file) {
+        const successEl = document.getElementById("upload_success");
+        const errorEl = document.getElementById("upload_error");
+        const warningsEl = document.getElementById("upload_warnings");
+
+        // Reset messages
+        successEl.style.display = "none";
+        errorEl.style.display = "none";
+        warningsEl.style.display = "none";
+        warningsEl.innerHTML = "";
+
+        if (!file) {
+            errorEl.textContent = "Please select a CSV file first.";
+            errorEl.style.display = "block";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file); // must match Flask backend key: request.files["file"]
+
+        try {
+            showLoader();
+
+            // IMPORTANT: tell apiClient this is FormData so it won’t JSON.stringify
+            const resp = await apiClient.request({
+                method: "POST",
+                endpoint: apiEndpoints.rightSection.tippaniApiUpload,
+                body: formData,
+                headers: {} // let browser set multipart boundary automatically
+            });
+
+            if (resp.success) {
+                successEl.textContent = resp.message;
+                successEl.style.display = "block";
+
+                if (resp.errors && resp.errors.length) {
+                    warningsEl.innerHTML = resp.errors.map(e => `<li>${e}</li>`).join("");
+                    warningsEl.style.display = "block";
+                }
+            } else {
+                errorEl.textContent = `Upload failed: ${resp.message || "Unknown error"}`;
+                errorEl.style.display = "block";
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            errorEl.textContent = "Something went wrong while uploading.";
+            errorEl.style.display = "block";
+        } finally {
+            hideLoader();
+        }
+    }
+
+
+
+
+
     // ------------ Init ------------ //
     await loadSamputaAuthors();
+    const downloadBtn = document.getElementById("download_template_btn");
+    if (downloadBtn) {
+        downloadBtn.addEventListener("click", downloadTippaniTemplateCSV);
+    }
+
+    // Bind upload form submit
+    document.getElementById("upload_tippani_form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = document.getElementById("tippani_csv").files[0];
+        await uploadTippaniCSV(file);
+    });
+
 }
+

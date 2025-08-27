@@ -1,20 +1,17 @@
 // static/js/apiClient.js
 
-//export const BASE_URL = "https://kagapa.com/kannada-tattvapada/";
 export const BASE_URL = "http://127.0.0.1:5000";
+// export const BASE_URL = "https://kagapa.com/kannada-tattvapada";
 
 const defaultHeaders = {
     "Content-Type": "application/json"
 };
 
-// Ensure endpoint is always relative (remove accidental leading slashes or full URLs)
 const normalizeEndpoint = (endpoint) => {
     try {
-        // Strip full URL if mistakenly passed
         const url = new URL(endpoint);
         return url.pathname + url.search;
     } catch {
-        // Not a full URL — ensure no leading slash to avoid double slashes in final URL
         return endpoint.replace(/^\/+/, '');
     }
 };
@@ -35,13 +32,21 @@ const buildUrlWithParams = (endpoint, params = {}) => {
 const apiClient = {
     request: async ({ method, endpoint, body = null, params = {}, headers = {} }) => {
         const url = buildUrlWithParams(endpoint, params);
+
         const options = {
             method: method.toUpperCase(),
             headers: { ...defaultHeaders, ...headers }
         };
 
+        // 🔑 Handle FormData (file upload)
         if (body && method.toUpperCase() !== "GET") {
-            options.body = JSON.stringify(body);
+            if (body instanceof FormData) {
+                options.body = body;
+                // Let browser set proper Content-Type with boundary
+                delete options.headers["Content-Type"];
+            } else {
+                options.body = JSON.stringify(body);
+            }
         }
 
         const response = await fetch(url, options);
