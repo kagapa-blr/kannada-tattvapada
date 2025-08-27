@@ -61,23 +61,23 @@ logger.info(
     "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"
 )
 
-# -------------------- Step 8: Auto-Apply Migrations -------------------- #
+# -------------------- Step 8: Fully Automatic Migrations -------------------- #
 def auto_upgrade():
-    """Automatically create migrations folder and apply pending migrations."""
+    """Automatically generate migration scripts and apply pending migrations."""
     migrations_path = os.path.join(app_root, "migrations")
 
-    # If migrations folder doesn't exist, initialize it
+    # 1️ Initialize migrations folder if missing
     if not os.path.exists(migrations_path):
         logger.info("Migrations folder not found. Initializing...")
         migrate_init(directory=migrations_path)
         logger.info("Migrations folder created.")
 
-        # Create initial migration automatically
-        logger.info("Creating initial migration...")
-        flask_migrate(directory=migrations_path, message="Initial migration")
-        logger.info("Initial migration created.")
+    # 2️ Autogenerate a migration script for any changes
+    logger.info("Autogenerating migration script for model changes...")
+    flask_migrate(directory=migrations_path, message="Auto migration")
+    logger.info("Migration script generated.")
 
-    # Apply migrations
+    # 3️ Apply all migrations
     logger.info("Applying pending database migrations...")
     upgrade(directory=migrations_path)
     logger.info("Database migrations applied successfully.")
