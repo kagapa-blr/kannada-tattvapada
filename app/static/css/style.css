@@ -1,3 +1,6 @@
+/* -----------------------------------
+   FONT SETUP
+----------------------------------- */
 @font-face {
   font-family: "NudiParijatha";
   src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
@@ -6,106 +9,168 @@
   font-display: swap;
 }
 
+/* -----------------------------------
+   BASE STYLES
+----------------------------------- */
 body {
   font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
   background: #f7f8fd;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
   font-size: 20px;
   color: #2c2c2c;
 }
 
-/* MAIN LAYOUT */
+/* -----------------------------------
+   MAIN LAYOUT
+----------------------------------- */
 .main-layout {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 3fr 1fr;
   gap: 28px;
   padding: 30px 20px;
 }
 
-.dropdown-section {
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+@media (max-width: 992px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
-.button-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* -----------------------------------
+   DROPDOWNS
+----------------------------------- */
+.dropdown-wrapper {
+  border-radius: 12px;
+  background: #fff;
 }
 
-/* FIELD BOX */
+.dropdown-choice {
+  min-width: 100%;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.choices {
+  font-size: 20px;
+}
+
+.choices__list--dropdown {
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* -----------------------------------
+   FIELD BOXES
+----------------------------------- */
 .field-box {
   position: relative;
   background: #fff;
-  border: 1.6px solid #4b49ac;
-  border-radius: 12px;
-  padding: 22px 18px;
-  box-shadow: 0 3px 8px rgba(75, 73, 172, 0.1);
-  transition: border-color 0.25s, box-shadow 0.25s;
+  border: 1.4px solid #e2e2f2;
+  border-radius: 10px;
+  padding: 18px 16px;
+  box-shadow: 0 2px 5px rgba(75, 73, 172, 0.08);
+  transition: 0.25s;
 }
 
 .field-box label {
   position: absolute;
   top: -12px;
   left: 16px;
-  background: #fff;
-  padding: 0 8px;
+  background: #f7f8fd;
+  padding: 0 6px;
   font-weight: 600;
-  font-size: 1rem;
-  color: #4b49ac;
-}
-
-.field-box:hover {
-  border-color: #6c5ce7;
-  box-shadow: 0 5px 14px rgba(75, 73, 172, 0.18);
+  font-size: 0.9rem;
+  color: #44417a;
 }
 
 .field-box div {
   font-size: 1.05rem;
   line-height: 1.6;
-  color: #333;
   margin-top: 6px;
 }
 
-/* SPECIAL LONG-TEXT BOXES */
+/* -----------------------------------
+   LONG-TEXT BOXES (ಭಾವಾನುವಾದ / ಟಿಪ್ಪಣಿ / ಗ್ಲೋಸ್)
+----------------------------------- */
 .bhavanuvada-box div,
 .tippani-box div,
 .gloss-box div {
-  font-size: 1.2rem;
-  line-height: 1.85;
+  font-size: 1.15rem;
+  line-height: 1.8;
   text-align: justify;
   white-space: pre-wrap;
   color: #2b2b6f;
 }
 
-/* POEM DISPLAY */
-.tatvapada-box {
-  border: 2px solid #4b49ac;
-  border-radius: 14px;
-  padding: 24px 20px;
+.bhavanuvada-box div {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
+/* -----------------------------------
+   POEM DISPLAY AREA
+----------------------------------- */
 #poem-display-area {
-  font-size: 1.25rem;
-  line-height: 1.9;
-  text-align: center;
-  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
-  border-radius: 10px;
-  background: #fafaff;
-  transition: min-height 0.3s ease-in-out;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fafaff 60%, #f1f1ff);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+  min-height: 120px;
+  max-height: 420px;
 }
 
+#tatvapada_sheershike {
+  margin: 0;
+  padding-bottom: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  border-bottom: 2px solid #e0d8c5;
+  color: #4b3f2f;
+}
+
+.poem-content {
+  flex: 1;
+  /* takes available height */
+  overflow-y: auto;
+  /* only content scrolls */
+  font-size: 1.25rem;
+  line-height: 1.85;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Author - Bottom Right */
+.poem-author {
+  margin-top: 12px;
+  text-align: right;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #5a4b3c;
+}
+
+/* Poem scrollbar */
+.poem-content::-webkit-scrollbar,
+.bhavanuvada-box div::-webkit-scrollbar {
+  width: 6px;
+}
+
+.poem-content::-webkit-scrollbar-thumb,
+.bhavanuvada-box div::-webkit-scrollbar-thumb {
+  background: #b3b3cc;
+  border-radius: 6px;
+}
+
+/* EMPTY POEM PLACEHOLDER */
 #poem-display-area.no-content {
-  min-height: 90px;
   background: #fdfdfd;
   border: 1.5px dashed #bbb;
   color: #777;
+  min-height: 90px;
 }
 
 #poem-display-area .poem-placeholder {
@@ -120,28 +185,55 @@ body {
   margin-bottom: 6px;
 }
 
-/* BUTTONS */
+/* -----------------------------------
+   RIGHT NAV PANEL
+----------------------------------- */
+.button-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 12px;
+  background: #fff;
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+  /* stays visible */
+}
+
+.button-section h6 {
+  border-bottom: 1px solid #ececec;
+  padding-bottom: 6px;
+}
+
+/* Nav Buttons */
 .nav-button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 14px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
   font-size: 1rem;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1.5px solid #d5d5f0;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.25s;
+  color: #2c2c2c;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .nav-button:hover {
-  background: #ececff;
+  background: #f3f3ff;
+  border-color: #6c5ce7;
   color: #4b49ac;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button.primary {
   background: linear-gradient(45deg, #6c5ce7, #4b49ac);
+  border: none;
   color: #fff;
   font-weight: 600;
 }
@@ -150,53 +242,34 @@ body {
   background: linear-gradient(45deg, #5a4dcf, #3e3ca0);
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .main-layout {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .button-section {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .nav-button {
-    flex: 1 1 48%;
-  }
-}
-
-
-
-
-
-/* Choices.js integrated dropdowns */
-.choices__inner {
+/* -----------------------------------
+   SEARCH MODAL
+----------------------------------- */
+.sticky-result-count {
+  position: sticky;
+  top: 0;
   background: #fff;
-  border: 1.5px solid #4b49ac !important;
-  border-radius: 8px !important;
-  min-height: 48px;
-  font-size: 20px !important;
-  line-height: 1.6;
-  padding: 10px 12px !important;
-  box-shadow: 0 1px 4px rgba(75, 73, 172, 0.1);
-  transition: border-color 0.3s, box-shadow 0.3s;
+  z-index: 1050;
+  padding: 6px 8px;
+  border-bottom: 1px solid #dee2e6;
+  font-weight: 700;
+  text-align: center;
 }
 
-.choices__inner:focus-within {
-  border-color: #6c5ce7 !important;
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+.results-box {
+  overflow-y: auto;
+  flex-grow: 1;
+  margin-top: 6px;
 }
 
-/* Search box inside dropdown */
-.choices__input {
-  font-size: 22px !important;
-  padding: 10px 12px !important;
-  line-height: 1.6;
+.results-box p.highlight {
+  background-color: #fffa9e;
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
-/* Dropdown list */
+
+* Dropdown list */
 .choices__list--dropdown {
   z-index: 9999 !important;
   background-color: #fff;

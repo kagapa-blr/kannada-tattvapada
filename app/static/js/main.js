@@ -157,21 +157,30 @@ function resetDropdown(id, placeholder, disable = false) {
     initChoices(id, placeholder, disable);
 }
 
-// --------- Render Tatvapada ---------
 function renderTatvapada(data) {
-    const display = document.getElementById('poem-display-area');
-    const formattedPoem = (data.tatvapada || "")
-        .split('\n')
-        .map(line => `<p>${line.trim()}</p>`)
-        .join("");
+    // Title
+    document.getElementById("tatvapada_sheershike").textContent =
+        data.tatvapada_sheershike || "📝 ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
 
-    display.innerHTML = `
-        <div class="poem-display enhanced">
-            <h3 class="poem-title">${data.tatvapada_sheershike}</h3>
-            <div class="poem-content">${formattedPoem}</div>
-            <div class="poem-author">- ${data.tatvapadakarara_hesaru}</div>
-        </div>
-    `;
+    // Poem content
+    if (data.tatvapada) {
+        const formattedPoem = data.tatvapada
+            .split('\n')
+            .map(line => `<p>${line.trim()}</p>`)
+            .join("");
+        document.getElementById("tatvapada_content").innerHTML = formattedPoem;
+    } else {
+        document.getElementById("tatvapada_content").innerHTML =
+            `<p>📜 ತತ್ತ್ವಪದ ಪಂಕ್ತಿಗಳು ಇಲ್ಲಿ ತೋರುತ್ತವೆ</p>
+             <p>⬆ ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</p>`;
+    }
+
+    // Author
+    document.getElementById("tatvapada_author").textContent =
+        data.tatvapadakarara_hesaru
+            ? `✍️ ${data.tatvapadakarara_hesaru}`
+            : "✍️ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
+
 
     displayOtherFields(data);
 }

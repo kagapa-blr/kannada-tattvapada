@@ -9,22 +9,22 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
   <!-- Choices.js CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/choices/choices.min.css') }}">
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/search_by_keyword.css') }}">
 
-  <!-- Bootstrap & Scripts -->
+  <!-- Scripts -->
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="{{ url_for('static', filename='cdn/choices/choices.min.js') }}"></script>
+
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
 </head>
 
 <body>
-
   {% include 'navbar.html' %}
 
   <!-- MAIN CONTENT -->
@@ -35,20 +35,21 @@
       <div class="dropdown-section">
 
         <!-- Dropdowns -->
-        <div class="dropdown-wrapper container my-4">
+        <div class="dropdown-wrapper my-4 p-3 card shadow-sm">
+          <h6 class="fw-bold text-primary mb-3">🔽 ತತ್ವಪದ ಆಯ್ಕೆ</h6>
           <div class="row g-3 align-items-center">
             <div class="col-md-4">
-              <select id="samputa" class="form-select dropdown" aria-label="Select Samputa">
+              <select id="samputa" class="form-select dropdown-choice">
                 <option value="">ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ</option>
               </select>
             </div>
             <div class="col-md-4">
-              <select id="tatvapadakarara_hesaru" class="form-select dropdown" disabled>
+              <select id="tatvapadakarara_hesaru" class="form-select dropdown-choice" disabled>
                 <option value="">ತತ್ವಪದಕಾರರ ಹೆಸರು</option>
               </select>
             </div>
             <div class="col-md-4">
-              <select id="tatvapada_sankhye" class="form-select dropdown" disabled>
+              <select id="tatvapada_sankhye" class="form-select dropdown-choice" disabled>
                 <option value="">ತತ್ವಪದ ಸಂಖ್ಯೆ</option>
               </select>
             </div>
@@ -112,12 +113,14 @@
             <div class="col-md-12">
               <div class="field-box tatvapada-box">
                 <label>ತತ್ತ್ವಪದ</label>
-                <div class="poem-display-area no-content" id="poem-display-area">
-                  <div class="poem-placeholder">
-                    <div class="placeholder-icon">📜</div>
-                    <h5>ತತ್ವಪದ ಪ್ರದರ್ಶನ ಪ್ರದೇಶ</h5>
-                    <p>ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ</p>
+                <div id="poem-display-area" class="poem-display enhanced">
+                  <h3 class="poem-title" id="tatvapada_sheershike">📝 ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ</h3>
+                  <!-- scrollable area -->
+                  <div class="poem-content" id="tatvapada_content">
+                    <p>📜 ತತ್ತ್ವಪದ ಪಂಕ್ತಿಗಳು ಇಲ್ಲಿ ತೋರುತ್ತವೆ</p>
+                    <p>⬆ ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</p>
                   </div>
+                  <div class="poem-author" id="tatvapada_author">✍️ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಇಲ್ಲಿ ತೋರುತ್ತದೆ</div>
                 </div>
               </div>
             </div>
@@ -127,8 +130,9 @@
 
       </div>
 
-      <!-- RIGHT BUTTONS -->
-      <div class="button-section">
+      <!-- RIGHT SECTION -->
+      <div class="button-section card shadow-sm p-3">
+        <h6 class="fw-bold text-primary mb-3">📂 ವೇಗದ ನ್ಯಾವಿಗೇಶನ್</h6>
         <button class="nav-button primary" id="searchBtn">🔍 ಶೋಧನೆ</button>
         <button class="nav-button" id="right_section_tatvapadasuchi">📋 ತತ್ವಪದ ಸೂಚಿ</button>
         <button class="nav-button" id="right_section_arthakosha">📖 ಅರ್ಥಕೋಶ</button>
@@ -141,44 +145,26 @@
   </div>
 
   <!-- Search Modal -->
-  <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
       <div class="modal-content" style="height: 90vh;">
         <div class="modal-header py-2 px-3">
-          <h5 class="modal-title" id="searchModalLabel">ತತ್ತ್ವಪದ ಶೋಧನೆ</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">ತತ್ತ್ವಪದ ಶೋಧನೆ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body d-flex flex-column p-2" style="height: calc(100% - 56px);">
-          <!-- Sticky total count -->
-          <div id="resultCount" style="
-              position: sticky;
-              top: 0;
-              background: white;
-              z-index: 1050;
-              padding: 6px 8px;
-              border-bottom: 1px solid #dee2e6;
-              font-weight: 700;
-              font-size: 1.1rem;
-              text-align: center;">
-            <p class="mb-0 text-primary" style="font-size: 1rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          <div id="resultCount" class="sticky-result-count">
+            <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
           </div>
-
-          <!-- Search input and button inline -->
           <div class="d-flex align-items-center my-2 gap-2">
-            <label for="searchKeyword" class="form-label fw-bold mb-0"
-              style="font-size: 0.9rem; flex-shrink: 0; white-space: nowrap;">ಶೋಧಿಸಿ ಪದ:</label>
-            <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ"
-              style="flex-grow: 1; min-width: 0;">
-            <button type="button" class="btn btn-primary btn-sm" id="btnSearch"
-              style="white-space: nowrap;">ಶೋಧಿಸಿ</button>
+            <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ:</label>
+            <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
+            <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
           </div>
-
-          <!-- Scrollable results container -->
-          <div id="searchResults" style="overflow-y: auto; flex-grow: 1; margin-top: 6px;">
-            <p class="text-muted" style="font-size: 0.9rem;">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          <div id="searchResults" class="results-box">
+            <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
           </div>
         </div>
-
         <div class="modal-footer py-2 px-3">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
         </div>
@@ -186,10 +172,8 @@
     </div>
   </div>
 
-
-
   {% include 'customLoader.html' %}
   {% include 'footer.html' %}
-
 </body>
+
 </html>
