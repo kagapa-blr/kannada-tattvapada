@@ -1,4 +1,3 @@
-/* ============ GLOBAL STYLES ============ */
 @font-face {
   font-family: "NudiParijatha";
   src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
@@ -9,7 +8,7 @@
 
 body {
   font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
-  background-color: #f7f8fd;
+  background: #f7f8fd;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -17,83 +16,14 @@ body {
   color: #2c2c2c;
 }
 
-.container {
-  max-width: 100%;
-  padding: 0;
-}
-
-
-/* ============ HEADER ============ */
-.header-bar {
-  width: 100%;
-  background: linear-gradient(90deg, #4b49ac, #6c5ce7);
-  color: #fff;
-  padding: 22px 0;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-}
-
-.header-bar h1 {
-  font-size: 2.2rem;
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.header-bar p {
-  font-size: 1.05rem;
-  margin: 6px 0 0;
-  opacity: 0.9;
-}
-
-
-/* ============ NAVIGATION BAR ============ */
-.top-navabar-bar {
-  width: 100%;
-  background-color: #1a1a1a;
-  padding: 12px 0;
-  border-bottom: 2px solid #4b49ac;
-}
-
-.top-navabar-bar .nav-inner {
-  display: flex;
-  gap: 28px;
-  padding-left: 28px;
-  align-items: center;
-}
-
-.top-navabar-bar .nav-btn {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 1.05rem;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s, color 0.3s, transform 0.15s;
-}
-
-.top-navabar-bar .nav-btn:hover,
-.top-navabar-bar .nav-btn.active {
-  background-color: #fff;
-  color: #000;
-  transform: translateY(-2px);
-}
-
-
-/* ============ MAIN LAYOUT ============ */
+/* MAIN LAYOUT */
 .main-layout {
   display: flex;
   flex-wrap: wrap;
   gap: 28px;
   padding: 30px 20px;
-  position: relative;
-  z-index: 0;
 }
 
-
-/* ============ LEFT SECTION (Dropdowns & Poem) ============ */
 .dropdown-section {
   flex: 3;
   display: flex;
@@ -101,15 +31,144 @@ body {
   gap: 24px;
 }
 
-.dropdown-container {
+.button-section {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 24px;
-  position: relative;
-  z-index: 10;
+  flex-direction: column;
+  gap: 14px;
 }
+
+/* FIELD BOX */
+.field-box {
+  position: relative;
+  background: #fff;
+  border: 1.6px solid #4b49ac;
+  border-radius: 12px;
+  padding: 22px 18px;
+  box-shadow: 0 3px 8px rgba(75, 73, 172, 0.1);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.field-box label {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: #fff;
+  padding: 0 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #4b49ac;
+}
+
+.field-box:hover {
+  border-color: #6c5ce7;
+  box-shadow: 0 5px 14px rgba(75, 73, 172, 0.18);
+}
+
+.field-box div {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #333;
+  margin-top: 6px;
+}
+
+/* SPECIAL LONG-TEXT BOXES */
+.bhavanuvada-box div,
+.tippani-box div,
+.gloss-box div {
+  font-size: 1.2rem;
+  line-height: 1.85;
+  text-align: justify;
+  white-space: pre-wrap;
+  color: #2b2b6f;
+}
+
+/* POEM DISPLAY */
+.tatvapada-box {
+  border: 2px solid #4b49ac;
+  border-radius: 14px;
+  padding: 24px 20px;
+}
+
+#poem-display-area {
+  font-size: 1.25rem;
+  line-height: 1.9;
+  text-align: center;
+  margin-top: 8px;
+  padding: 20px;
+  border-radius: 10px;
+  background: #fafaff;
+  transition: min-height 0.3s ease-in-out;
+}
+
+#poem-display-area.no-content {
+  min-height: 90px;
+  background: #fdfdfd;
+  border: 1.5px dashed #bbb;
+  color: #777;
+}
+
+#poem-display-area .poem-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#poem-display-area .placeholder-icon {
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+/* BUTTONS */
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 14px;
+  font-size: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.25s;
+}
+
+.nav-button:hover {
+  background: #ececff;
+  color: #4b49ac;
+}
+
+.nav-button.primary {
+  background: linear-gradient(45deg, #6c5ce7, #4b49ac);
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-button.primary:hover {
+  background: linear-gradient(45deg, #5a4dcf, #3e3ca0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .button-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .nav-button {
+    flex: 1 1 48%;
+  }
+}
+
+
+
 
 
 /* Choices.js integrated dropdowns */
@@ -164,178 +223,4 @@ body {
   color: #888 !important;
   font-style: italic;
   font-size: 20px !important;
-}
-
-
-/* ============ POEM DISPLAY AREA ============ */
-.poem-display-area {
-  width: 94%;
-  max-width: 750px;
-  margin: 0 auto 40px;
-  background-color: #fff;
-  border: 1px solid #e1e4e8;
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  font-size: 1.25rem;
-  color: #333;
-  overflow: hidden;
-}
-
-.poem-display {
-  max-height: 480px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
-.poem-title {
-  position: sticky;
-  top: 0;
-  background: #f5f6ff;
-  padding: 14px 30px;
-  font-weight: bold;
-  font-size: 1.5rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-  z-index: 2;
-  color: #2b2b6f;
-}
-
-.poem-content {
-  padding: 26px 32px;
-  line-height: 1.7;
-}
-
-.poem-content p {
-  margin: 0 0 12px;
-}
-
-.poem-author {
-  position: sticky;
-  bottom: 0;
-  background: #fdfdfd;
-  padding: 12px 30px;
-  font-style: italic;
-  text-align: right;
-  color: #444;
-  border-top: 1px solid #ddd;
-}
-
-
-/* ============ RIGHT SECTION (Buttons) ============ */
-.button-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.nav-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px;
-  font-size: 1.05rem;
-  background-color: #f5f5fa;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.25s ease-in-out;
-}
-
-.nav-button:hover {
-  background: #ececff;
-  color: #4b49ac;
-  border-color: #4b49ac;
-}
-
-.nav-button.primary {
-  background: linear-gradient(45deg, #6c5ce7, #4b49ac);
-  color: #fff;
-  font-weight: 600;
-}
-
-.nav-button.primary:hover {
-  background: linear-gradient(45deg, #5a4dcf, #3e3ca0);
-}
-
-
-/* ============ SCROLLBAR STYLING ============ */
-.poem-display-area::-webkit-scrollbar {
-  width: 12px;
-}
-
-.poem-display-area::-webkit-scrollbar-track {
-  background: #f0f0f5;
-  border-radius: 8px;
-}
-
-.poem-display-area::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 6px;
-  border: 2px solid #f0f0f5;
-}
-
-.poem-display-area::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5a67d8, #6148a3);
-}
-
-
-/* ============ FIELD BOX (Other Fields) ============ */
-.field-box {
-  position: relative;
-  background-color: #fff;
-  border: 1.8px solid #4b49ac;
-  border-radius: 12px;
-  padding: 24px 22px 18px;
-  box-shadow: 0 3px 10px rgba(75, 73, 172, 0.15);
-  margin-bottom: 22px;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.35s, border-color 0.35s;
-}
-
-.field-box:hover {
-  box-shadow: 0 8px 22px rgba(75, 73, 172, 0.25);
-  border-color: #6c5ce7;
-}
-
-.field-box label {
-  position: absolute;
-  top: -14px;
-  left: 18px;
-  background-color: #fff;
-  padding: 0 10px;
-  font-weight: 700;
-  font-size: 1rem;
-  color: #4b49ac;
-  white-space: nowrap;
-}
-
-
-/* ============ RESPONSIVE ============ */
-@media (max-width: 768px) {
-  .main-layout {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .dropdown-container {
-    flex-direction: column;
-  }
-
-  .button-section {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .nav-button {
-    flex: 1 1 48%;
-    font-size: 1rem;
-  }
-
-  .poem-display-area {
-    width: 100%;
-  }
 }
