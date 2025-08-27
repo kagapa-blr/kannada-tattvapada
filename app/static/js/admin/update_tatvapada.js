@@ -117,7 +117,7 @@ function populateTatvapadaSankhyes(authorId) {
     filtered.forEach(item => {
         const option = document.createElement("option");
         option.value = item.tatvapada_sankhye;
-        option.textContent = `ತತ್ತ್ವಪದ ${item.tatvapada_sankhye}`;
+        option.textContent = `ತತ್ವಪದ ${item.tatvapada_sankhye}`;
         sankhyeDropdown.appendChild(option);
     });
 }
@@ -198,7 +198,7 @@ function showSuccessModal(callback, message) {
 
 function handleErrorModal(error) {
     const msgEl = document.getElementById("update_tatvapada_errorMessage");
-    if (msgEl) msgEl.textContent = error?.message || "ತತ್ತ್ವಪದವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.";
+    if (msgEl) msgEl.textContent = error?.message || "ತತ್ವಪದವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.";
     new bootstrap.Modal(document.getElementById("update_tatvapada_errorModal")).show();
 }
 

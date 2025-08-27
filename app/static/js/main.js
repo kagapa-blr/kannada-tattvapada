@@ -160,7 +160,7 @@ function resetDropdown(id, placeholder, disable = false) {
 function renderTatvapada(data) {
     // Title
     document.getElementById("tatvapada_sheershike").textContent =
-        data.tatvapada_sheershike || "📝 ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
+        data.tatvapada_sheershike || "📝 ತತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
 
     // Poem content
     if (data.tatvapada) {
@@ -171,15 +171,15 @@ function renderTatvapada(data) {
         document.getElementById("tatvapada_content").innerHTML = formattedPoem;
     } else {
         document.getElementById("tatvapada_content").innerHTML =
-            `<p>📜 ತತ್ತ್ವಪದ ಪಂಕ್ತಿಗಳು ಇಲ್ಲಿ ತೋರುತ್ತವೆ</p>
-             <p>⬆ ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</p>`;
+            `<p>📜 ತತ್ವಪದ ಪಂಕ್ತಿಗಳು ಇಲ್ಲಿ ತೋರುತ್ತವೆ</p>
+             <p>⬆ ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</p>`;
     }
 
     // Author
     document.getElementById("tatvapada_author").textContent =
         data.tatvapadakarara_hesaru
             ? `✍️ ${data.tatvapadakarara_hesaru}`
-            : "✍️ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
+            : "✍️ ತತ್ವಪದಕಾರರ ಹೆಸರು ಇಲ್ಲಿ ತೋರುತ್ತದೆ";
 
 
     displayOtherFields(data);

@@ -1,6 +1,6 @@
-/* -----------------------------------
+/* =======================================================
    FONT SETUP
------------------------------------ */
+======================================================= */
 @font-face {
   font-family: "NudiParijatha";
   src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
@@ -9,9 +9,9 @@
   font-display: swap;
 }
 
-/* -----------------------------------
+/* =======================================================
    BASE STYLES
------------------------------------ */
+======================================================= */
 body {
   font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
   background: #f7f8fd;
@@ -21,82 +21,147 @@ body {
   color: #2c2c2c;
 }
 
-/* -----------------------------------
+.container {
+  max-width: 98% !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =======================================================
    MAIN LAYOUT
------------------------------------ */
+======================================================= */
 .main-layout {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 4fr 1.2fr;
   gap: 28px;
-  padding: 30px 20px;
+  padding: 30px 40px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 @media (max-width: 992px) {
   .main-layout {
     grid-template-columns: 1fr;
+    padding: 20px;
   }
 }
 
-/* -----------------------------------
+/* =======================================================
    DROPDOWNS
------------------------------------ */
+======================================================= */
 .dropdown-wrapper {
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 }
 
-.dropdown-choice {
-  min-width: 100%;
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
+.dropdown-choice,
 .choices {
-  font-size: 20px;
-}
-
-.choices__list--dropdown {
+  font-size: 1.15rem;
   border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
-/* -----------------------------------
+.choices__placeholder {
+  color: #888 !important;
+  font-style: italic;
+  font-size: 1.2rem !important;
+}
+
+/* Dropdown list */
+.choices__list--dropdown {
+  z-index: 9999 !important;
+  background-color: #fff;
+  border: 1.6px solid #dcdcf2;
+  border-radius: 10px;
+  margin-top: 4px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  padding: 6px 0;
+  font-size: 1.2rem;
+}
+
+.choices__list--dropdown .choices__item {
+  font-size: 1.35rem;
+  padding: 10px 16px;
+  color: #2c2c2c;
+  cursor: pointer;
+  transition: background-color 0.2s, padding-left 0.2s;
+}
+
+.choices__list--dropdown .choices__item.is-highlighted,
+.choices__list--dropdown .choices__item--selectable:hover {
+  background-color: #f0f4ff;
+  color: #7882df;
+  font-weight: 600;
+  padding-left: 20px;
+}
+
+/* Bootstrap form-select override */
+.dropdown-section .form-select {
+  font-size: 1.1rem;
+  padding: 10px 14px;
+  min-width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .dropdown-section .row .col-md-4 {
+    flex: 0 0 40%;
+    max-width: 40%;
+  }
+
+  .dropdown-section .row .col-md-4:nth-child(3) {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+}
+
+/* =======================================================
    FIELD BOXES
------------------------------------ */
+======================================================= */
 .field-box {
   position: relative;
   background: #fff;
   border: 1.4px solid #e2e2f2;
   border-radius: 10px;
-  padding: 18px 16px;
+  padding: 24px 16px 16px 16px;
   box-shadow: 0 2px 5px rgba(75, 73, 172, 0.08);
   transition: 0.25s;
 }
 
-.field-box label {
+.field-box .field-label {
   position: absolute;
-  top: -12px;
+  top: 0;
   left: 16px;
-  background: #f7f8fd;
-  padding: 0 6px;
+  transform: translateY(-50%);
+  background: #ffffff;
+  padding: 2px 10px;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: #44417a;
+  font-size: 0.95rem;
+  color: #000000;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.field-box:hover,
+.field-box:focus-within {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
 }
 
 .field-box div {
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  line-height: 1.8;
   margin-top: 6px;
 }
 
-/* -----------------------------------
-   LONG-TEXT BOXES (ಭಾವಾನುವಾದ / ಟಿಪ್ಪಣಿ / ಗ್ಲೋಸ್)
------------------------------------ */
+/* =======================================================
+   LONG TEXT BOXES (ಭಾವಾನುವಾದ / ಟಿಪ್ಪಣಿ / ಗ್ಲೋಸ್)
+======================================================= */
 .bhavanuvada-box div,
 .tippani-box div,
 .gloss-box div {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   line-height: 1.8;
   text-align: justify;
   white-space: pre-wrap;
@@ -109,9 +174,9 @@ body {
   padding-right: 6px;
 }
 
-/* -----------------------------------
+/* =======================================================
    POEM DISPLAY AREA
------------------------------------ */
+======================================================= */
 #poem-display-area {
   display: flex;
   flex-direction: column;
@@ -126,7 +191,7 @@ body {
 #tatvapada_sheershike {
   margin: 0;
   padding-bottom: 12px;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   text-align: center;
   border-bottom: 2px solid #e0d8c5;
@@ -135,25 +200,22 @@ body {
 
 .poem-content {
   flex: 1;
-  /* takes available height */
   overflow-y: auto;
-  /* only content scrolls */
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1.85;
   text-align: center;
   padding: 10px;
 }
 
-/* Author - Bottom Right */
 .poem-author {
   margin-top: 12px;
   text-align: right;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-style: italic;
   color: #5a4b3c;
 }
 
-/* Poem scrollbar */
+/* Scrollbars */
 .poem-content::-webkit-scrollbar,
 .bhavanuvada-box div::-webkit-scrollbar {
   width: 6px;
@@ -165,7 +227,7 @@ body {
   border-radius: 6px;
 }
 
-/* EMPTY POEM PLACEHOLDER */
+/* Placeholder */
 #poem-display-area.no-content {
   background: #fdfdfd;
   border: 1.5px dashed #bbb;
@@ -185,9 +247,9 @@ body {
   margin-bottom: 6px;
 }
 
-/* -----------------------------------
-   RIGHT NAV PANEL
------------------------------------ */
+/* =======================================================
+   RIGHT NAVIGATION PANEL
+======================================================= */
 .button-section {
   display: flex;
   flex-direction: column;
@@ -197,7 +259,6 @@ body {
   position: sticky;
   top: 20px;
   height: fit-content;
-  /* stays visible */
 }
 
 .button-section h6 {
@@ -205,20 +266,19 @@ body {
   padding-bottom: 6px;
 }
 
-/* Nav Buttons */
 .nav-button {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 12px 16px;
-  font-size: 1rem;
-  background: #ffffff;
+  padding: 14px 18px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: #fff;
   border: 1.5px solid #d5d5f0;
   border-radius: 10px;
-  cursor: pointer;
-  font-weight: 500;
   color: #2c2c2c;
+  cursor: pointer;
   transition: all 0.25s ease-in-out;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
@@ -242,9 +302,9 @@ body {
   background: linear-gradient(45deg, #5a4dcf, #3e3ca0);
 }
 
-/* -----------------------------------
+/* =======================================================
    SEARCH MODAL
------------------------------------ */
+======================================================= */
 .sticky-result-count {
   position: sticky;
   top: 0;
@@ -269,31 +329,109 @@ body {
 }
 
 
-* Dropdown list */
-.choices__list--dropdown {
-  z-index: 9999 !important;
-  background-color: #fff;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  padding: 6px 0;
+
+
+/* =======================================================
+   CUSTOMIZED CHOICES.JS
+======================================================= */
+
+/* Focus state for input */
+.choices.is-focused {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
 }
 
+/* Main dropdown container */
+.choices {
+  font-size: 1.2rem;
+  min-height: auto;
+  /* remove extra height */
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Inner input box */
+.choices__inner {
+  background: #fff;
+  border: 1.5px solid #d1d1e9;
+  border-radius: 8px;
+  min-height: 32px;
+  /* reduced input height */
+  padding: 2px 12px;
+  /* less vertical padding */
+  font-size: 1.2rem;
+  /* input font size */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  /* vertically center selected item */
+}
+
+/* Single select - selected item */
+.choices__list--single .choices__item {
+  font-size: 1.25rem !important;
+  /* increase font size */
+  font-weight: 500;
+  color: #222;
+  padding: 4px 8px;
+  /* smaller height */
+  line-height: 1.2;
+}
+
+/* Multi-select tags */
+.choices__list--multiple .choices__item {
+  background-color: #6c5ce7;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 4px 6px 0 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.choices__list--multiple .choices__item .choices__button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  margin-left: 6px;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.choices__list--multiple .choices__item .choices__button:hover {
+  opacity: 1;
+}
+
+/* Dropdown container */
+.choices__list--dropdown {
+  font-size: 1.2rem;
+  padding: 4px 0;
+  border-radius: 8px;
+  border: 1.5px solid #d1d1e9;
+  background-color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  z-index: 9999 !important;
+}
+
+/* Each dropdown option */
 .choices__list--dropdown .choices__item {
-  font-size: 22px !important;
-  padding: 12px 14px;
-  color: #333;
+  font-size: 1.45rem;
+  /* larger option font */
+  padding: 10px 16px;
+  color: #222;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
+/* Highlighted / hovered option */
+.choices__list--dropdown .choices__item.is-highlighted,
 .choices__list--dropdown .choices__item--selectable:hover {
-  background-color: #f0f0f7;
-  cursor: pointer;
-}
-
-/* Placeholder style */
-.choices__placeholder {
-  color: #888 !important;
-  font-style: italic;
-  font-size: 20px !important;
+  background-color: #f0f4ff;
+  font-weight: 600;
 }

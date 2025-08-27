@@ -38,8 +38,8 @@ function initializeModeSwitching() {
             inputsContainer.style.display = "";
             cascadingSection.style.display = "none";
             resetDropdown(document.getElementById("add_tatvapada_samputa"), "ತತ್ವಪದಕೋಶ ಸಂಪುಟ ಆಯ್ಕೆಮಾಡಿ", true);
-            resetDropdown(document.getElementById("add_tatvapada_tatvapadakarara_hesaru"), "ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು", true);
-            resetDropdown(document.getElementById("add_tatvapada_tatvapada_sankhye"), "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", true);
+            resetDropdown(document.getElementById("add_tatvapada_tatvapadakarara_hesaru"), "ತತ್ವಪದಕಾರರ ಹೆಸರು", true);
+            resetDropdown(document.getElementById("add_tatvapada_tatvapada_sankhye"), "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
             removeInlineNewAuthorInput();
             removeInlineNewSankhyeInput();
         } else {
@@ -64,8 +64,8 @@ function initializeDropdownHandlers() {
         if (samputa) {
             fetchAuthorsAndSankhyas(samputa);
         } else {
-            resetDropdown(authorDropdown, "ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು", true);
-            resetDropdown(sankhyeDropdown, "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", true);
+            resetDropdown(authorDropdown, "ತತ್ವಪದಕಾರರ ಹೆಸರು", true);
+            resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
             removeInlineNewAuthorInput();
             removeInlineNewSankhyeInput();
         }
@@ -76,7 +76,7 @@ function initializeDropdownHandlers() {
         if (authorId === "__add_new__") {
             showInlineNewAuthorInput();
             sankhyeDropdown.disabled = false;
-            resetDropdown(sankhyeDropdown, "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", false);
+            resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", false);
             appendAddNewSankhyeOption();
         } else {
             removeInlineNewAuthorInput();
@@ -84,7 +84,7 @@ function initializeDropdownHandlers() {
                 populateTatvapadaSankhyes(authorId);
                 sankhyeDropdown.disabled = false;
             } else {
-                resetDropdown(sankhyeDropdown, "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", true);
+                resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
                 removeInlineNewSankhyeInput();
             }
         }
@@ -160,8 +160,8 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
             const authorDropdown = document.getElementById("add_tatvapada_tatvapadakarara_hesaru");
             const sankhyeDropdown = document.getElementById("add_tatvapada_tatvapada_sankhye");
 
-            resetDropdown(authorDropdown, "ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು", false);
-            resetDropdown(sankhyeDropdown, "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", true);
+            resetDropdown(authorDropdown, "ತತ್ವಪದಕಾರರ ಹೆಸರು", false);
+            resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", true);
             removeInlineNewAuthorInput();
             removeInlineNewSankhyeInput();
 
@@ -178,7 +178,7 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
 
             const addNew = document.createElement("option");
             addNew.value = "__add_new__";
-            addNew.textContent = "Add new ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು";
+            addNew.textContent = "Add new ತತ್ವಪದಕಾರರ ಹೆಸರು";
             authorDropdown.appendChild(addNew);
         })
         .catch((error) => {
@@ -193,7 +193,7 @@ function fetchAuthorsAndSankhyas(samputaSankhye) {
 // --------------------- Populate Sankhyes --------------------- //
 function populateTatvapadaSankhyes(authorId) {
     const sankhyeDropdown = document.getElementById("add_tatvapada_tatvapada_sankhye");
-    resetDropdown(sankhyeDropdown, "ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ", false);
+    resetDropdown(sankhyeDropdown, "ತತ್ವಪದ ಸಂಖ್ಯೆ", false);
     removeInlineNewSankhyeInput();
 
     const filtered = currentTatvapadaData.filter(
@@ -203,7 +203,7 @@ function populateTatvapadaSankhyes(authorId) {
     filtered.forEach((item) => {
         const option = document.createElement("option");
         option.value = item.tatvapada_sankhye;
-        option.textContent = `ತತ್ತ್ವಪದ ${item.tatvapada_sankhye}`;
+        option.textContent = `ತತ್ವಪದ ${item.tatvapada_sankhye}`;
         sankhyeDropdown.appendChild(option);
     });
 
@@ -249,7 +249,7 @@ function showInlineNewAuthorInput() {
     const input = document.createElement("input");
     input.type = "text";
     input.id = "add_tatvapada_inline_new_author";
-    input.placeholder = "ಹೊಸ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು";
+    input.placeholder = "ಹೊಸ ತತ್ವಪದಕಾರರ ಹೆಸರು";
     input.className = "form-control";
     container.appendChild(input);
 }
@@ -264,7 +264,7 @@ function appendAddNewSankhyeOption() {
     if ([...sankhyeDropdown.options].some(o => o.value === "__add_new_sankhye__")) return;
     const addNew = document.createElement("option");
     addNew.value = "__add_new_sankhye__";
-    addNew.textContent = "Add new ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ";
+    addNew.textContent = "Add new ತತ್ವಪದ ಸಂಖ್ಯೆ";
     sankhyeDropdown.appendChild(addNew);
 }
 
@@ -276,7 +276,7 @@ function showInlineNewSankhyeInput() {
     const input = document.createElement("input");
     input.type = "number";
     input.id = "add_tatvapada_inline_new_sankhye";
-    input.placeholder = "ಹೊಸ ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ";
+    input.placeholder = "ಹೊಸ ತತ್ವಪದ ಸಂಖ್ಯೆ";
     input.className = "form-control";
     container.appendChild(input);
 }
@@ -305,7 +305,7 @@ function initializeFormSubmitHandler() {
 
             if (!authorName) {
                 hideLoader();
-                alert("ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಅಗತ್ಯವಿದೆ");
+                alert("ತತ್ವಪದಕಾರರ ಹೆಸರು ಅಗತ್ಯವಿದೆ");
                 return;
             }
 
@@ -347,7 +347,7 @@ function initializeFormSubmitHandler() {
                 const inlineAuthorInput = document.getElementById("add_tatvapada_inline_new_author");
                 if (!inlineAuthorInput || !inlineAuthorInput.value.trim()) {
                     hideLoader();
-                    alert("ಹೊಸ ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ನೀಡಿರಿ");
+                    alert("ಹೊಸ ತತ್ವಪದಕಾರರ ಹೆಸರು ನೀಡಿರಿ");
                     return;
                 }
                 jsonData.tatvapadakarara_hesaru = inlineAuthorInput.value.trim();
@@ -355,7 +355,7 @@ function initializeFormSubmitHandler() {
                 jsonData.tatvapada_author_id = authorId;
             } else {
                 hideLoader();
-                alert("ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು ಆಯ್ಕೆ ಅಗತ್ಯವಿದೆ");
+                alert("ತತ್ವಪದಕಾರರ ಹೆಸರು ಆಯ್ಕೆ ಅಗತ್ಯವಿದೆ");
                 return;
             }
 
@@ -363,7 +363,7 @@ function initializeFormSubmitHandler() {
                 const inlineSankhyeInput = document.getElementById("add_tatvapada_inline_new_sankhye");
                 if (!inlineSankhyeInput || !inlineSankhyeInput.value.trim()) {
                     hideLoader();
-                    alert("ಹೊಸ ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ ನೀಡಿ");
+                    alert("ಹೊಸ ತತ್ವಪದ ಸಂಖ್ಯೆ ನೀಡಿ");
                     return;
                 }
                 jsonData.tatvapada_sankhye = inlineSankhyeInput.value.trim();
@@ -371,7 +371,7 @@ function initializeFormSubmitHandler() {
                 jsonData.tatvapada_sankhye = sankhyeValue;
             } else {
                 hideLoader();
-                alert("ತತ್ತ್ವಪದ ಸಂಖ್ಯೆ ಆಯ್ಕೆ ಮಾಡಬೇಕು");
+                alert("ತತ್ವಪದ ಸಂಖ್ಯೆ ಆಯ್ಕೆ ಮಾಡಬೇಕು");
                 return;
             }
 
@@ -419,7 +419,7 @@ function showSuccessModal(callback, message = "ಯಶಸ್ವಿಯಾಗಿದ
 
 function handleErrorModal(error) {
     const messageEl = document.getElementById("add_tatvapada_errorMessage");
-    const defaultText = "ತತ್ತ್ವಪದವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಾದಿಲ್ಲ.";
+    const defaultText = "ತತ್ವಪದವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಾದಿಲ್ಲ.";
     if (messageEl) {
         messageEl.textContent = error?.message || defaultText;
     }

@@ -57,15 +57,15 @@ async function handleSearchClick() {
       return;
     }
 
-    countDiv.innerHTML = `ಒಟ್ಟು ತತ್ತ್ವಪದ ಸಂಕೇತಗಳು ಸಿಕ್ಕಿವೆ: ${data.length}`;
+    countDiv.innerHTML = `ಒಟ್ಟು ತತ್ವಪದ ಸಂಕೇತಗಳು ಸಿಕ್ಕಿವೆ: ${data.length}`;
 
     resultsDiv.innerHTML = data.map(item => `
       <div class="card mb-3 shadow-sm border-0 rounded">
         <div class="card-body">
           <div class="row g-2">
-            <div class="col-md-4"><span class="fw-bold">ತತ್ತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapada_sheershike)}</div>
-            <div class="col-md-4"><span class="fw-bold">ತತ್ತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapadakosha_sheershike)}</div>
-            <div class="col-md-4"><span class="fw-bold">ತತ್ತ್ವಪದಕಾರರ ಹೆಸರು :</span><br>${escapeHtml(item.tatvapadakarara_hesaru)}</div>
+            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapada_sheershike)}</div>
+            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapadakosha_sheershike)}</div>
+            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span><br>${escapeHtml(item.tatvapadakarara_hesaru)}</div>
           </div>
           <div class="row g-2 mt-2">
             <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span><br>${escapeHtml(item.samputa_sankhye?.toString())}</div>
@@ -74,7 +74,7 @@ async function handleSearchClick() {
           </div>
           <hr>
           <div>
-            <span class="fw-bold">ತತ್ತ್ವಪದ :</span>
+            <span class="fw-bold">ತತ್ವಪದ :</span>
             <div style="white-space: pre-wrap; margin-top: 4px;">
               ${highlightKeyword(item.tatvapada?.trimStart(), keyword)}
             </div>
