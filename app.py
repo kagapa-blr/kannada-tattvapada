@@ -1,8 +1,7 @@
 import os
-
 from dotenv import load_dotenv
 from flask import Flask
-
+from flask_migrate import Migrate, init as migrate_init, migrate as flask_migrate, upgrade
 from app.config.database import db_instance, init_db
 from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
@@ -27,8 +26,6 @@ app_root = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(app_root, "app", "templates")
 static_path = os.path.join(app_root, "app", "static")
 
-
-
 logger.info(f"App root path: {app_root}")
 logger.info(f"Template folder path: {template_path}")
 logger.info(f"Static folder path: {static_path}")
@@ -45,6 +42,10 @@ logger.debug(f"SECRET_KEY loaded from environment: {app.config['SECRET_KEY']}")
 init_db(app)
 logger.info("Database initialized and SQLAlchemy bound to app.")
 
+# -------------------- Step 6b: Flask-Migrate Setup -------------------- #
+migrate = Migrate(app, db_instance)
+logger.info("Flask-Migrate initialized.")
+
 # -------------------- Step 7: Blueprint Registration -------------------- #
 app.register_blueprint(home_bp)
 app.register_blueprint(tatvapada_bp)
@@ -56,22 +57,43 @@ app.register_blueprint(errors_bp)
 app.register_blueprint(right_section_bp)
 app.register_blueprint(right_section_impl_bp)
 
-logger.info("Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp")
+logger.info(
+    "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"
+)
 
-# -------------------- Step 8: Entry Point -------------------- #
+# -------------------- Step 8: Auto-Apply Migrations -------------------- #
+def auto_upgrade():
+    """Automatically create migrations folder and apply pending migrations."""
+    migrations_path = os.path.join(app_root, "migrations")
+
+    # If migrations folder doesn't exist, initialize it
+    if not os.path.exists(migrations_path):
+        logger.info("Migrations folder not found. Initializing...")
+        migrate_init(directory=migrations_path)
+        logger.info("Migrations folder created.")
+
+        # Create initial migration automatically
+        logger.info("Creating initial migration...")
+        flask_migrate(directory=migrations_path, message="Initial migration")
+        logger.info("Initial migration created.")
+
+    # Apply migrations
+    logger.info("Applying pending database migrations...")
+    upgrade(directory=migrations_path)
+    logger.info("Database migrations applied successfully.")
+
+# -------------------- Step 9: Entry Point -------------------- #
 if __name__ == "__main__":
     logger.info("Launching Tatvapada Flask app...")
 
     with app.app_context():
-        logger.debug("Creating tables if not present...")
-        db_instance.create_all()
-        logger.info("Database tables created or already exist.")
+        auto_upgrade()
 
-        # Print the created table names
+        # Print the current tables
         inspector = db_instance.inspect(db_instance.engine)
         tables = inspector.get_table_names()
         logger.info(f"Tables in the database: {tables}")
-        print("Created tables:", tables)
+        print("Created/updated tables:", tables)
 
-    logger.info(f"Flask app is up and running")
+    logger.info("Flask app is up and running")
     app.run(host="0.0.0.0", port=5000, debug=False)
