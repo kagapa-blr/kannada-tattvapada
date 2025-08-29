@@ -9,8 +9,8 @@ from app.routes.delete_tatvapada import delete_bp
 from app.routes.document_routes import documents_bp
 from app.routes.error_handling import errors_bp
 from app.routes.home import home_bp
-from app.routes.right_section_ui import right_section_bp
 from app.routes.right_section_api import right_section_impl_bp
+from app.routes.right_section_ui import right_section_bp
 from app.routes.tatvapada import tatvapada_bp
 from app.utils.logger import setup_logger
 
@@ -18,8 +18,8 @@ from app.utils.logger import setup_logger
 load_dotenv()
 
 # -------------------- Step 2: Logger Setup -------------------- #
-logger = setup_logger("tatvapada", "extractor.log")
-logger.info("Logger initialized.")
+logger = setup_logger("main", "main.log")
+logger.info("Logger initialized.\n")
 
 # -------------------- Step 3: Determine App Root & Template/Static Paths -------------------- #
 app_root = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,7 @@ logger.info(f"Static folder path: {static_path}")
 
 # -------------------- Step 4: App Initialization -------------------- #
 app = Flask(__name__, static_folder=static_path, template_folder=template_path)
-logger.info("Flask app instance created.")
+logger.info("Flask app instance created.\n")
 
 # -------------------- Step 5: Configuration -------------------- #
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "super-secret-key")
@@ -68,7 +68,7 @@ def auto_upgrade():
 
     # 1️ Initialize migrations folder if missing
     if not os.path.exists(migrations_path):
-        logger.info("Migrations folder not found. Initializing...")
+        logger.info("Migrations folder not found. Initializing...\n")
         migrate_init(directory=migrations_path)
         logger.info("Migrations folder created.")
 
@@ -84,7 +84,7 @@ def auto_upgrade():
 
 # -------------------- Step 9: Entry Point -------------------- #
 if __name__ == "__main__":
-    logger.info("Launching Tatvapada Flask app...")
+    logger.info("Launching Tatvapada Flask app...\n")
 
     with app.app_context():
         auto_upgrade()
@@ -93,7 +93,13 @@ if __name__ == "__main__":
         inspector = db_instance.inspect(db_instance.engine)
         tables = inspector.get_table_names()
         logger.info(f"Tables in the database: {tables}")
-        print("Created/updated tables:", tables)
+        if tables:
+            tables_list = "\n".join([f"  {i + 1}. {table}" for i, table in enumerate(tables)])
+            print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")
+            logger.info(f"Tables in the database:\n{tables_list}\n")
+        else:
+            print("\n\nNo tables found in the database.\n\n")
+            logger.info("No tables found in the database.\n")
 
-    logger.info("Flask app is up and running")
+    logger.info("Flask app is up and running\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
