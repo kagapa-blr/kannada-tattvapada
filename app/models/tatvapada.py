@@ -44,26 +44,6 @@ class Tatvapada(db_instance.Model):
     klishta_padagalu_artha = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
     tippani = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
 
-class TatvapadaTippani(db_instance.Model):
-    __tablename__ = "tatvapada_tippani"
-
-    tippani_id = Column(Integer, primary_key=True, autoincrement=True)
-    tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
-    samputa_sankhye = Column(String(255), nullable=False)
-
-    # Tippani title (not globally unique)
-    tippani_title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
-
-    # Large content field
-    tippani_content = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
-
-    author = relationship(TatvapadaAuthorInfo, backref="tippanigalu")
-
-    __table_args__ = (
-        UniqueConstraint('tatvapada_author_id', 'tippani_title', name='uq_author_title'),
-    )
-
-
 class ParibhashikaPadavivarana(db_instance.Model):
     __tablename__ = "paribhashika_padavivarana"
 

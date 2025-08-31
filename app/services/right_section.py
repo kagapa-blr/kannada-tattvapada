@@ -1,13 +1,13 @@
 import csv
 import io
-from typing import Tuple, List, Dict
+from typing import Tuple, List
 
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada, TatvapadaTippani, Arthakosha, ParibhashikaPadavivarana
+from app.models.tatvapada import Tatvapada, Arthakosha, ParibhashikaPadavivarana
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
 
@@ -105,78 +105,6 @@ class RightSection:
             # Propagate exception for route handling
             raise e
 
-    #---------------------TIPPANI------------------------------
-    def get_all_tippanis(self, offset=0, limit=10, search=""):
-        """
-        Fetch paginated Tippanis with samputa, author id, author name, tippani_id.
-        Optional search by Tippani title OR Author name (starts with search string).
-        """
-        query = (
-            db_instance.session.query(
-                TatvapadaTippani.tippani_id,
-                TatvapadaTippani.samputa_sankhye,
-                TatvapadaTippani.tatvapada_author_id,
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru,
-                TatvapadaTippani.tippani_title
-            )
-            .join(TatvapadaAuthorInfo, TatvapadaTippani.tatvapada_author_id == TatvapadaAuthorInfo.id)
-        )
-
-        if search:
-            search_str = f"{search.strip()}%"  # match only from start
-            query = query.filter(
-                TatvapadaTippani.tippani_title.ilike(search_str) |
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_str)
-            )
-
-        total = query.count()  # total matching rows
-
-        # Apply pagination
-        rows = query.order_by(TatvapadaTippani.tippani_id).offset(offset).limit(limit).all()
-
-        results = [
-            {
-                "tippani_id": row.tippani_id,
-                "samputa_sankhye": row.samputa_sankhye,
-                "tatvapada_author_id": row.tatvapada_author_id,
-                "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
-                "tippani_title": row.tippani_title
-            }
-            for row in rows
-        ]
-
-        return {
-            "total": total,
-            "offset": offset,
-            "limit": limit,
-            "results": results
-        }
-
-    @staticmethod
-    def get_tippanis_by_samputa_author(samputa: str, author_id: int):
-        """
-        Fetch all Tippani IDs for a given samputa and author_id.
-        Returns:
-        [
-            {"tippani_id": 1},
-            {"tippani_id": 2},
-            ...
-        ]
-        """
-        if not samputa or not author_id:
-            return []
-
-        query = (
-            db_instance.session.query(TatvapadaTippani.tippani_id)
-            .filter(
-                TatvapadaTippani.samputa_sankhye == samputa,
-                TatvapadaTippani.tatvapada_author_id == author_id,
-            )
-            .order_by(TatvapadaTippani.tippani_id.asc())
-            .all()
-        )
-
-        return [{"tippani_id": row.tippani_id} for row in query]
 
     @staticmethod
     def get_samputa_with_authors():
@@ -214,111 +142,6 @@ class RightSection:
             })
 
         return samputa_list
-
-    @staticmethod
-    def get_tippani(samputa: str, author_id: int, tippani_id: int):
-        """
-        Fetch a specific Tippani entry by Samputa, Author ID, and Tippani ID.
-        Returns dict with full details or None.
-        """
-        tippani = (
-            db_instance.session.query(TatvapadaTippani)
-            .filter_by(
-                samputa_sankhye=samputa,
-                tatvapada_author_id=author_id,
-                tippani_id=tippani_id
-            )
-            .first()
-        )
-        if tippani:
-            return {
-                "id": tippani.tippani_id,
-                "samputa": tippani.samputa_sankhye,
-                "author_id": tippani.tatvapada_author_id,
-                "title": tippani.tippani_title,
-                "content": tippani.tippani_content,
-            }
-        return None
-
-
-    @staticmethod
-    def create_tippani(samputa: str, author_id: int, content: str, title: str = None):
-        """
-        Create a new Tippani entry with given Samputa, Author, Title, and Content.
-        Ensures proper types and not null values.
-        """
-        if not samputa or not author_id or not content:
-            raise ValueError("samputa, author_id and content are required")
-
-        try:
-            author_id = int(author_id)  # Ensure it's int
-        except ValueError:
-            raise ValueError("author_id must be an integer")
-
-        new_tippani = TatvapadaTippani(
-            samputa_sankhye=str(samputa).strip(),
-            tatvapada_author_id=author_id,
-            tippani_title=str(title).strip() if title else None,
-            tippani_content=str(content).strip()
-        )
-
-        db_instance.session.add(new_tippani)
-        db_instance.session.commit()
-
-        return {
-            "id": new_tippani.tippani_id,
-            "samputa": new_tippani.samputa_sankhye,
-            "author_id": new_tippani.tatvapada_author_id,
-            "title": new_tippani.tippani_title,
-            "content": new_tippani.tippani_content
-        }
-
-
-    @staticmethod
-    def update_tippani(samputa: str, author_id: int, tippani_id: int, content: str, title: str = None):
-        """
-        Update existing Tippani by Samputa, Author, and Tippani ID.
-        """
-        tippani = (
-            db_instance.session.query(TatvapadaTippani)
-            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id, tippani_id=tippani_id)
-            .first()
-        )
-        if not tippani:
-            return None
-
-        if content:
-            tippani.tippani_content = str(content).strip()
-        if title is not None:
-            tippani.tippani_title = str(title).strip()
-
-        db_instance.session.commit()
-
-        return {
-            "id": tippani.tippani_id,
-            "samputa": tippani.samputa_sankhye,
-            "author_id": tippani.tatvapada_author_id,
-            "title": tippani.tippani_title,
-            "content": tippani.tippani_content
-        }
-
-
-    @staticmethod
-    def delete_tippani(samputa: str, author_id: int, tippani_id: int):
-        """
-        Delete Tippani by Samputa, Author, and Tippani ID.
-        """
-        tippani = (
-            db_instance.session.query(TatvapadaTippani)
-            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id, tippani_id=tippani_id)
-            .first()
-        )
-        if not tippani:
-            return False
-        db_instance.session.delete(tippani)
-        db_instance.session.commit()
-        return True
-
 
 
     # --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
@@ -679,46 +502,6 @@ class RightSectionBulkService:
     def __init__(self, db_session=None):
         self.db = db_session or db_instance.session
 
-    def upload_tippani_records(self, file_stream) -> Tuple[int, List[str]]:
-        """
-        Reads CSV from file_stream and inserts Tippani records in bulk.
-        Expected columns: tatvapada_author_id, samputa_sankhye, tippani_title, tippani_content
-        """
-        records_added = 0
-        errors: List[str] = []
-        try:
-            file_content = file_stream.read().decode("utf-8-sig")
-            reader = csv.DictReader(io.StringIO(file_content))
-
-            if not reader.fieldnames:
-                return 0, ["CSV file has no header row."]
-
-            required_cols = {"tatvapada_author_id", "samputa_sankhye", "tippani_title", "tippani_content"}
-            missing_cols = required_cols - set(reader.fieldnames)
-            if missing_cols:
-                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
-
-            for i, row in enumerate(reader, 1):
-                try:
-                    tippani = TatvapadaTippani(
-                        tatvapada_author_id=row.get("tatvapada_author_id"),
-                        samputa_sankhye=row.get("samputa_sankhye"),
-                        tippani_title=row.get("tippani_title"),
-                        tippani_content=row.get("tippani_content"),
-                    )
-                    self.db.add(tippani)
-                    self.db.flush()
-                    records_added += 1
-                except IntegrityError:
-                    self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate entry or invalid tatvapada_author_id")
-                except Exception as row_err:
-                    self.db.rollback()
-                    errors.append(f"Row {i}: {str(row_err)}")
-
-            return records_added, errors
-        except Exception as e:
-            return 0, [f"Unexpected error: {str(e)}"]
 
     def upload_paribhashika_padavivarana_records(self, file_stream) -> Tuple[int, List[str]]:
         """

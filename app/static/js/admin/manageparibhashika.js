@@ -264,7 +264,7 @@ export async function initParibhashikaPadavivaranaManageTab() {
     });
 
 
-// Add New Tatvapada
+    // Add New Tatvapada
     // Cascading dropdowns
     addSamputa.addEventListener("change", () => {
         addForm.style.display = "none";
@@ -314,11 +314,14 @@ export async function initParibhashikaPadavivaranaManageTab() {
                     manageAuthor.dispatchEvent(new Event("change"));
                 }
             } else {
+                // Only show the backend error message
                 showInfo(resp?.error || "Failed to create.");
             }
         } catch (err) {
-            console.error(err);
-            showInfo("Error while creating.");
+            // Try to extract backend error message
+            const backendError = err?.response?.data?.error;
+            showInfo(backendError || "Error while creating. " + err);
+            //console.error(err); // optional: keep for debugging
         } finally {
             hideLoader();
         }

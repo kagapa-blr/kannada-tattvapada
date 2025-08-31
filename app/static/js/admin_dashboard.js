@@ -10,7 +10,7 @@ import { initDeleteTab } from "./admin/delete_tatvapada.js";
 import { showLoader, hideLoader } from "./loader.js";
 import { initDocumentsTab } from './admin/documents.js'
 import apiClient, { BASE_URL } from "./apiClient.js";
-import { initTippaniManageTab } from './admin/manageTippani.js'
+
 import { initParibhashikaPadavivaranaManageTab } from './admin/manageparibhashika.js'
 import { initArthakoshaManageTab } from './admin/manageArthakosha.js'
 document.addEventListener("DOMContentLoaded", () => {
@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "admin-add": initAddTab,
         "admin-delete": initDeleteTab,
         "admin-documents": initDocumentsTab,
-        "admin-tippani": initTippaniManageTab,
         "admin-paribhashika": initParibhashikaPadavivaranaManageTab,
         "admin-arthakosha": initArthakoshaManageTab, // <-- instantiate the class
     };
