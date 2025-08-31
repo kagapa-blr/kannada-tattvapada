@@ -20,6 +20,7 @@ def arthakosha():
 def tippani():
     return render_template('right_section/tippani.html')
 
+
 @right_section_bp.route('/tatvapadakara_vivarane', methods=['GET'])
 def tatvapadakara_vivarane():
     return render_template('right_section/tatvapadakara_vivarane.html')

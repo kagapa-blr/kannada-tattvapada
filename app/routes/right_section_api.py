@@ -6,10 +6,137 @@ from app.utils.auth_decorator import login_required
 
 # Blueprint with url_prefix for API versioning
 right_section_impl_bp = Blueprint("right_section_impl", __name__, url_prefix="/api/v1/right-section")
-
-
 right_section = RightSection()
 right_section_bulk_service = RightSectionBulkService(db_instance.session)
+
+
+
+
+
+
+
+# --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
+@right_section_impl_bp.route("/samputa-authors", methods=["GET"])
+def get_samputa_authors():
+    """
+    GET /api/v1/right-section/samputa-authors
+    Returns list of Samputa numbers with their associated authors.
+    """
+    try:
+        data = right_section.get_samputa_with_authors()
+        return jsonify({"success": True, "data": data})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@right_section_impl_bp.route("/padavivarana", methods=["GET"])
+def get_all_padavivarana():
+    offset = int(request.args.get("offset", 0))
+    limit = int(request.args.get("limit", 10))
+    search = request.args.get("search", "")
+
+    data = right_section.get_all_paribhashika_padavivarana(offset, limit, search)
+    return jsonify(data)
+
+
+
+
+@right_section_impl_bp.route("/padavivarana/<samputa>/<author_id>", methods=["GET"])
+def get_padavivarana_id_by_samputa_author(samputa, author_id):
+    try:
+        entries = right_section.get_id_tittle_paribhashika(
+            samputa, author_id
+        )
+        return jsonify({
+            "success": True,
+            "data": entries
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+@right_section_impl_bp.route("/padavivarana/<samputa>/<author_id>/<int:entry_id>", methods=["GET"])
+def get_padavivarana(samputa, author_id, entry_id):
+    entry = right_section.get_paribhashika_padavivarana(
+        samputa, author_id, entry_id
+    )
+    if entry:
+        return jsonify(entry)
+    return jsonify({"error": "Entry not found"}), 404
+
+
+# --- Route ---
+@right_section_impl_bp.route("/padavivarana", methods=["POST"])
+def create_padavivarana():
+    data = request.get_json()
+    samputa = data.get("samputa")
+    author_id = data.get("author_id")
+    content = data.get("content")
+    title = data.get("title")
+
+    if not samputa or not author_id or not content or not title:
+        return jsonify({"error": "samputa, author_id, title, and content are required"}), 400
+
+    try:
+        entry = right_section.create_paribhashika_padavivarana(
+            samputa, author_id, content, title
+        )
+        return jsonify({
+            "success": True,
+            "data": entry
+        }), 201
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@right_section_impl_bp.route("/padavivarana/<samputa>/<int:author_id>/<int:entry_id>", methods=["PUT"])
+def update_padavivarana(samputa, author_id, entry_id):
+    data = request.get_json()
+    content = data.get("content")
+    title = data.get("title")
+
+    entry = right_section.update_paribhashika_padavivarana(
+        samputa, author_id, entry_id, content, title
+    )
+    if entry:
+        return jsonify({"success": True, "data": entry})
+    return jsonify({"success": False, "error": "Entry not found"}), 404
+
+
+@right_section_impl_bp.route("/padavivarana/<samputa>/<int:author_id>/<int:entry_id>", methods=["DELETE"])
+def delete_padavivarana(samputa, author_id, entry_id):
+    success = right_section.delete_paribhashika_padavivarana(
+        samputa, author_id, entry_id
+    )
+    if success:
+        return jsonify({"success": True, "message": "Deleted successfully"})
+    return jsonify({"success": False, "error": "Entry not found"}), 404
+
+# --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
+
+
+
+
+
+
+
+
 # ----------------- Tatvapada Routes ----------------- #
 
 # 1️⃣ List all Tatvapadas (paginated, optional search)
@@ -135,17 +262,6 @@ def get_tippani():
         return jsonify({"success": False, "message": str(e)}), 500
 
 # 3. Get Samputa → Authors mapping
-@right_section_impl_bp.route("/samputa-authors", methods=["GET"])
-def get_samputa_authors():
-    """
-    GET /api/v1/right-section/samputa-authors
-    Returns list of Samputa numbers with their associated authors.
-    """
-    try:
-        data = right_section.get_samputa_with_authors()
-        return jsonify({"success": True, "data": data})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
 
 # 4. Get specific Tippani by Samputa + Author + Tippani ID
@@ -371,6 +487,44 @@ def bulk_upload_tippani():
             "error": str(e)
         }), 500
 
+@right_section_impl_bp.route("/upload-padavivarana", methods=["POST"])
+@login_required
+def bulk_upload_padavivarana():
+    """
+    Handle CSV bulk upload of Paribhashika Padavivarana.
+    Expected CSV columns:
+    tatvapada_author_id, samputa_sankhye,
+    paribhashika_padavivarana_title, paribhashika_padavivarana_content
+    """
+    if "file" not in request.files:
+        return jsonify({"success": False, "message": "No file part in request"}), 400
+
+    file = request.files["file"]
+    if not file or file.filename.strip() == "":
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    try:
+        # Reset file pointer just in case
+        file.stream.seek(0)
+
+        records_added, errors = right_section_bulk_service.upload_paribhashika_padavivarana_records(file.stream)
+        db_instance.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"{records_added} Padavivarana record(s) added successfully",
+            "errors": errors
+        }), 200
+
+    except Exception as e:
+        db_instance.session.rollback()
+        return jsonify({
+            "success": False,
+            "message": "Failed to insert Padavivarana CSV records",
+            "error": str(e)
+        }), 500
+
+
 
 @right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
 @login_required
@@ -402,3 +556,12 @@ def bulk_upload_arthakosha():
             "message": "Failed to insert Arthakosha CSV records",
             "error": str(e)
         }), 500
+
+
+
+
+
+
+
+
+

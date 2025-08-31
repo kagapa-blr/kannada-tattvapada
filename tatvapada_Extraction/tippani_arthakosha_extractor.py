@@ -25,8 +25,8 @@ def stable_id(author: str) -> int:
 def process_docx_file(file_path: str,
                       author_id_map: Dict[str, int]) -> Tuple[Optional[List[Dict]], Optional[List[Dict]]]:
     """
-    Extract Tippani and Arthakosha from one DOCX file.
-    Returns (tippani_rows, arthakosha_rows) or (None, None) if none found.
+    Extract Paribhashika Padavivarana and Arthakosha from one DOCX file.
+    Returns (padavivarana_rows, arthakosha_rows) or (None, None) if none found.
     """
     doc = docx.Document(file_path)
 
@@ -34,9 +34,10 @@ def process_docx_file(file_path: str,
     tatvapada_author_id = None
     author_name = None
 
-    tippani_rows = []
+    padavivarana_rows = []
     arthakosha_rows = []
     current_section = None
+    last_row = None  # track last added row for multi-line continuation
 
     for para in doc.paragraphs:
         text = para.text.strip()
@@ -58,53 +59,59 @@ def process_docx_file(file_path: str,
             tatvapada_author_id = author_id_map[text]
             continue
 
-        # Only set current_section if not set yet (file has either Tippani or Arthakosha)
-        if current_section is None:
-            if text.startswith("ಟಿಪ್ಪಣಿ"):
-                current_section = "tippani"
-                continue
-            elif text.startswith("ಅರ್ಥಕೋಶ"):
-                current_section = "arthakosha"
-                continue
-        else:
-            # Section already set, ignore other section markers
+        # Detect section headers
+        if text.startswith("ಟಿಪ್ಪಣಿ") or text.startswith("ಪಾರಿಭಾಷಿಕ"):
+            current_section = "padavivarana"
+            last_row = None
+            continue
+        elif text.startswith("ಅರ್ಥಕೋಶ"):
+            current_section = "arthakosha"
+            last_row = None
+            continue
 
-            # Parse lines depending on current_section
-            if current_section == "tippani":
-                if "-" in text or "–" in text:
-                    parts = re.split(r"[-–]", text, maxsplit=1)
-                    if len(parts) == 2:
-                        title, content = parts
-                        tippani_rows.append({
-                            "samputa_sankhye": samputa_sankhye,
-                            "author_name": author_name,
-                            "tatvapada_author_id": tatvapada_author_id,
-                            "tippani_title": title.strip(),
-                            "tippani": content.strip()
-                        })
-            elif current_section == "arthakosha":
-                if "-" in text or "–" in text:
-                    parts = re.split(r"[-–]", text, maxsplit=1)
-                    if len(parts) == 2:
-                        word, meaning = parts
-                        arthakosha_rows.append({
-                            "samputa_sankhye": samputa_sankhye,
-                            "author_name": author_name,
-                            "word": word.strip(),
-                            "meaning": meaning.strip()
-                        })
+        # Parse lines depending on current_section
+        if current_section == "padavivarana":
+            if "-" in text or "–" in text:
+                parts = re.split(r"[-–]", text, maxsplit=1)
+                if len(parts) == 2:
+                    title, content = parts
+                    last_row = {
+                        "samputa_sankhye": samputa_sankhye,
+                        "author_name": author_name,
+                        "tatvapada_author_id": tatvapada_author_id,
+                        "paribhashika_padavivarana_title": title.strip(),
+                        "paribhashika_padavivarana_content": content.strip()
+                    }
+                    padavivarana_rows.append(last_row)
+            elif last_row:  # continuation line
+                last_row["paribhashika_padavivarana_content"] += " " + text
 
-    if not tippani_rows and not arthakosha_rows:
-        print(f"Skipping {os.path.basename(file_path)} (no Tippani or Arthakosha found)")
+        elif current_section == "arthakosha":
+            if "-" in text or "–" in text:
+                parts = re.split(r"[-–]", text, maxsplit=1)
+                if len(parts) == 2:
+                    word, meaning = parts
+                    last_row = {
+                        "samputa_sankhye": samputa_sankhye,
+                        "author_name": author_name,
+                        "word": word.strip(),
+                        "meaning": meaning.strip()
+                    }
+                    arthakosha_rows.append(last_row)
+            elif last_row:  # continuation line
+                last_row["meaning"] += " " + text
+
+    if not padavivarana_rows and not arthakosha_rows:
+        print(f"Skipping {os.path.basename(file_path)} (no Padavivarana or Arthakosha found)")
         return None, None
 
-    return tippani_rows, arthakosha_rows
+    return padavivarana_rows, arthakosha_rows
 
 def process_folder(input_folder: str,
-                   tippani_output_folder: str,
+                   padavivarana_output_folder: str,
                    arthakosha_output_folder: str):
     """
-    Process DOCX files and save separate Tippani and Arthakosha CSVs in respective folders,
+    Process DOCX files and save separate ParibhashikaPadavivarana and Arthakosha CSVs in respective folders,
     creating folders if needed.
     """
     author_id_map: Dict[str, int] = {}
@@ -112,17 +119,23 @@ def process_folder(input_folder: str,
     for filename in os.listdir(input_folder):
         if filename.lower().endswith(".docx"):
             filepath = os.path.join(input_folder, filename)
-            tippani_rows, arthakosha_rows = process_docx_file(filepath, author_id_map)
+            padavivarana_rows, arthakosha_rows = process_docx_file(filepath, author_id_map)
 
-            if tippani_rows:
-                os.makedirs(tippani_output_folder, exist_ok=True)
-                csv_path = os.path.join(tippani_output_folder, f"{os.path.splitext(filename)[0]}_tippani.csv")
+            if padavivarana_rows:
+                os.makedirs(padavivarana_output_folder, exist_ok=True)
+                csv_path = os.path.join(padavivarana_output_folder, f"{os.path.splitext(filename)[0]}_padavivarana.csv")
                 with open(csv_path, "w", newline="", encoding="utf-8") as f:
-                    fieldnames = ["samputa_sankhye", "author_name", "tatvapada_author_id", "tippani_title", "tippani"]
+                    fieldnames = [
+                        "samputa_sankhye",
+                        "author_name",
+                        "tatvapada_author_id",
+                        "paribhashika_padavivarana_title",
+                        "paribhashika_padavivarana_content"
+                    ]
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
-                    writer.writerows(tippani_rows)
-                print(f"Wrote Tippani CSV: {csv_path}")
+                    writer.writerows(padavivarana_rows)
+                print(f"Wrote Padavivarana CSV: {csv_path}")
 
             if arthakosha_rows:
                 os.makedirs(arthakosha_output_folder, exist_ok=True)
@@ -136,8 +149,8 @@ def process_folder(input_folder: str,
 
 if __name__ == "__main__":
     input_folder = input("Enter the folder path containing DOCX files: ").strip()
-    output_folder = "output_tippani_arthakosha"
-    tippani_output_folder = os.path.join(output_folder, "output_tippani")
+    output_folder = "output_padavivarana_arthakosha"
+    padavivarana_output_folder = os.path.join(output_folder, "output_padavivarana")
     arthakosha_output_folder = os.path.join(output_folder, "output_arthakosha")
 
     if not os.path.isdir(input_folder):
@@ -146,5 +159,5 @@ if __name__ == "__main__":
         if os.path.exists(output_folder):
             shutil.rmtree(output_folder)  # clean old run
 
-        process_folder(input_folder, tippani_output_folder, arthakosha_output_folder)
+        process_folder(input_folder, padavivarana_output_folder, arthakosha_output_folder)
         print("✅ Processing completed.")

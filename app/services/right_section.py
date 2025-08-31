@@ -1,13 +1,13 @@
 import csv
 import io
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada, TatvapadaTippani, Arthakosha
+from app.models.tatvapada import Tatvapada, TatvapadaTippani, Arthakosha, ParibhashikaPadavivarana
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
 
@@ -320,6 +320,239 @@ class RightSection:
         return True
 
 
+
+    # --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
+    def get_all_paribhashika_padavivarana(self, offset=0, limit=10, search=""):
+        """
+        Fetch paginated ParibhashikaPadavivarana entries with samputa, author id, author name, entry_id.
+        Optional search by Title OR Author name (starts with search string).
+        """
+        query = (
+            db_instance.session.query(
+                ParibhashikaPadavivarana.paribhashika_padavivarana_id,
+                ParibhashikaPadavivarana.samputa_sankhye,
+                ParibhashikaPadavivarana.tatvapada_author_id,
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru,
+                ParibhashikaPadavivarana.paribhashika_padavivarana_title
+            )
+            .join(TatvapadaAuthorInfo, ParibhashikaPadavivarana.tatvapada_author_id == TatvapadaAuthorInfo.id)
+        )
+
+        if search:
+            search_str = f"{search.strip()}%"  # match only from start
+            query = query.filter(
+                ParibhashikaPadavivarana.paribhashika_padavivarana_title.ilike(search_str) |
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_str)
+            )
+
+        total = query.count()  # total matching rows
+
+        # Apply pagination
+        rows = query.order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id).offset(offset).limit(limit).all()
+
+        results = [
+            {
+                "id": row.paribhashika_padavivarana_id,
+                "samputa_sankhye": row.samputa_sankhye,
+                "tatvapada_author_id": row.tatvapada_author_id,
+                "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
+                "title": row.paribhashika_padavivarana_title
+            }
+            for row in rows
+        ]
+
+        return {
+            "total": total,
+            "offset": offset,
+            "limit": limit,
+            "results": results
+        }
+
+    @staticmethod
+    def get_padavivaranas_by_samputa_author(samputa: str, author_id: int):
+        """
+        Fetch all Padavivarana IDs for a given samputa and author_id.
+
+        Returns:
+        [
+            {"paribhashika_padavivarana_id": 1},
+            {"paribhashika_padavivarana_id": 2},
+            ...
+        ]
+        """
+        if not samputa or not author_id:
+            return []
+
+        query = (
+            db_instance.session.query(ParibhashikaPadavivarana.paribhashika_padavivarana_id)
+            .filter(
+                ParibhashikaPadavivarana.samputa_sankhye == samputa,
+                ParibhashikaPadavivarana.tatvapada_author_id == author_id,
+            )
+            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+            .all()
+        )
+
+        return [{"paribhashika_padavivarana_id": row.paribhashika_padavivarana_id} for row in query]
+
+    @staticmethod
+    def get_id_tittle_paribhashika(samputa: str, author_id: int):
+        """
+        Fetch all IDs and titles for a given samputa and author_id.
+        Returns:
+        [
+            {"padavivarana_id": 1, "title": "Title 1"},
+            {"padavivarana_id": 2, "title": "Title 2"},
+            ...
+        ]
+        """
+        if not samputa or not author_id:
+            return []
+
+        query = (
+            db_instance.session.query(
+                ParibhashikaPadavivarana.paribhashika_padavivarana_id,
+                ParibhashikaPadavivarana.paribhashika_padavivarana_title
+            )
+            .filter(
+                ParibhashikaPadavivarana.samputa_sankhye == samputa,
+                ParibhashikaPadavivarana.tatvapada_author_id == author_id,
+            )
+            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+            .all()
+        )
+
+        return [
+            {
+                "padavivarana_id": row.paribhashika_padavivarana_id,
+                "title": row.paribhashika_padavivarana_title
+            } for row in query
+        ]
+
+    @staticmethod
+    def get_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int):
+        """
+        Fetch a specific ParibhashikaPadavivarana entry.
+        """
+        entry = (
+            db_instance.session.query(ParibhashikaPadavivarana)
+            .filter_by(
+                samputa_sankhye=samputa,
+                tatvapada_author_id=author_id,
+                paribhashika_padavivarana_id=entry_id
+            )
+            .first()
+        )
+        if entry:
+            return {
+                "id": entry.paribhashika_padavivarana_id,
+                "samputa": entry.samputa_sankhye,
+                "author_id": entry.tatvapada_author_id,
+                "title": entry.paribhashika_padavivarana_title,
+                "content": entry.paribhashika_padavivarana_content,
+            }
+        return None
+
+    # --- Service method ---
+    @staticmethod
+    def create_paribhashika_padavivarana(samputa: str, author_id: int, content: str, title: str):
+        """
+        Create a new ParibhashikaPadavivarana entry.
+        """
+        if not all([samputa, author_id, content, title]):
+            raise ValueError("All fields are required.")
+
+        # Optional: check for duplicate title per author
+        exists = db_instance.session.query(ParibhashikaPadavivarana).filter_by(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            paribhashika_padavivarana_title=title
+        ).first()
+        if exists:
+            raise ValueError("Padavivarana title already exists for this author and samputa.")
+
+        entry = ParibhashikaPadavivarana(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            paribhashika_padavivarana_title=title.strip(),
+            paribhashika_padavivarana_content=content.strip()
+        )
+        db_instance.session.add(entry)
+        db_instance.session.commit()
+
+        return {
+            "id": entry.paribhashika_padavivarana_id,
+            "samputa": entry.samputa_sankhye,
+            "author_id": entry.tatvapada_author_id,
+            "title": entry.paribhashika_padavivarana_title,
+            "content": entry.paribhashika_padavivarana_content
+        }
+
+    @staticmethod
+    def update_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int, content: str, title: str = None):
+        """
+        Update an existing ParibhashikaPadavivarana entry.
+        """
+        entry = (
+            db_instance.session.query(ParibhashikaPadavivarana)
+            .filter_by(
+                samputa_sankhye=samputa,
+                tatvapada_author_id=author_id,
+                paribhashika_padavivarana_id=entry_id
+            )
+            .first()
+        )
+        if not entry:
+            return None
+
+        if content:
+            entry.paribhashika_padavivarana_content = str(content).strip()
+        if title is not None:
+            entry.paribhashika_padavivarana_title = str(title).strip()
+
+        db_instance.session.commit()
+
+        return {
+            "id": entry.paribhashika_padavivarana_id,
+            "samputa": entry.samputa_sankhye,
+            "author_id": entry.tatvapada_author_id,
+            "title": entry.paribhashika_padavivarana_title,
+            "content": entry.paribhashika_padavivarana_content
+        }
+
+    @staticmethod
+    def delete_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int):
+        """
+        Delete a ParibhashikaPadavivarana entry.
+        """
+        entry = (
+            db_instance.session.query(ParibhashikaPadavivarana)
+            .filter_by(
+                samputa_sankhye=samputa,
+                tatvapada_author_id=author_id,
+                paribhashika_padavivarana_id=entry_id
+            )
+            .first()
+        )
+        if not entry:
+            return False
+        db_instance.session.delete(entry)
+        db_instance.session.commit()
+        return True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # --------------------- ARTHAKOSHA -------------------------
 
     # ---------------- CREATE ----------------
@@ -487,6 +720,62 @@ class RightSectionBulkService:
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
 
+    def upload_paribhashika_padavivarana_records(self, file_stream) -> Tuple[int, List[str]]:
+        """
+        Reads CSV from file_stream and inserts ParibhashikaPadavivarana records in bulk.
+
+        ✅ Required columns:
+            tatvapada_author_id, samputa_sankhye,
+            paribhashika_padavivarana_title, paribhashika_padavivarana_content
+        """
+        records_added = 0
+        errors: List[str] = []
+
+        try:
+            file_content = file_stream.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(file_content))
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
+            required_cols = {
+                "tatvapada_author_id",
+                "samputa_sankhye",
+                "paribhashika_padavivarana_title",
+                "paribhashika_padavivarana_content"
+            }
+
+            # Check required columns
+            print(reader.fieldnames)
+            missing_cols = required_cols - set(reader.fieldnames)
+            if missing_cols:
+                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
+
+            for i, row in enumerate(reader, 1):
+                try:
+                    padavivarana = ParibhashikaPadavivarana(
+                        tatvapada_author_id=row.get("tatvapada_author_id"),
+                        samputa_sankhye=row.get("samputa_sankhye"),
+                        paribhashika_padavivarana_title=row.get("paribhashika_padavivarana_title"),
+                        paribhashika_padavivarana_content=row.get("paribhashika_padavivarana_content"),
+                    )
+                    self.db.add(padavivarana)
+                    self.db.flush()
+                    records_added += 1
+
+                except IntegrityError:
+                    self.db.rollback()
+                    errors.append(
+                        f"Row {i}: Duplicate entry (author + title must be unique) or invalid tatvapada_author_id")
+                except Exception as row_err:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
+
+            return records_added, errors
+
+        except Exception as e:
+            return 0, [f"Unexpected error: {str(e)}"]
+
     def upload_arthakosha_records(self, file_stream) -> Tuple[int, List[str]]:
         """
         Reads CSV from file_stream and inserts Arthakosha records in bulk.
@@ -529,3 +818,5 @@ class RightSectionBulkService:
             return records_added, errors
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
+
+

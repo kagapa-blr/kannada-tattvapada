@@ -41,7 +41,8 @@ const apiEndpoints = {
         //---------------------
         samputaAuthor: `${BASE_URL}/api/v1/right-section/samputa-authors`,
         manageTippani: `${BASE_URL}/api/v1/right-section/tippani`,
-        manageArthakosha: `${BASE_URL}/api/v1/right-section/arthakosha`
+        manageArthakosha: `${BASE_URL}/api/v1/right-section/arthakosha`,
+        manageParibhashika: `${BASE_URL}/api/v1/right-section/padavivarana`
 
 
     },
@@ -62,6 +63,7 @@ const apiEndpoints = {
     rightSection: {
         tippaniApi: `${BASE_URL}/api/v1/right-section/tippani`,
         tippaniApiUpload: `${BASE_URL}/api/v1/right-section/upload-tippani`,
+        padavivaranaApiUpload: `${BASE_URL}/api/v1/right-section/upload-padavivarana`,
         arthakoshaApi: `${BASE_URL}/api/v1/right-section/arthakosha`,
         tatvapadaSuchi: `${BASE_URL}/api/v1/right-section/tatvapadasuchi`,
         getTatvapada: (samputa, authorId, sankhye) =>
