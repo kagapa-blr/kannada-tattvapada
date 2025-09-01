@@ -9,10 +9,8 @@ export async function initArthakoshaManageTab() {
     // Modals
     const infoModalEl = document.getElementById("arthakosha_infoModal");
     const deleteModalEl = document.getElementById("arthakosha_deleteModal");
-
     const infoModal = new bootstrap.Modal(infoModalEl);
     const deleteModal = new bootstrap.Modal(deleteModalEl);
-
     const infoModalBody = document.getElementById("arthakosha_infoModalBody");
     const confirmDeleteBtn = document.getElementById("arthakosha_confirmDeleteBtn");
 
@@ -21,23 +19,20 @@ export async function initArthakoshaManageTab() {
         infoModal.show();
     }
 
-    // ---------------- Manage Existing ----------------
+    // ---------------- Manage / Add Elements ----------------
     const manageSamputa = document.getElementById("manage_arthakosha_samputaSelect");
     const manageAuthor = document.getElementById("manage_arthakosha_authorSelect");
     const manageArthakosha = document.getElementById("manage_arthakoshaSelect");
     const manageForm = document.getElementById("manage_arthakosha_form");
-
     const manageId = document.getElementById("manage_arthakosha_id");
     const manageTitle = document.getElementById("manage_arthakosha_title");
     const manageWord = document.getElementById("manage_arthakosha_word");
     const manageMeaning = document.getElementById("manage_arthakosha_meaning");
     const manageNotes = document.getElementById("manage_arthakosha_notes");
 
-    // ---------------- Add New ----------------
     const addSamputa = document.getElementById("add_arthakosha_samputaSelect");
     const addAuthor = document.getElementById("add_arthakosha_authorSelect");
     const addForm = document.getElementById("add_arthakosha_form");
-
     const addTitle = document.getElementById("add_arthakosha_title");
     const addWord = document.getElementById("add_arthakosha_word");
     const addMeaning = document.getElementById("add_arthakosha_meaning");
@@ -46,7 +41,7 @@ export async function initArthakoshaManageTab() {
     let samputaAuthors = [];
     let currentEntries = [];
 
-    // Load Samputa & Authors
+    // ---------------- Load Samputa & Authors ----------------
     async function loadSamputaAuthors() {
         try {
             showLoader();
@@ -54,18 +49,19 @@ export async function initArthakoshaManageTab() {
             if (resp.success) {
                 samputaAuthors = resp.data;
                 samputaAuthors.forEach(s => {
-                    const opt1 = new Option(s.samputa, s.samputa);
-                    const opt2 = new Option(s.samputa, s.samputa);
-                    manageSamputa.appendChild(opt1);
-                    addSamputa.appendChild(opt2);
+                    manageSamputa.appendChild(new Option(s.samputa, s.samputa));
+                    addSamputa.appendChild(new Option(s.samputa, s.samputa));
                 });
             }
+        } catch (err) {
+            console.error(err);
+            showInfo("Failed to load Samputa & Authors.");
         } finally {
             hideLoader();
         }
     }
 
-    // ---------------- Manage Cascading ----------------
+    // ---------------- Cascading Dropdowns ----------------
     manageSamputa.addEventListener("change", () => {
         manageAuthor.innerHTML = `<option value="">-- Select Author --</option>`;
         manageArthakosha.innerHTML = `<option value="">-- Select Entry --</option>`;
@@ -85,61 +81,105 @@ export async function initArthakoshaManageTab() {
         currentEntries = [];
 
         if (!manageSamputa.value || !manageAuthor.value) return;
+        try {
+            showLoader();
 
-        const resp = await apiClient.get(`${ARTHAKOSHAS_API}?samputa=${manageSamputa.value}&author_id=${manageAuthor.value}`);
-        if (resp.results?.length) {
-            currentEntries = resp.results;
-            resp.results.forEach(e => {
-                const text = `ID:${e.id} - ${e.title || e.word}`;
-                manageArthakosha.appendChild(new Option(text, e.id));
-            });
-            manageArthakosha.disabled = false;
+            // Call the correct endpoint
+            const resp = await apiClient.get(
+                `${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}`
+            );
+
+            if (resp.success && resp.results?.length) {
+                currentEntries = resp.results;
+
+                resp.results.forEach(e => {
+                    manageArthakosha.appendChild(
+                        new Option(`ID:${e.id} - ${e.title || e.word}`, e.id)
+                    );
+                });
+
+                manageArthakosha.disabled = false;
+            } else {
+                showInfo("No Arthakosha entries found.");
+            }
+        } catch (err) {
+            console.error(err);
+            showInfo("Failed to load Arthakosha entries.");
+        } finally {
+            hideLoader();
         }
+
     });
 
     manageArthakosha.addEventListener("change", async () => {
         if (!manageArthakosha.value) return;
         const entryId = manageArthakosha.value;
-        const resp = await apiClient.get(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${entryId}`);
-        if (resp) {
-            manageId.value = resp.id;
-            manageTitle.value = resp.title || "";
-            manageWord.value = resp.word || "";
-            manageMeaning.value = resp.meaning || "";
-            manageNotes.value = resp.notes || "";
-            manageForm.style.display = "block";
+        try {
+            showLoader();
+            const resp = await apiClient.get(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${entryId}`);
+            if (resp) {
+                manageId.value = resp.id;
+                manageTitle.value = resp.title || "";
+                manageWord.value = resp.word || "";
+                manageMeaning.value = resp.meaning || "";
+                manageNotes.value = resp.notes || "";
+                manageForm.style.display = "block";
+            }
+        } catch (err) {
+            console.error(err);
+            showInfo("Failed to load entry details.");
+        } finally {
+            hideLoader();
         }
     });
 
+    // ---------------- Update ----------------
     document.getElementById("manage_arthakosha_saveBtn").addEventListener("click", async () => {
-        const resp = await apiClient.put(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${manageId.value}`, {
-            title: manageTitle.value,
-            word: manageWord.value,
-            meaning: manageMeaning.value,
-            notes: manageNotes.value
-        });
-        showInfo(resp.message || (resp.success ? "Updated successfully!" : "Failed to update."));
+        try {
+            showLoader();
+            const resp = await apiClient.put(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${manageId.value}`, {
+                title: manageTitle.value,
+                word: manageWord.value,
+                meaning: manageMeaning.value,
+                notes: manageNotes.value
+            });
+            showInfo(resp.message || (resp.success ? "Updated successfully!" : "Failed to update."));
+            manageAuthor.dispatchEvent(new Event("change"));
+        } catch (err) {
+            console.error(err);
+            showInfo(err?.response?.data?.error || "Failed to update.");
+        } finally {
+            hideLoader();
+        }
     });
 
+    // ---------------- Delete ----------------
     document.getElementById("manage_arthakosha_deleteBtn").addEventListener("click", () => {
         if (!manageId.value) return;
         deleteModal.show();
     });
 
     confirmDeleteBtn.addEventListener("click", async () => {
-        const resp = await apiClient.delete(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${manageId.value}`);
-        deleteModal.hide();
-        showInfo(resp.message || (resp.success ? "Deleted successfully!" : "Failed to delete."));
-        manageArthakosha.value = "";
-        manageForm.style.display = "none";
-        manageAuthor.dispatchEvent(new Event("change"));
+        try {
+            showLoader();
+            const resp = await apiClient.delete(`${ARTHAKOSHAS_API}/${manageSamputa.value}/${manageAuthor.value}/${manageId.value}`);
+            deleteModal.hide();
+            showInfo(resp.message || (resp.success ? "Deleted successfully!" : "Failed to delete."));
+            manageArthakosha.value = "";
+            manageForm.style.display = "none";
+            manageAuthor.dispatchEvent(new Event("change"));
+        } catch (err) {
+            console.error(err);
+            showInfo(err?.response?.data?.error || "Failed to delete.");
+        } finally {
+            hideLoader();
+        }
     });
 
     // ---------------- Add New Cascading ----------------
     addSamputa.addEventListener("change", () => {
         addAuthor.innerHTML = `<option value="">-- Select Author --</option>`;
         addForm.style.display = "none";
-
         const samputaObj = samputaAuthors.find(s => s.samputa === addSamputa.value);
         if (samputaObj) {
             samputaObj.authors.forEach(a => addAuthor.appendChild(new Option(a.name, a.id)));
@@ -151,7 +191,6 @@ export async function initArthakoshaManageTab() {
         addForm.style.display = addAuthor.value ? "block" : "none";
     });
 
-
     document.getElementById("add_arthakosha_saveBtn").addEventListener("click", async () => {
         if (!addSamputa.value || !addAuthor.value || !addWord.value || !addMeaning.value) {
             showInfo("Please fill all required fields.");
@@ -159,6 +198,7 @@ export async function initArthakoshaManageTab() {
         }
 
         try {
+            showLoader();
             const resp = await apiClient.post(`${ARTHAKOSHAS_API}`, {
                 samputa: addSamputa.value,
                 author_id: addAuthor.value,
@@ -167,31 +207,132 @@ export async function initArthakoshaManageTab() {
                 meaning: addMeaning.value,
                 notes: addNotes.value
             });
+            if (resp.id) showInfo("Created successfully!");
+            else showInfo(resp?.error || "Failed to create.");
 
-            if (resp.id) {  // <-- check if id exists
-                showInfo("Created successfully!");
-            } else {
-                showInfo("Failed to create.");
-            }
-
-            // Reset form
             addTitle.value = "";
             addWord.value = "";
             addMeaning.value = "";
             addNotes.value = "";
             addForm.style.display = "none";
-
-            // Refresh Manage dropdown if same Samputa & Author
             if (manageSamputa.value === addSamputa.value && manageAuthor.value === addAuthor.value) {
                 manageAuthor.dispatchEvent(new Event("change"));
             }
         } catch (err) {
             console.error(err);
-            showInfo("Failed to create.");
+            showInfo(err?.response?.data?.error || "Failed to create.");
+        } finally {
+            hideLoader();
         }
     });
+
+    // ---------------- CSV Upload ----------------
+    async function uploadArthakoshaCSV(file) {
+        const successEl = document.getElementById("arthakosha_upload_success");
+        const errorEl = document.getElementById("arthakosha_upload_error");
+        const warningsEl = document.getElementById("arthakosha_upload_warnings");
+
+        successEl.style.display = errorEl.style.display = warningsEl.style.display = "none";
+        warningsEl.innerHTML = "";
+
+        if (!file) {
+            errorEl.textContent = "Please select a CSV file first.";
+            errorEl.style.display = "block";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            showLoader();
+            const resp = await apiClient.request({
+                method: "POST",
+                endpoint: apiEndpoints.rightSection.arthakoshaApiUpload,
+                body: formData,
+                headers: {}
+            });
+
+            if (resp.success) {
+                successEl.textContent = resp.message || "Uploaded successfully!";
+                successEl.style.display = "block";
+                if (resp.errors?.length) {
+                    warningsEl.innerHTML = resp.errors.map(e => `<li>${e}</li>`).join("");
+                    warningsEl.style.display = "block";
+                }
+            } else {
+                errorEl.textContent = resp.error || `Upload failed: ${resp.message || "Unknown error"}`;
+                errorEl.style.display = "block";
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            errorEl.textContent = err?.response?.data?.error || "Something went wrong while uploading.";
+            errorEl.style.display = "block";
+        } finally {
+            hideLoader();
+        }
+    }
+
+
+    // ---------- CSV Template for Arthakosha ----------
+    function downloadArthakoshaTemplateCSV() {
+        if (!samputaAuthors.length) {
+            showInfo("No samputa-author data loaded yet. Please reload the page.");
+            return;
+        }
+
+        const rows = [
+            [
+                "author_id",
+                "author_name",
+                "samputa",
+                "title",
+                "word",
+                "meaning",
+                "notes"
+            ]
+        ];
+
+        samputaAuthors.forEach(item => {
+            item.authors.forEach(author => {
+                rows.push([
+                    `"${author.id}"`,
+                    `"${author.name}"`,
+                    `"${item.samputa}"`,
+                    "",
+                    "",
+                    "",
+                    ""
+                ]);
+            });
+        });
+
+        const csv = "\uFEFF" + rows.map(r => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "arthakosha_template.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
 
 
     // ---------------- Init ----------------
     await loadSamputaAuthors();
+
+    document.getElementById("arthakosha_upload_form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = document.getElementById("arthakosha_csv").files[0];
+        await uploadArthakoshaCSV(file);
+    });
+
+
+    // Bind download button
+    const arthakoshaDownloadTemplateBtn = document.getElementById("arthakosha_download_template_btn");
+    arthakoshaDownloadTemplateBtn.addEventListener("click", downloadArthakoshaTemplateCSV);
+
+
 }

@@ -70,7 +70,7 @@ class Arthakosha(db_instance.Model):
     """
     __tablename__ = "arthakosha"
     __table_args__ = (
-        UniqueConstraint('samputa', 'author_id', 'id', name='uq_arthakosha_per_author_per_samputa'),
+        UniqueConstraint('author_id', 'title', name='uq_arthakosha_author_title'),
         {
             'mysql_engine': 'InnoDB',
             'mysql_charset': 'utf8mb4',
@@ -82,7 +82,7 @@ class Arthakosha(db_instance.Model):
     samputa = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     author = relationship(TatvapadaAuthorInfo, backref="arthakoshas")
-    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)  # New title column
+    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)  # title cannot be null now
     word = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     meaning = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
     notes = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)

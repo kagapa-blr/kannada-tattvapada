@@ -376,13 +376,18 @@ class RightSection:
 
 
 
-# --------------------- ARTHAKOSHA -------------------------
-
+# --------------------- ARTHAKOSHA SERVICE METHODS -------------------------
     # ---------------- CREATE ----------------
     @staticmethod
     def create_arthakosha(samputa: str, author_id: int, title: str, word: str, meaning: str, notes: str = None):
         if not samputa or not author_id or not word or not meaning:
             raise ValueError("samputa, author_id, word, and meaning are required")
+
+        # Ensure no duplicate title for same author
+        if title:
+            existing = Arthakosha.query.filter_by(author_id=int(author_id), title=title.strip()).first()
+            if existing:
+                raise ValueError(f"Arthakosha title '{title}' already exists for this author")
 
         entry = Arthakosha(
             samputa=str(samputa).strip(),
@@ -405,26 +410,24 @@ class RightSection:
             "notes": entry.notes
         }
 
-
-    # ---------------- LIST ARTHAKOSHAS ----------------
+    # ---------------- LIST ----------------
     @staticmethod
     def list_arthakoshas(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
-        query = Arthakosha.query.join(Arthakosha.author)  # join to get author info
+        query = Arthakosha.query.join(Arthakosha.author)
         if samputa:
             query = query.filter(Arthakosha.samputa == samputa)
         if author_id:
             query = query.filter(Arthakosha.author_id == author_id)
         if search:
-            search_term = search.strip()
+            term = search.strip()
             query = query.filter(
-                Arthakosha.word.ilike(f"{search_term}%") |
-                Arthakosha.meaning.ilike(f"{search_term}%") |
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"{search_term}%")
+                Arthakosha.word.ilike(f"{term}%") |
+                Arthakosha.meaning.ilike(f"{term}%") |
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"{term}%")
             )
 
         total = query.count()
         rows = query.offset(offset).limit(limit).all()
-
         results = [
             {
                 "id": r.id,
@@ -440,7 +443,7 @@ class RightSection:
         ]
         return {"total": total, "offset": offset, "limit": limit, "results": results}
 
-    # ---------------- GET SINGLE ARTHAKOSHA ----------------
+    # ---------------- GET SINGLE ----------------
     @staticmethod
     def get_arthakosha(samputa: str, author_id: int, arthakosha_id: int):
         entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
@@ -464,6 +467,13 @@ class RightSection:
         entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
         if not entry:
             return None
+
+        # Prevent duplicate title for same author
+        if title and title.strip() != entry.title:
+            existing = Arthakosha.query.filter_by(author_id=author_id, title=title.strip()).first()
+            if existing:
+                raise ValueError(f"Arthakosha title '{title}' already exists for this author")
+
         if title is not None:
             entry.title = str(title).strip()
         if word is not None:
@@ -472,6 +482,7 @@ class RightSection:
             entry.meaning = str(meaning).strip()
         if notes is not None:
             entry.notes = str(notes).strip()
+
         db_instance.session.commit()
         return {
             "id": entry.id,
@@ -493,9 +504,29 @@ class RightSection:
         db_instance.session.commit()
         return True
 
+    # ---------------- GET ALL BY SAMPUTA + AUTHOR ----------------
+    @staticmethod
+    def get_arthakoshas_by_samputa_author(samputa: str, author_id: int):
+        query = Arthakosha.query.join(Arthakosha.author).filter(
+            Arthakosha.samputa == samputa,
+            Arthakosha.author_id == author_id
+        )
 
-
-
+        rows = query.all()
+        results = [
+            {
+                "id": r.id,
+                "samputa": r.samputa,
+                "author_id": r.author_id,
+                "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
+                "title": r.title,
+                "word": r.word,
+                "meaning": r.meaning,
+                "notes": r.notes
+            }
+            for r in rows
+        ]
+        return results
 
 
 class RightSectionBulkService:
@@ -563,9 +594,13 @@ class RightSectionBulkService:
         """
         Reads CSV from file_stream and inserts Arthakosha records in bulk.
         Expected columns: samputa, author_id, title, word, meaning, notes
+        Returns:
+            records_added: int - number of successfully inserted records
+            errors: List[str] - list of error messages for failed rows
         """
         records_added = 0
         errors: List[str] = []
+
         try:
             file_content = file_stream.read().decode("utf-8-sig")
             reader = csv.DictReader(io.StringIO(file_content))
@@ -580,26 +615,37 @@ class RightSectionBulkService:
 
             for i, row in enumerate(reader, 1):
                 try:
+                    # Skip empty mandatory fields
+                    if not row.get("samputa") or not row.get("author_id") or not row.get("title") \
+                            or not row.get("word") or not row.get("meaning"):
+                        errors.append(f"Row {i}: Missing required field(s).")
+                        continue
+
                     arthakosha = Arthakosha(
-                        samputa=row.get("samputa"),
-                        author_id=row.get("author_id"),
-                        title=row.get("title"),
-                        word=row.get("word"),
-                        meaning=row.get("meaning"),
-                        notes=row.get("notes"),
+                        samputa=row.get("samputa").strip(),
+                        author_id=int(row.get("author_id")),
+                        title=row.get("title").strip(),
+                        word=row.get("word").strip(),
+                        meaning=row.get("meaning").strip(),
+                        notes=row.get("notes").strip() if row.get("notes") else None,
                     )
+
                     self.db.add(arthakosha)
                     self.db.flush()
                     records_added += 1
-                except IntegrityError:
+
+                except IntegrityError as ie:
                     self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate entry for word '{row.get('word')}'")
+                    # Likely due to unique constraint (author_id + title)
+                    errors.append(f"Row {i}: Duplicate title '{row.get('title')}' for author_id {row.get('author_id')}")
+                except ValueError as ve:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: Invalid data - {str(ve)}")
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
 
             return records_added, errors
+
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
-
-

@@ -209,6 +209,25 @@ def get_tatvapada():
 
 
 # ---------------- Arthakosha Routes ----------------
+@right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>", methods=["GET"])
+def get_arthakosha_by_samputa_author(samputa, author_id):
+    """
+    Fetch Arthakosha entries for a given samputa and author_id.
+    Returns list of entries with id, title, word, meaning, notes.
+    """
+    try:
+        entries = right_section.get_arthakoshas_by_samputa_author(samputa, author_id)
+        return jsonify({
+            "success": True,
+            "results": entries
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
 @right_section_impl_bp.route('/arthakosha', methods=['POST'])
 def create_arthakosha():
     data = request.json or {}
@@ -231,7 +250,7 @@ def create_arthakosha():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+#---USER API---
 @right_section_impl_bp.route('/arthakosha', methods=['GET'])
 def list_arthakoshas():
     try:
@@ -309,36 +328,6 @@ def delete_arthakosha(samputa, author_id, arthakosha_id):
 
 
 
-@right_section_impl_bp.route("/upload-tippani", methods=["POST"])
-@login_required
-def bulk_upload_tippani():
-    """
-    Handle CSV bulk upload of Tatvapada Tippani.
-    Expected CSV columns:
-    tatvapada_author_id, samputa_sankhye, tippani_title, tippani_content
-    """
-    if "file" not in request.files:
-        return jsonify({"success": False, "message": "No file part in request"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"success": False, "message": "No file selected"}), 400
-
-    try:
-        records_added, errors = right_section_bulk_service.upload_tippani_records(file)
-        db_instance.session.commit()
-        return jsonify({
-            "success": True,
-            "message": f"{records_added} Tippani record(s) added successfully",
-            "errors": errors
-        }), 200
-    except Exception as e:
-        db_instance.session.rollback()
-        return jsonify({
-            "success": False,
-            "message": "Failed to insert Tippani CSV records",
-            "error": str(e)
-        }), 500
 
 @right_section_impl_bp.route("/upload-padavivarana", methods=["POST"])
 @login_required
