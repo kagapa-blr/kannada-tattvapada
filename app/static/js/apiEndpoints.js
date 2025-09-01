@@ -77,6 +77,14 @@ const apiEndpoints = {
         paramarshanaSahitya: `${BASE_URL}/paramarshana_sahitya`
     },
 
+    authors: {
+        list: `${BASE_URL}/api/v1/authors`,               // GET all (id + name only)
+        create: `${BASE_URL}/api/v1/authors`,             // POST
+        getById: (id) => `${BASE_URL}/api/v1/authors/${id}`, // GET single
+        update: (id) => `${BASE_URL}/api/v1/authors/${id}`,  // PUT
+        delete: (id) => `${BASE_URL}/api/v1/authors/${id}`   // DELETE
+    }
+
 };
 
 export default apiEndpoints;

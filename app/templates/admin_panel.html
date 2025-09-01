@@ -15,11 +15,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/update_tatvapada.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/add_tatvapada.css') }}" />
 
-  <!-- Main Dashboard JS (imports all tab scripts) -->
-  <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
-
   <script type="module" src="{{ url_for('static', filename='/cdn/quill/quill.js') }}"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='/cdn/quill/quill.snow.css') }}" />
+
+  <!-- Main Dashboard JS (imports all tab scripts) -->
+  <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
 
 </head>
 
@@ -37,6 +37,8 @@
       <a data-tab="admin-documents">📄<span> Documents </span></a>
       <a data-tab="admin-paribhashika">📝 <span>Manage paribhashika</span></a>
       <a data-tab="admin-arthakosha">📚 <span>Manage Arthakosha</span></a>
+      <a data-tab="admin-tatvapadakara-vivarane">👤 <span>Manage Tatvapadakara Vivarane</span></a>
+
 
 
     </div>
@@ -88,6 +90,10 @@
       <div id="admin-arthakosha" class="admin-tab-content">
         {% include "admin_tabs/manage_arthakosha.html" %}
       </div>
+      <div id="admin-tatvapadakara-vivarane" class="admin-tab-content">
+        {% include "admin_tabs/manage_tatvapadakara_vivarane.html" %}
+      </div>
+
     </div>
     <footer class="admin-footer"
       style="background:#f8f9fa; padding:12px 0; text-align:center; font-size:0.9rem; color:#555; border-top:1px solid #e0e0e0;">

@@ -13,6 +13,7 @@ import apiClient, { BASE_URL } from "./apiClient.js";
 
 import { initParibhashikaPadavivaranaManageTab } from './admin/manageparibhashika.js'
 import { initArthakoshaManageTab } from './admin/manageArthakosha.js'
+import { initAuthorsTab } from './admin/manage_tatvapadakara_vivarane.js'
 document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------
     // DOM References
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "admin-documents": initDocumentsTab,
         "admin-paribhashika": initParibhashikaPadavivaranaManageTab,
         "admin-arthakosha": initArthakoshaManageTab, // <-- instantiate the class
+        "admin-tatvapadakara-vivarane": initAuthorsTab, // <-- instantiate the class
     };
 
     // ----------------------------

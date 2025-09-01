@@ -12,6 +12,7 @@ from app.routes.home import home_bp
 from app.routes.right_section_api import right_section_impl_bp
 from app.routes.right_section_ui import right_section_bp
 from app.routes.tatvapada import tatvapada_bp
+from app.routes.tatvapadakarara_vivara import tatvapadakarara_bp
 from app.utils.logger import setup_logger
 
 # -------------------- Step 1: Load Environment -------------------- #
@@ -56,6 +57,7 @@ app.register_blueprint(documents_bp)
 app.register_blueprint(errors_bp)
 app.register_blueprint(right_section_bp)
 app.register_blueprint(right_section_impl_bp)
+app.register_blueprint(tatvapadakarara_bp)
 
 logger.info(
     "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"

@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
+from app.models.documents import TatvapadakararaVivara
 from app.models.tatvapada import Tatvapada, Arthakosha, ParibhashikaPadavivarana
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
@@ -364,19 +365,6 @@ class RightSection:
         db_instance.session.commit()
         return True
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # --------------------- ARTHAKOSHA SERVICE METHODS -------------------------
     # ---------------- CREATE ----------------
     @staticmethod
@@ -650,3 +638,58 @@ class RightSectionBulkService:
 
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
+
+
+class TatvapadakararaVivaraService:
+
+    @staticmethod
+    def create_author(author_name, content):
+        try:
+            new_author = TatvapadakararaVivara(
+                author_name=author_name,
+                content=content
+            )
+            db_instance.session.add(new_author)
+            db_instance.session.commit()
+            return new_author, None
+        except IntegrityError:
+            db_instance.session.rollback()
+            return None, "Author with this name already exists"
+
+    @staticmethod
+    def get_all_authors():
+        """Return ID, name, created_at, and updated_at (not full content)."""
+        return TatvapadakararaVivara.query.with_entities(
+            TatvapadakararaVivara.id,
+            TatvapadakararaVivara.author_name,
+            TatvapadakararaVivara.created_at,
+            TatvapadakararaVivara.updated_at
+        ).all()
+
+    @staticmethod
+    def get_author_by_id(author_id):
+        return TatvapadakararaVivara.query.get(author_id)
+
+    @staticmethod
+    def update_author(author_id, author_name=None, content=None):
+        author = TatvapadakararaVivara.query.get(author_id)
+        if not author:
+            return None, "Author not found"
+
+        if author_name:
+            author.author_name = author_name
+        if content:
+            author.content = content
+
+        db_instance.session.commit()
+        return author, None
+
+    @staticmethod
+    def delete_author(author_id):
+        author = TatvapadakararaVivara.query.get(author_id)
+        if not author:
+            return False, "Author not found"
+
+        db_instance.session.delete(author)
+        db_instance.session.commit()
+        return True, None

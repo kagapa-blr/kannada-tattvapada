@@ -41,3 +41,33 @@ class KannadaDocument(db_instance.Model):
 
     def __repr__(self):
         return f"<KannadaDocument(title='{self.title}', id={self.id})>"
+
+class TatvapadakararaVivara(db_instance.Model):
+    """
+    Stores ತತ್ವಪದಕಾರರ ವಿವರ (Author Introductions).
+    Minimal fields: ID, Author Name, Content.
+    """
+    __tablename__ = "tatvapadakarara_vivara"
+    __table_args__ = (
+        UniqueConstraint('author_name', name='uq_author_name'),
+        {
+            'mysql_engine': 'InnoDB',
+            'mysql_charset': 'utf8mb4',
+            'mysql_collate': 'utf8mb4_unicode_ci'
+        }
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Author metadata
+    author_name = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
+
+    # Full content (Kannada text or HTML)
+    content = Column(LONGTEXT(collation='utf8mb4_unicode_ci'), nullable=False)
+
+    # Timestamps (IST)
+    created_at = Column(DateTime(timezone=True), default=current_ist_time)
+    updated_at = Column(DateTime(timezone=True), default=current_ist_time, onupdate=current_ist_time)
+
+    def __repr__(self):
+        return f"<TatvapadakararaVivara(author_name='{self.author_name}', id={self.id})>"
