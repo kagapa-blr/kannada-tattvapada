@@ -204,6 +204,7 @@ function setupNavigation() {
         right_section_tippani: apiEndpoints.rightSectionUI.tippani,
         right_section_arthakosha: apiEndpoints.rightSectionUI.arthakosha,
         right_section_sampadakara_nudi: apiEndpoints.rightSectionUI.sampadakaraNudi,
+        right_section_tatvapadakara_vivarane: apiEndpoints.rightSectionUI.tatvapadakara_vivarane,
         btnBiography: apiEndpoints.rightSection.tatvapadakaraVivarane,
 
     };

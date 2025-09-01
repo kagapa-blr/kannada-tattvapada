@@ -1,26 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tatvapadakara vivarane</title>
-    <!-- 1. Bootstrap CSS -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ತತ್ವಪದಕಾರರ ವಿವರ</title>
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
-
-    <!-- 2. Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
-
 </head>
 
-<body>
+<body class="bg-light d-flex flex-column min-vh-100">
+
     <!-- Navbar -->
     {% include 'navbar.html' %}
-    <div class="p-3">
-        <h3>👤 ತತ್ವಪದಕಾರರ ವಿವರ</h3>
-        <p>ತತ್ವಪದಕಾರರ ಜೀವನ ಚರಿತ್ರೆ ಮತ್ತು ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.</p>
-    </div>
 
+    <main class="container my-5 flex-grow-1" style="max-width: 900px;">
+        <header class="mb-4">
+            <h3>👤 ತತ್ವಪದಕಾರರ ವಿವರ</h3>
+            <p class="text-secondary">ತತ್ವಪದಕಾರರ ಜೀವನ ಚರಿತ್ರೆ ಮತ್ತು ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.</p>
+        </header>
+
+        <!-- Author Select & Button -->
+        <form class="d-flex gap-2 mb-4" id="authorForm" aria-label="Select and view author details">
+            <label for="authorSelect" class="visually-hidden">Select Author</label>
+            <select id="authorSelect" class="form-select flex-grow-1" aria-required="true"
+                aria-describedby="helpAuthorSelect" required>
+                <option value="" disabled selected>-- Select Author --</option>
+            </select>
+            <button type="submit" class="btn btn-primary" id="viewAuthorBtn">View Info</button>
+        </form>
+
+        <small id="helpAuthorSelect" class="form-text text-muted mb-3">Choose an author from the dropdown and click View
+            Info.</small>
+
+        <!-- Author Card -->
+        <article id="authorCard" class="card d-none shadow-sm border-secondary">
+            <div class="card-body"
+                style="max-height: 70vh; overflow-y: auto; background-color: #fefefe; border: 1px solid #ced4da; border-radius: 0.375rem; padding: 1.5rem;">
+                <h4 id="authorName" class="card-title fw-semibold mb-3"></h4>
+                <p id="authorCreated" class="text-muted small mb-4"></p>
+                <section id="authorContent" class="card-text fs-6 lh-lg text-break"
+                    style="white-space: pre-wrap; word-wrap: break-word;"></section>
+            </div>
+        </article>
+    </main>
 
     <!-- Custom Loader -->
     {% include 'customLoader.html' %}
@@ -28,12 +52,90 @@
     <!-- Footer -->
     {% include 'footer.html' %}
 
-    <!-- 1. Bootstrap JS -->
+    <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-    <!-- 2. Custom JS -->
     <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 
+    <script>
+        const authorSelect = document.getElementById("authorSelect");
+        const authorCard = document.getElementById("authorCard");
+        const authorName = document.getElementById("authorName");
+        const authorCreated = document.getElementById("authorCreated");
+        const authorContent = document.getElementById("authorContent");
+        const authorForm = document.getElementById("authorForm");
+
+        // Fetch all authors and populate the dropdown
+        async function loadAuthors() {
+            try {
+                const response = await fetch("/api/v1/authors");
+                if (!response.ok) throw new Error("Network response was not OK");
+                const authors = await response.json();
+
+                authors.forEach(a => {
+                    const option = document.createElement("option");
+                    option.value = a.id;
+                    option.textContent = a.author_name;
+                    authorSelect.appendChild(option);
+                });
+
+                // Optional: auto-select first author and load info
+                if (authors.length > 0) {
+                    authorSelect.value = authors[0].id;
+                    await viewAuthor(authors[0].id);
+                }
+            } catch (err) {
+                console.error("Failed to load authors:", err);
+                alert("Failed to load authors. Please try again later.");
+            }
+        }
+
+        // Fetch single author details by ID and display
+        async function viewAuthor(selectedId) {
+            const id = selectedId || authorSelect.value;
+            if (!id) {
+                alert("Please select an author.");
+                return;
+            }
+
+            authorCard.classList.remove("d-none");
+            authorName.textContent = "Loading...";
+            authorCreated.textContent = "";
+            authorContent.textContent = "Please wait...";
+            authorContent.style.opacity = 0;
+
+            try {
+                const response = await fetch(`/api/v1/authors/${id}`);
+                if (!response.ok) throw new Error("Author not found");
+                const data = await response.json();
+
+                authorName.textContent = data.author_name;
+                authorCreated.textContent =
+                    `Created: ${new Date(data.created_at).toLocaleString()} | Updated: ${new Date(data.updated_at).toLocaleString()}`;
+                authorContent.innerHTML = data.content || "<em>No content available.</em>";
+
+                // Fade in content smoothly
+                setTimeout(() => {
+                    authorContent.style.transition = "opacity 0.5s ease-in-out";
+                    authorContent.style.opacity = 1;
+                }, 50);
+
+            } catch (err) {
+                console.error(err);
+                authorName.textContent = "";
+                authorCreated.textContent = "";
+                authorContent.textContent = "Failed to load content. Please try again.";
+                authorContent.style.opacity = 1;
+            }
+        }
+
+        authorForm.addEventListener("submit", async event => {
+            event.preventDefault();
+            await viewAuthor();
+        });
+
+        // Initialize page
+        loadAuthors();
+    </script>
 </body>
 
 </html>
