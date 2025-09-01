@@ -61,7 +61,7 @@ const apiEndpoints = {
     },
 
     rightSection: {
-        tippaniApi: `${BASE_URL}/api/v1/right-section/padavivarana`,
+        padavivaranaApi: `${BASE_URL}/api/v1/right-section/padavivarana`,
         tippaniApiUpload: `${BASE_URL}/api/v1/right-section/upload-tippani`,
         padavivaranaApiUpload: `${BASE_URL}/api/v1/right-section/upload-padavivarana`,
         arthakoshaApi: `${BASE_URL}/api/v1/right-section/arthakosha`,

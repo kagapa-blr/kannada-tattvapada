@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</title>
+  <title>📖 ಪರಿಭಾಷಿಕ ಪದವಿವರಣೆ ಪಟ್ಟಿ</title>
 
   <!-- CSS Dependencies -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
@@ -17,23 +17,22 @@
   {% include 'navbar.html' %}
 
   <div class="container mt-4">
-    <h2>📖 ಟಿಪ್ಪಣಿ ಪಟ್ಟಿ</h2>
+    <h2>📖 ಪಾರಿಭಾಷಿಕ ಪದವಿವರಣ ಕೋಶ </h2>
 
     <!-- ✅ Kannada letters grid -->
-    <div class="letters-container">
-      <div class="letters-grid" id="letters-grid"></div>
-      <button class="clear-btn" id="clearSearch">🔄 ಹುಡುಕಾಟ ಅಳಿಸಿ</button>
+    <div class="letters-container mb-3">
+      <div class="letters-grid d-flex flex-wrap" id="letters-grid"></div>
+      <button class="btn btn-sm btn-warning mt-2" id="clearSearch">🔄 ಹುಡುಕಾಟ ಅಳಿಸಿ</button>
     </div>
 
-
-
-    <table id="right_section_tippaniTable" class="display stripe hover table table-bordered" style="width:100%;">
+    <!-- Paribhashika Padavivarana Table -->
+    <table id="right_section_padavivaranaTable" class="display stripe hover table table-bordered w-100">
       <thead>
         <tr>
           <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
           <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
-          <th>ಟಿಪ್ಪಣಿ ಐಡಿ</th>
-          <th>ಟಿಪ್ಪಣಿ ಶೀರ್ಷಿಕೆ</th>
+          <th>ಪದವಿವರಣೆ ಐಡಿ</th>
+          <th>ಪದವಿವರಣೆ ಶೀರ್ಷಿಕೆ</th>
           <th>Author ID (hidden)</th>
         </tr>
       </thead>
@@ -41,28 +40,28 @@
     </table>
   </div>
 
-  <!-- Modal for Tippani Details -->
-  <div class="modal fade" id="right_section_tippaniModal" tabindex="-1"
-    aria-labelledby="right_section_tippaniModalLabel" aria-hidden="true">
+  <!-- Modal for Padavivarana Details -->
+  <div class="modal fade" id="right_section_padavivaranaModal" tabindex="-1"
+    aria-labelledby="right_section_padavivaranaModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="right_section_tippaniModalLabel">ಟಿಪ್ಪಣಿ ವಿವರಗಳು</h5>
+          <h5 class="modal-title" id="right_section_padavivaranaModalLabel">ಪರಿಭಾಷಿಕ ಪದವಿವರಣೆ ವಿವರಗಳು</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
-          <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="right_section_modalSamputa"></span></p>
-          <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="right_section_modalAuthor"></span></p>
-          <p><strong>ಟಿಪ್ಪಣಿ ಐಡಿ:</strong> <span id="right_section_modalId"></span></p>
-          <p><strong>ಟಿಪ್ಪಣಿ ಶೀರ್ಷಿಕೆ:</strong> <span id="right_section_modalTitle"></span></p>
+          <p><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="modalSamputa"></span></p>
+          <p><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="modalAuthor"></span></p>
+          <p><strong>ಪದವಿವರಣೆ ಐಡಿ:</strong> <span id="modalId"></span></p>
+          <p><strong>ಪದವಿವರಣೆ ಶೀರ್ಷಿಕೆ:</strong> <span id="modalTitle"></span></p>
           <hr>
-          <p><strong>ಟಿಪ್ಪಣಿ ವಿಷಯ:</strong></p>
-          <div id="right_section_modalContent"
+          <p><strong>ಪದವಿವರಣೆ ವಿಷಯ:</strong></p>
+          <div id="modalContent"
             style="white-space:pre-wrap; border:1px solid #ddd; padding:1rem; background-color:#f8f9fa; border-radius:0.25rem;">
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
         </div>
       </div>
     </div>
@@ -75,7 +74,8 @@
   <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-  <script type="module" src="{{ url_for('static', filename='js/right_section/right_section_tippani.js') }}"></script>
+  <script type="module"
+    src="{{ url_for('static', filename='js/right_section/paribhashika_padavivarana.js') }}"></script>
 
 </body>
 

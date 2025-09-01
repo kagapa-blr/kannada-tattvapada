@@ -1,7 +1,7 @@
 import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     const letters = [
         "ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ೠ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ",
         "ಕ", "ಖ", "ಗ", "ಘ", "ಙ", "ಚ", "ಛ", "ಜ", "ಝ", "ಞ",
@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "ಶ", "ಷ", "ಸ", "ಹ", "ಳ"
     ];
 
-    // Initialize DataTable with default pagination and info enabled
-    const table = new DataTable("#right_section_tippaniTable", {
+    // ✅ Initialize DataTable
+    const table = new DataTable("#right_section_padavivaranaTable", {
         processing: true,
         serverSide: true,
         ajax: async (data, callback) => {
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             try {
                 const res = await apiClient.get(
-                    `${apiEndpoints.rightSection.tippaniApi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`
+                    `${apiEndpoints.rightSection.padavivaranaApi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`
                 );
 
                 callback({
@@ -30,15 +30,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     data: res.results || []
                 });
             } catch (err) {
-                console.error("Error loading Tippani list:", err);
+                console.error("Error loading Padavivarana list:", err);
                 callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
             }
         },
         columns: [
             { data: "samputa_sankhye" },
             { data: "tatvapadakarara_hesaru" },
-            { data: "tippani_id" },
-            { data: "tippani_title" },
+            { data: "id", visible: false },
+            { data: "title" },
             { data: "tatvapada_author_id", visible: false }
         ],
         language: {
@@ -56,36 +56,36 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         pageLength: 50,
         stripeClasses: ["odd-row", "even-row"],
-        paging: true,   // Ensure paging enabled
-        info: true      // Ensure info display enabled
+        paging: true,
+        info: true
     });
 
-    // Row click → fetch Tippani details
-    document.querySelector("#right_section_tippaniTable tbody").addEventListener("click", async (event) => {
+    // ✅ Row click → fetch Padavivarana details
+    document.querySelector("#right_section_padavivaranaTable tbody").addEventListener("click", async (event) => {
         const tr = event.target.closest("tr");
         if (!tr) return;
         const rowData = table.row(tr).data();
         if (!rowData) return;
 
         try {
-            const url = `${apiEndpoints.rightSection.tippaniApi}/${rowData.tippani_id}?samputa=${rowData.samputa_sankhye}&author_id=${rowData.tatvapada_author_id}`;
+            const url = `${apiEndpoints.rightSection.padavivaranaApi}/${rowData.samputa_sankhye}/${rowData.tatvapada_author_id}/${rowData.id}`;
             const res = await apiClient.get(url);
-            if (res.success && res.data) {
-                const tippani = res.data;
-                document.getElementById("right_section_modalSamputa").textContent = tippani.samputa;
-                document.getElementById("right_section_modalAuthor").textContent = rowData.tatvapadakarara_hesaru;
-                document.getElementById("right_section_modalId").textContent = tippani.id;
-                document.getElementById("right_section_modalTitle").textContent = tippani.title || "—";
-                document.getElementById("right_section_modalContent").textContent = tippani.content || "—";
 
-                new bootstrap.Modal(document.getElementById("right_section_tippaniModal")).show();
+            if (res.id) {
+                document.getElementById("modalSamputa").textContent = res.samputa;
+                document.getElementById("modalAuthor").textContent = rowData.tatvapadakarara_hesaru;
+                document.getElementById("modalId").textContent = res.id;
+                document.getElementById("modalTitle").textContent = res.title || "—";
+                document.getElementById("modalContent").textContent = res.content || "—";
+
+                new bootstrap.Modal(document.getElementById("right_section_padavivaranaModal")).show();
             }
         } catch (err) {
-            console.error("Error fetching Tippani:", err);
+            console.error("Error fetching Padavivarana:", err);
         }
     });
 
-    // Kannada letters grid → append to DataTable search
+    // ✅ Kannada letters grid → append to DataTable search
     const lettersGrid = document.getElementById("letters-grid");
     letters.forEach(ch => {
         const btn = document.createElement("button");
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         lettersGrid.appendChild(btn);
     });
 
-    // Clear search button
+    // ✅ Clear search button
     document.getElementById("clearSearch").addEventListener("click", () => {
         table.search("").draw();
     });

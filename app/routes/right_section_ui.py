@@ -18,7 +18,7 @@ def arthakosha():
 
 @right_section_bp.route('/tippani', methods=['GET'])
 def tippani():
-    return render_template('right_section/tippani.html')
+    return render_template('right_section/paribhashika_padavivarana.html')
 
 
 @right_section_bp.route('/tatvapadakara_vivarane', methods=['GET'])

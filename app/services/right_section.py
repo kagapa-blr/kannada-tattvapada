@@ -145,7 +145,8 @@ class RightSection:
 
 
     # --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
-    def get_all_paribhashika_padavivarana(self, offset=0, limit=10, search=""):
+    @staticmethod
+    def get_all_paribhashika_padavivarana(offset=0, limit=10, search=""):
         """
         Fetch paginated ParibhashikaPadavivarana entries with samputa, author id, author name, entry_id.
         Optional search by Title OR Author name (starts with search string).
