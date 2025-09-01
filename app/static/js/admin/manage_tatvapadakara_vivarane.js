@@ -15,15 +15,30 @@ export function initAuthorsTab() {
     deleteModal = new bootstrap.Modal(document.getElementById("deleteAuthorModal"));
 
     // Initialize Quill editor
+    // Initialize Quill editor with extended toolbar
     quill = new Quill("#authorContentEditor", {
         theme: "snow",
         modules: {
             toolbar: {
-                container: "#authorContentToolbar"
+                container: [
+                    [{ 'header': [1, 2, 3, false] }],       // Headings
+                    ['bold', 'italic', 'underline', 'strike'], // Text styles
+                    [{ 'align': [] }],                       // Alignment (left, center, right, justify)
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }], // Lists
+                    [{ 'indent': '-1' }, { 'indent': '+1' }], // Indentation
+                    [{ 'color': [] }, { 'background': [] }], // Text & background color
+                    ['link', 'image'],                       // Links & images
+                    ['blockquote', 'code-block'],            // Quote & code block
+                    ['clean']                                // Remove formatting
+                ],
+                handlers: {
+                    // you can override custom handlers here if needed
+                }
             }
         },
         bounds: "#authorModal .modal-content"
     });
+
 
     // Keep hidden textarea synced
     quill.on("text-change", () => {
