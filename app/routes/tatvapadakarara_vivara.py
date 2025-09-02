@@ -37,15 +37,17 @@ def create_author():
 @tatvapadakarara_bp.route("/authors", methods=["GET"])
 def get_authors():
     authors = TatvapadakararaVivaraService.get_all_authors()
-    return jsonify([
-        {
-            "id": a.id,
-            "author_name": a.author_name,
-            "created_at": a.created_at.isoformat() if a.created_at else None,
-            "updated_at": a.updated_at.isoformat() if a.updated_at else None,
-        }
-        for a in authors
-    ]), 200
+    return jsonify({
+        "data": [
+            {
+                "id": a.id,
+                "author_name": a.author_name,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+            }
+            for a in authors
+        ]
+    }), 200
 
 
 # ---------------------------
