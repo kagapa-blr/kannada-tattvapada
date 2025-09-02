@@ -2,140 +2,232 @@
 <html lang="kn">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ತತ್ವಪದಕಾರರ ವಿವರ</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ತತ್ವಪದಕಾರರ ವಿವರ</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+
+  <style>
+    body {
+      background-color: #f9fafb;
+      font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+      font-size: 19px;
+      /* slightly smaller for balance */
+      line-height: 1.75;
+      color: #2c2c2c;
+    }
+
+    h3 {
+      font-weight: 600;
+      color: #222;
+      letter-spacing: 0.5px;
+    }
+
+    .card {
+      border-radius: 1rem;
+      transition: all 0.4s ease;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    #authorCard {
+      display: none;
+      opacity: 0;
+      transform: translateY(25px);
+    }
+
+    #authorContent {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      max-height: 65vh;
+      overflow-y: auto;
+      padding-right: 10px;
+      font-size: 18px;
+    }
+
+    #authorContent::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #authorContent::-webkit-scrollbar-thumb {
+      background: #c2c2c2;
+      border-radius: 6px;
+    }
+
+    #authorContent::-webkit-scrollbar-thumb:hover {
+      background: #8a8a8a;
+    }
+
+    .btn-primary {
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .form-select {
+      border-radius: 0.75rem;
+      font-size: 18px;
+      padding: 0.6rem 0.9rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .meta-text {
+      font-size: 0.95rem;
+      color: #6c757d;
+      font-style: italic;
+    }
+  </style>
+
 </head>
 
-<body class="bg-light d-flex flex-column min-vh-100">
+<body>
+  <!-- Navbar -->
+  {% include 'navbar.html' %}
 
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
+  <div class="container my-5">
+    <div class="text-center mb-4">
+      <h3 class="mb-2">👤 ತತ್ವಪದಕಾರರ ವಿವರ</h3>
+      <p class="text-muted">ತತ್ವಪದಕಾರರ ಜೀವನ ಚರಿತ್ರೆ ಮತ್ತು ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ವೀಕ್ಷಿಸಬಹುದು.</p>
+    </div>
 
-    <main class="container my-5 flex-grow-1" style="max-width: 900px;">
-        <header class="mb-4">
-            <h3>👤 ತತ್ವಪದಕಾರರ ವಿವರ</h3>
-            <p class="text-secondary">ತತ್ವಪದಕಾರರ ಜೀವನ ಚರಿತ್ರೆ ಮತ್ತು ವಿವರಗಳನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.</p>
-        </header>
+    <!-- Author Select & Button -->
+    <div class="row g-2 justify-content-center mb-4">
+      <div class="col-md-7">
+        <select id="authorSelect" class="form-select shadow-sm">
+          <option value="">-- ತತ್ವಪದಕಾರರನ್ನು ಆಯ್ಕೆಮಾಡಿ --</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button id="viewAuthorBtn" class="btn btn-primary shadow-sm">ವಿವರ ವೀಕ್ಷಿಸಿ</button>
+      </div>
+    </div>
 
-        <!-- Author Select & Button -->
-        <form class="d-flex gap-2 mb-4" id="authorForm" aria-label="Select and view author details">
-            <label for="authorSelect" class="visually-hidden">Select Author</label>
-            <select id="authorSelect" class="form-select flex-grow-1" aria-required="true"
-                aria-describedby="helpAuthorSelect" required>
-                <option value="" disabled selected>-- Select Author --</option>
-            </select>
-            <button type="submit" class="btn btn-primary" id="viewAuthorBtn">View Info</button>
-        </form>
+    <!-- Author Card -->
+    <div id="authorCard" class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h4 id="authorName" class="card-title fw-semibold mb-2"></h4>
+        <p id="authorCreated" class="meta-text mb-3"></p>
+        <div id="authorContent" class="card-text"></div>
+      </div>
+    </div>
+  </div>
 
-        <small id="helpAuthorSelect" class="form-text text-muted mb-3">Choose an author from the dropdown and click View
-            Info.</small>
+  <!-- Custom Loader -->
+  {% include 'customLoader.html' %}
 
-        <!-- Author Card -->
-        <article id="authorCard" class="card d-none shadow-sm border-secondary">
-            <div class="card-body"
-                style="max-height: 70vh; overflow-y: auto; background-color: #fefefe; border: 1px solid #ced4da; border-radius: 0.375rem; padding: 1.5rem;">
-                <h4 id="authorName" class="card-title fw-semibold mb-3"></h4>
-                <p id="authorCreated" class="text-muted small mb-4"></p>
-                <section id="authorContent" class="card-text fs-6 lh-lg text-break"
-                    style="white-space: pre-wrap; word-wrap: break-word;"></section>
-            </div>
-        </article>
-    </main>
+  <!-- Footer -->
+  {% include 'footer.html' %}
 
-    <!-- Custom Loader -->
-    {% include 'customLoader.html' %}
+  <!-- Bootstrap JS -->
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
 
-    <!-- Footer -->
-    {% include 'footer.html' %}
+  <script>
+    const authorSelect = document.getElementById("authorSelect");
+    const viewBtn = document.getElementById("viewAuthorBtn");
+    const authorCard = document.getElementById("authorCard");
+    const authorName = document.getElementById("authorName");
+    const authorCreated = document.getElementById("authorCreated");
+    const authorContent = document.getElementById("authorContent");
 
-    <!-- Bootstrap JS -->
-    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    // Animate card
+    function fadeInCard() {
+      authorCard.style.display = "block";
+      setTimeout(() => {
+        authorCard.style.opacity = "1";
+        authorCard.style.transform = "translateY(0)";
+      }, 50);
+    }
 
-    <script>
-        const authorSelect = document.getElementById("authorSelect");
-        const authorCard = document.getElementById("authorCard");
-        const authorName = document.getElementById("authorName");
-        const authorCreated = document.getElementById("authorCreated");
-        const authorContent = document.getElementById("authorContent");
-        const authorForm = document.getElementById("authorForm");
+    function resetCardAnimation() {
+      authorCard.style.opacity = "0";
+      authorCard.style.transform = "translateY(20px)";
+    }
 
-        // Fetch all authors and populate the dropdown
-        async function loadAuthors() {
-            try {
-                const response = await fetch("/api/v1/authors");
-                if (!response.ok) throw new Error("Network response was not OK");
-                const authors = await response.json();
+    function resetContentAnimation() {
+      authorContent.style.opacity = "0";
+    }
 
-                authors.forEach(a => {
-                    const option = document.createElement("option");
-                    option.value = a.id;
-                    option.textContent = a.author_name;
-                    authorSelect.appendChild(option);
-                });
+    function fadeInContent() {
+      setTimeout(() => {
+        authorContent.style.opacity = "1";
+      }, 200);
+    }
 
-                // Optional: auto-select first author and load info
-                if (authors.length > 0) {
-                    authorSelect.value = authors[0].id;
-                    await viewAuthor(authors[0].id);
-                }
-            } catch (err) {
-                console.error("Failed to load authors:", err);
-                alert("Failed to load authors. Please try again later.");
-            }
-        }
+    // Fetch all authors and populate dropdown
+    async function loadAuthors() {
+      try {
+        const response = await fetch("/api/v1/authors");
+        const authors = await response.json();
 
-        // Fetch single author details by ID and display
-        async function viewAuthor(selectedId) {
-            const id = selectedId || authorSelect.value;
-            if (!id) {
-                alert("Please select an author.");
-                return;
-            }
-
-            authorCard.classList.remove("d-none");
-            authorName.textContent = "Loading...";
-            authorCreated.textContent = "";
-            authorContent.textContent = "Please wait...";
-            authorContent.style.opacity = 0;
-
-            try {
-                const response = await fetch(`/api/v1/authors/${id}`);
-                if (!response.ok) throw new Error("Author not found");
-                const data = await response.json();
-
-                authorName.textContent = data.author_name;
-                authorCreated.textContent =
-                    `Created: ${new Date(data.created_at).toLocaleString()} | Updated: ${new Date(data.updated_at).toLocaleString()}`;
-                authorContent.innerHTML = data.content || "<em>No content available.</em>";
-
-                // Fade in content smoothly
-                setTimeout(() => {
-                    authorContent.style.transition = "opacity 0.5s ease-in-out";
-                    authorContent.style.opacity = 1;
-                }, 50);
-
-            } catch (err) {
-                console.error(err);
-                authorName.textContent = "";
-                authorCreated.textContent = "";
-                authorContent.textContent = "Failed to load content. Please try again.";
-                authorContent.style.opacity = 1;
-            }
-        }
-
-        authorForm.addEventListener("submit", async event => {
-            event.preventDefault();
-            await viewAuthor();
+        authors.forEach(a => {
+          const option = document.createElement("option");
+          option.value = a.id;
+          option.textContent = a.author_name;
+          authorSelect.appendChild(option);
         });
 
-        // Initialize page
-        loadAuthors();
-    </script>
+        // Auto-load first author if available
+        if (authors.length > 0) {
+          authorSelect.value = authors[0].id;
+          viewAuthor();
+        }
+      } catch (err) {
+        console.error("Failed to load authors:", err);
+        alert("ತತ್ವಪದಕಾರರನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.");
+      }
+    }
+
+    // Fetch single author content by ID
+    async function viewAuthor() {
+      const id = authorSelect.value;
+      if (!id) return alert("ದಯವಿಟ್ಟು ತತ್ವಪದಕಾರರನ್ನು ಆಯ್ಕೆಮಾಡಿ.");
+
+      resetCardAnimation();
+      resetContentAnimation();
+      fadeInCard();
+
+      authorName.textContent = "Loading...";
+      authorCreated.textContent = "";
+      authorContent.textContent = "ದಯವಿಟ್ಟು ಕಾಯಿರಿ...";
+
+      try {
+        const response = await fetch(`/api/v1/authors/${id}`);
+        if (!response.ok) throw new Error("Author not found");
+        const data = await response.json();
+
+        authorName.textContent = data.author_name;
+        authorCreated.textContent =
+          `📅 ರಚನೆ: ${data.created_at} | 📝 ನವೀಕರಿಸಲಾಗಿದೆ: ${data.updated_at}`;
+
+        authorContent.innerHTML = data.content || "<em>ವಿವರ ಲಭ್ಯವಿಲ್ಲ.</em>";
+        fadeInContent();
+
+      } catch (err) {
+        console.error(err);
+        authorName.textContent = "";
+        authorCreated.textContent = "";
+        authorContent.textContent = "ವಿವರಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.";
+      }
+    }
+
+    viewBtn.addEventListener("click", viewAuthor);
+
+    // Initialize
+    loadAuthors();
+  </script>
 </body>
 
 </html>
