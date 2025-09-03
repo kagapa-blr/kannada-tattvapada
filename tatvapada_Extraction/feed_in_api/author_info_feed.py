@@ -74,8 +74,8 @@ class AuthorUploader:
 
 if __name__ == "__main__":
     # ========== CONFIG ==========
-    #API_URL = "http://127.0.0.1:5000/api/v1/authors"
-    API_URL = "https://kagapa.com/kannada-tattvapada/api/v1/authors"
+    API_URL = "http://127.0.0.1:5000/api/v1/authors"
+    #API_URL = "https://kagapa.com/kannada-tattvapada/api/v1/authors"
     DOCX_FOLDER = r"C:\Users\techk\Downloads\tattvapadakaararu\tattvapadakaararu"
     # ============================
 

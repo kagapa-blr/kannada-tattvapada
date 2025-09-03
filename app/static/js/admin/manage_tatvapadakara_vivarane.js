@@ -77,8 +77,8 @@ export function initAuthorsTab() {
 async function loadAuthors() {
     showLoader();
     try {
-        const authors = await apiClient.get(apiEndpoints.authors.list);
-        renderAuthorsTable(authors);
+        const response = await apiClient.get(apiEndpoints.authors.list);
+        renderAuthorsTable(response.data);  // <-- use .data
     } catch (err) {
         console.error("Failed to load authors", err);
         alert("Failed to load authors.");

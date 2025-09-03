@@ -43,8 +43,6 @@ async function loadAuthors() {
     showLoader();
     try {
         const response = await apiClient.get(apiEndpoints.authors.list);
-        console.log("Full response:", response);
-
         const authors = unwrapResponse(response);
 
         if (!Array.isArray(authors)) {
@@ -83,24 +81,22 @@ async function viewAuthor() {
     showLoader();
     try {
         const response = await apiClient.get(apiEndpoints.authors.getById(authorId));
-        console.log("Author detail response raw:", response);
-
         const author = unwrapResponse(response);
 
         if (!author || !author.id || !author.author_name) {
             throw new Error("Invalid author detail response");
         }
 
-        // Render content
-        resetContentAnimation();
-        authorContent.innerHTML = `
-            <h3>${author.author_name}</h3>
-            <p class="text-sm text-gray-500">
-                📅 ರಚನೆ: ${author.created_at} | 📝 ನವೀಕರಣ: ${author.updated_at}
-            </p><br>
-            <div>${author.content || "<em>ಯಾವುದೇ ವಿವರಗಳಿಲ್ಲ</em>"}</div>
+        // Fill header fields
+        document.getElementById("authorName").textContent = author.author_name;
+        document.getElementById("authorCreated").textContent =
+            `📅 ರಚನೆ: ${author.created_at} | 📝 ನವೀಕರಣ: ${author.updated_at}`;
 
-        `;
+        // Fill content
+        resetContentAnimation();
+        authorContent.innerHTML = author.content || "<em>ಯಾವುದೇ ವಿವರಗಳಿಲ್ಲ</em>";
+
+        // Animate
         fadeInContent();
         fadeInCard();
     } catch (err) {

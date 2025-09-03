@@ -1,26 +1,22 @@
 import csv
 import io
 from typing import Tuple, List
-
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
-
 from app.config.database import db_instance
 from app.models.documents import TatvapadakararaVivara
 from app.models.tatvapada import Tatvapada, Arthakosha, ParibhashikaPadavivarana
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 
 
-class RightSection:
-    def __init__(self):
-        pass
-    #--------------Tatvapada suchi -------------------
-    def get_tatvapada_suchi(self, offset=0, limit=10, search=""):
-        """
-        Fetch paginated list of Tatvapada entries.
-        Supports optional search by first line.
-        """
+# ----------------- Tatvapada Service -----------------
+class TatvapadaSuchiService:
+    """Service to manage Tatvapada entries and related queries"""
+
+    @staticmethod
+    def get_tatvapada_suchi(offset=0, limit=10, search=""):
+        """Fetch paginated list of Tatvapada entries."""
         try:
             query = (
                 Tatvapada.query
@@ -33,13 +29,11 @@ class RightSection:
                     TatvapadaAuthorInfo.tatvapadakarara_hesaru,
                 )
             )
-
             if search:
                 query = query.filter(Tatvapada.tatvapada_first_line.ilike(f"{search.strip()}%"))
 
             total = query.count()
             rows = query.offset(offset).limit(limit).all()
-
             results = [
                 {
                     "samputa_sankhye": getattr(row, "samputa_sankhye", None),
@@ -50,18 +44,13 @@ class RightSection:
                 }
                 for row in rows
             ]
-
             return {"total": total, "results": results}
-
         except Exception as e:
-            # Log error or raise for route to handle
             raise e
 
-    def get_tatvapada_details(self, samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
-        """
-        Fetch a specific Tatvapada entry by (samputa, author_id, tatvapada_sankhye).
-        Returns dict if found, else None. Handles missing relationships safely.
-        """
+    @staticmethod
+    def get_tatvapada_details(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
+        """Fetch a specific Tatvapada entry by (samputa, author_id, tatvapada_sankhye)."""
         try:
             row = (
                 Tatvapada.query
@@ -72,15 +61,11 @@ class RightSection:
                 )
                 .first()
             )
-
             if not row:
                 return None
 
-            # Safe access for author name
             author_name = getattr(row.tatvapadakarara_hesaru, "tatvapadakarara_hesaru", None) \
                 if getattr(row, "tatvapadakarara_hesaru", None) else None
-
-            # Safe access for tippanis
             tippanis = [
                 {
                     "tippani_id": getattr(t, "tippani_id", None),
@@ -101,31 +86,17 @@ class RightSection:
                 "klishta_padagalu_artha": getattr(row, "klishta_padagalu_artha", None),
                 "tippanis": tippanis,
             }
-
         except Exception as e:
-            # Propagate exception for route handling
             raise e
-
 
     @staticmethod
     def get_samputa_with_authors():
-        """
-        Returns a list of Samputa numbers along with authors who have entries in that Samputa.
-        Output format:
-        [
-            {
-                "samputa": "1",
-                "authors": [{"id": 1, "name": "Basavaraj"}, {"id": 2, "name": "Shivakumar"}]
-            },
-            ...
-        ]
-        """
+        """Return list of Samputa numbers with authors."""
         tatvapadas = (
             db_instance.session.query(Tatvapada)
             .options(joinedload(Tatvapada.tatvapadakarara_hesaru))
             .all()
         )
-
         result = {}
         for t in tatvapadas:
             samputa = t.samputa_sankhye
@@ -134,24 +105,18 @@ class RightSection:
                 result[samputa] = {}
             result[samputa][author.id] = author.tatvapadakarara_hesaru
 
-        # Convert to list of dicts
-        samputa_list = []
-        for samputa, authors in result.items():
-            samputa_list.append({
-                "samputa": samputa,
-                "authors": [{"id": aid, "name": name} for aid, name in authors.items()]
-            })
-
-        return samputa_list
+        return [
+            {"samputa": samputa, "authors": [{"id": aid, "name": name} for aid, name in authors.items()]}
+            for samputa, authors in result.items()
+        ]
 
 
-    # --------------------- PARIBHASHIKA PADAVIVARANA ------------------------------
+# ----------------- ParibhashikaPadavivarana Service -----------------
+class ParibhashikaPadavivaranaService:
+    """Service to manage ParibhashikaPadavivarana entries."""
+
     @staticmethod
-    def get_all_paribhashika_padavivarana(offset=0, limit=10, search=""):
-        """
-        Fetch paginated ParibhashikaPadavivarana entries with samputa, author id, author name, entry_id.
-        Optional search by Title OR Author name (starts with search string).
-        """
+    def get_all(offset=0, limit=10, search=""):
         query = (
             db_instance.session.query(
                 ParibhashikaPadavivarana.paribhashika_padavivarana_id,
@@ -162,112 +127,62 @@ class RightSection:
             )
             .join(TatvapadaAuthorInfo, ParibhashikaPadavivarana.tatvapada_author_id == TatvapadaAuthorInfo.id)
         )
-
         if search:
-            search_str = f"{search.strip()}%"  # match only from start
+            search_str = f"{search.strip()}%"
             query = query.filter(
                 ParibhashikaPadavivarana.paribhashika_padavivarana_title.ilike(search_str) |
                 TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_str)
             )
 
-        total = query.count()  # total matching rows
-
-        # Apply pagination
+        total = query.count()
         rows = query.order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id).offset(offset).limit(limit).all()
-
-        results = [
-            {
-                "id": row.paribhashika_padavivarana_id,
-                "samputa_sankhye": row.samputa_sankhye,
-                "tatvapada_author_id": row.tatvapada_author_id,
-                "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
-                "title": row.paribhashika_padavivarana_title
-            }
-            for row in rows
-        ]
 
         return {
             "total": total,
             "offset": offset,
             "limit": limit,
-            "results": results
+            "results": [
+                {
+                    "id": row.paribhashika_padavivarana_id,
+                    "samputa_sankhye": row.samputa_sankhye,
+                    "tatvapada_author_id": row.tatvapada_author_id,
+                    "tatvapadakarara_hesaru": row.tatvapadakarara_hesaru,
+                    "title": row.paribhashika_padavivarana_title
+                }
+                for row in rows
+            ]
         }
 
     @staticmethod
-    def get_padavivaranas_by_samputa_author(samputa: str, author_id: int):
-        """
-        Fetch all Padavivarana IDs for a given samputa and author_id.
-
-        Returns:
-        [
-            {"paribhashika_padavivarana_id": 1},
-            {"paribhashika_padavivarana_id": 2},
-            ...
+    def get_by_samputa_author(samputa: str, author_id: int):
+        return [
+            {"paribhashika_padavivarana_id": row.paribhashika_padavivarana_id}
+            for row in db_instance.session.query(ParibhashikaPadavivarana.paribhashika_padavivarana_id)
+                .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+                .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+                .all()
         ]
-        """
-        if not samputa or not author_id:
-            return []
-
-        query = (
-            db_instance.session.query(ParibhashikaPadavivarana.paribhashika_padavivarana_id)
-            .filter(
-                ParibhashikaPadavivarana.samputa_sankhye == samputa,
-                ParibhashikaPadavivarana.tatvapada_author_id == author_id,
-            )
-            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
-            .all()
-        )
-
-        return [{"paribhashika_padavivarana_id": row.paribhashika_padavivarana_id} for row in query]
 
     @staticmethod
-    def get_id_tittle_paribhashika(samputa: str, author_id: int):
-        """
-        Fetch all IDs and titles for a given samputa and author_id.
-        Returns:
-        [
-            {"padavivarana_id": 1, "title": "Title 1"},
-            {"padavivarana_id": 2, "title": "Title 2"},
-            ...
-        ]
-        """
-        if not samputa or not author_id:
-            return []
-
-        query = (
-            db_instance.session.query(
+    def get_id_title(samputa: str, author_id: int):
+        return [
+            {"padavivarana_id": row.paribhashika_padavivarana_id, "title": row.paribhashika_padavivarana_title}
+            for row in db_instance.session.query(
                 ParibhashikaPadavivarana.paribhashika_padavivarana_id,
                 ParibhashikaPadavivarana.paribhashika_padavivarana_title
             )
-            .filter(
-                ParibhashikaPadavivarana.samputa_sankhye == samputa,
-                ParibhashikaPadavivarana.tatvapada_author_id == author_id,
-            )
-            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
-            .all()
-        )
-
-        return [
-            {
-                "padavivarana_id": row.paribhashika_padavivarana_id,
-                "title": row.paribhashika_padavivarana_title
-            } for row in query
+                .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+                .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+                .all()
         ]
 
     @staticmethod
-    def get_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int):
-        """
-        Fetch a specific ParibhashikaPadavivarana entry.
-        """
-        entry = (
-            db_instance.session.query(ParibhashikaPadavivarana)
-            .filter_by(
-                samputa_sankhye=samputa,
-                tatvapada_author_id=author_id,
-                paribhashika_padavivarana_id=entry_id
-            )
-            .first()
-        )
+    def get_entry(samputa: str, author_id: int, entry_id: int):
+        entry = db_instance.session.query(ParibhashikaPadavivarana).filter_by(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            paribhashika_padavivarana_id=entry_id
+        ).first()
         if entry:
             return {
                 "id": entry.paribhashika_padavivarana_id,
@@ -278,16 +193,11 @@ class RightSection:
             }
         return None
 
-    # --- Service method ---
     @staticmethod
-    def create_paribhashika_padavivarana(samputa: str, author_id: int, content: str, title: str):
-        """
-        Create a new ParibhashikaPadavivarana entry.
-        """
+    def create(samputa: str, author_id: int, content: str, title: str):
         if not all([samputa, author_id, content, title]):
             raise ValueError("All fields are required.")
 
-        # Optional: check for duplicate title per author
         exists = db_instance.session.query(ParibhashikaPadavivarana).filter_by(
             samputa_sankhye=samputa,
             tatvapada_author_id=author_id,
@@ -304,7 +214,6 @@ class RightSection:
         )
         db_instance.session.add(entry)
         db_instance.session.commit()
-
         return {
             "id": entry.paribhashika_padavivarana_id,
             "samputa": entry.samputa_sankhye,
@@ -314,29 +223,21 @@ class RightSection:
         }
 
     @staticmethod
-    def update_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int, content: str, title: str = None):
-        """
-        Update an existing ParibhashikaPadavivarana entry.
-        """
-        entry = (
-            db_instance.session.query(ParibhashikaPadavivarana)
-            .filter_by(
-                samputa_sankhye=samputa,
-                tatvapada_author_id=author_id,
-                paribhashika_padavivarana_id=entry_id
-            )
-            .first()
-        )
+    def update(samputa: str, author_id: int, entry_id: int, content: str, title: str = None):
+        entry = db_instance.session.query(ParibhashikaPadavivarana).filter_by(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            paribhashika_padavivarana_id=entry_id
+        ).first()
         if not entry:
             return None
 
         if content:
-            entry.paribhashika_padavivarana_content = str(content).strip()
+            entry.paribhashika_padavivarana_content = content.strip()
         if title is not None:
-            entry.paribhashika_padavivarana_title = str(title).strip()
+            entry.paribhashika_padavivarana_title = title.strip()
 
         db_instance.session.commit()
-
         return {
             "id": entry.paribhashika_padavivarana_id,
             "samputa": entry.samputa_sankhye,
@@ -346,33 +247,28 @@ class RightSection:
         }
 
     @staticmethod
-    def delete_paribhashika_padavivarana(samputa: str, author_id: int, entry_id: int):
-        """
-        Delete a ParibhashikaPadavivarana entry.
-        """
-        entry = (
-            db_instance.session.query(ParibhashikaPadavivarana)
-            .filter_by(
-                samputa_sankhye=samputa,
-                tatvapada_author_id=author_id,
-                paribhashika_padavivarana_id=entry_id
-            )
-            .first()
-        )
+    def delete(samputa: str, author_id: int, entry_id: int):
+        entry = db_instance.session.query(ParibhashikaPadavivarana).filter_by(
+            samputa_sankhye=samputa,
+            tatvapada_author_id=author_id,
+            paribhashika_padavivarana_id=entry_id
+        ).first()
         if not entry:
             return False
         db_instance.session.delete(entry)
         db_instance.session.commit()
         return True
 
-# --------------------- ARTHAKOSHA SERVICE METHODS -------------------------
-    # ---------------- CREATE ----------------
+
+# ----------------- Arthakosha Service -----------------
+class ArthakoshaService:
+    """Service to manage Arthakosha entries"""
+
     @staticmethod
-    def create_arthakosha(samputa: str, author_id: int, title: str, word: str, meaning: str, notes: str = None):
+    def create(samputa: str, author_id: int, title: str, word: str, meaning: str, notes: str = None):
         if not samputa or not author_id or not word or not meaning:
             raise ValueError("samputa, author_id, word, and meaning are required")
 
-        # Ensure no duplicate title for same author
         if title:
             existing = Arthakosha.query.filter_by(author_id=int(author_id), title=title.strip()).first()
             if existing:
@@ -399,9 +295,8 @@ class RightSection:
             "notes": entry.notes
         }
 
-    # ---------------- LIST ----------------
     @staticmethod
-    def list_arthakoshas(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
+    def list(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
         query = Arthakosha.query.join(Arthakosha.author)
         if samputa:
             query = query.filter(Arthakosha.samputa == samputa)
@@ -417,24 +312,27 @@ class RightSection:
 
         total = query.count()
         rows = query.offset(offset).limit(limit).all()
-        results = [
-            {
-                "id": r.id,
-                "samputa": r.samputa,
-                "author_id": r.author_id,
-                "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
-                "title": r.title,
-                "word": r.word,
-                "meaning": r.meaning,
-                "notes": r.notes
-            }
-            for r in rows
-        ]
-        return {"total": total, "offset": offset, "limit": limit, "results": results}
+        return {
+            "total": total,
+            "offset": offset,
+            "limit": limit,
+            "results": [
+                {
+                    "id": r.id,
+                    "samputa": r.samputa,
+                    "author_id": r.author_id,
+                    "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
+                    "title": r.title,
+                    "word": r.word,
+                    "meaning": r.meaning,
+                    "notes": r.notes
+                }
+                for r in rows
+            ]
+        }
 
-    # ---------------- GET SINGLE ----------------
     @staticmethod
-    def get_arthakosha(samputa: str, author_id: int, arthakosha_id: int):
+    def get(samputa: str, author_id: int, arthakosha_id: int):
         entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
         if not entry:
             return None
@@ -449,29 +347,24 @@ class RightSection:
             "notes": entry.notes
         }
 
-    # ---------------- UPDATE ----------------
     @staticmethod
-    def update_arthakosha(samputa: str, author_id: int, arthakosha_id: int, title: str = None, word: str = None,
-                          meaning: str = None, notes: str = None):
+    def update(samputa: str, author_id: int, arthakosha_id: int, title: str = None, word: str = None,
+               meaning: str = None, notes: str = None):
         entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
         if not entry:
             return None
-
-        # Prevent duplicate title for same author
         if title and title.strip() != entry.title:
             existing = Arthakosha.query.filter_by(author_id=author_id, title=title.strip()).first()
             if existing:
                 raise ValueError(f"Arthakosha title '{title}' already exists for this author")
-
         if title is not None:
-            entry.title = str(title).strip()
+            entry.title = title.strip()
         if word is not None:
-            entry.word = str(word).strip()
+            entry.word = word.strip()
         if meaning is not None:
-            entry.meaning = str(meaning).strip()
+            entry.meaning = meaning.strip()
         if notes is not None:
-            entry.notes = str(notes).strip()
-
+            entry.notes = notes.strip()
         db_instance.session.commit()
         return {
             "id": entry.id,
@@ -483,9 +376,8 @@ class RightSection:
             "notes": entry.notes
         }
 
-    # ---------------- DELETE ----------------
     @staticmethod
-    def delete_arthakosha(samputa: str, author_id: int, arthakosha_id: int):
+    def delete(samputa: str, author_id: int, arthakosha_id: int):
         entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
         if not entry:
             return False
@@ -493,16 +385,13 @@ class RightSection:
         db_instance.session.commit()
         return True
 
-    # ---------------- GET ALL BY SAMPUTA + AUTHOR ----------------
     @staticmethod
-    def get_arthakoshas_by_samputa_author(samputa: str, author_id: int):
-        query = Arthakosha.query.join(Arthakosha.author).filter(
+    def get_by_samputa_author(samputa: str, author_id: int):
+        rows = Arthakosha.query.join(Arthakosha.author).filter(
             Arthakosha.samputa == samputa,
             Arthakosha.author_id == author_id
-        )
-
-        rows = query.all()
-        results = [
+        ).all()
+        return [
             {
                 "id": r.id,
                 "samputa": r.samputa,
@@ -515,41 +404,30 @@ class RightSection:
             }
             for r in rows
         ]
-        return results
 
 
-class RightSectionBulkService:
+# ----------------- Bulk Upload Service -----------------
+class BulkUploadService:
+    """Service to handle bulk CSV uploads for ParibhashikaPadavivarana and Arthakosha"""
+
     def __init__(self, db_session=None):
         self.db = db_session or db_instance.session
 
-
-    def upload_paribhashika_padavivarana_records(self, file_stream) -> Tuple[int, List[str]]:
-        """
-        Reads CSV from file_stream and inserts ParibhashikaPadavivarana records in bulk.
-
-        ✅ Required columns:
-            tatvapada_author_id, samputa_sankhye,
-            paribhashika_padavivarana_title, paribhashika_padavivarana_content
-        """
+    def upload_paribhashika_padavivarana(self, file_stream) -> Tuple[int, List[str]]:
+        """Bulk upload ParibhashikaPadavivarana from CSV"""
         records_added = 0
         errors: List[str] = []
 
         try:
             file_content = file_stream.read().decode("utf-8-sig")
             reader = csv.DictReader(io.StringIO(file_content))
-
             if not reader.fieldnames:
                 return 0, ["CSV file has no header row."]
 
             required_cols = {
-                "tatvapada_author_id",
-                "samputa_sankhye",
-                "paribhashika_padavivarana_title",
-                "paribhashika_padavivarana_content"
+                "tatvapada_author_id", "samputa_sankhye",
+                "paribhashika_padavivarana_title", "paribhashika_padavivarana_content"
             }
-
-            # Check required columns
-            print(reader.fieldnames)
             missing_cols = required_cols - set(reader.fieldnames)
             if missing_cols:
                 return 0, [f"Missing columns: {', '.join(missing_cols)}"]
@@ -565,35 +443,24 @@ class RightSectionBulkService:
                     self.db.add(padavivarana)
                     self.db.flush()
                     records_added += 1
-
                 except IntegrityError:
                     self.db.rollback()
-                    errors.append(
-                        f"Row {i}: Duplicate entry (author + title must be unique) or invalid tatvapada_author_id")
+                    errors.append(f"Row {i}: Duplicate entry or invalid tatvapada_author_id")
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
-
             return records_added, errors
-
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
 
-    def upload_arthakosha_records(self, file_stream) -> Tuple[int, List[str]]:
-        """
-        Reads CSV from file_stream and inserts Arthakosha records in bulk.
-        Expected columns: samputa, author_id, title, word, meaning, notes
-        Returns:
-            records_added: int - number of successfully inserted records
-            errors: List[str] - list of error messages for failed rows
-        """
+    def upload_arthakosha(self, file_stream) -> Tuple[int, List[str]]:
+        """Bulk upload Arthakosha from CSV"""
         records_added = 0
         errors: List[str] = []
 
         try:
             file_content = file_stream.read().decode("utf-8-sig")
             reader = csv.DictReader(io.StringIO(file_content))
-
             if not reader.fieldnames:
                 return 0, ["CSV file has no header row."]
 
@@ -603,13 +470,11 @@ class RightSectionBulkService:
                 return 0, [f"Missing columns: {', '.join(missing_cols)}"]
 
             for i, row in enumerate(reader, 1):
+                if not row.get("samputa") or not row.get("author_id") or not row.get("title") \
+                        or not row.get("word") or not row.get("meaning"):
+                    errors.append(f"Row {i}: Missing required field(s).")
+                    continue
                 try:
-                    # Skip empty mandatory fields
-                    if not row.get("samputa") or not row.get("author_id") or not row.get("title") \
-                            or not row.get("word") or not row.get("meaning"):
-                        errors.append(f"Row {i}: Missing required field(s).")
-                        continue
-
                     arthakosha = Arthakosha(
                         samputa=row.get("samputa").strip(),
                         author_id=int(row.get("author_id")),
@@ -618,28 +483,21 @@ class RightSectionBulkService:
                         meaning=row.get("meaning").strip(),
                         notes=row.get("notes").strip() if row.get("notes") else None,
                     )
-
                     self.db.add(arthakosha)
                     self.db.flush()
                     records_added += 1
-
-                except IntegrityError as ie:
+                except IntegrityError:
                     self.db.rollback()
-                    # Likely due to unique constraint (author_id + title)
                     errors.append(f"Row {i}: Duplicate title '{row.get('title')}' for author_id {row.get('author_id')}")
-                except ValueError as ve:
-                    self.db.rollback()
-                    errors.append(f"Row {i}: Invalid data - {str(ve)}")
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
-
             return records_added, errors
-
         except Exception as e:
             return 0, [f"Unexpected error: {str(e)}"]
 
 
+# ----------------- TatvapadakararaVivara Service -----------------
 class TatvapadakararaVivaraService:
 
     @staticmethod
