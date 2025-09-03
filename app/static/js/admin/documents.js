@@ -20,21 +20,20 @@ export function initDocumentsTab() {
         modules: {
             toolbar: [
                 [{ header: [1, 2, 3, 4, 5, 6, false] }],
-                [{ font: [] }],                      // Font family dropdown
-                [{ size: ['small', false, 'large', 'huge'] }], // Font size dropdown
+                [{ font: [] }],
+                [{ size: ['small', false, 'large', 'huge'] }],
                 ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
-                [{ color: [] }, { background: [] }], // Text color and background color
-                [{ script: 'sub' }, { script: 'super' }],      // Subscript/superscript
+                [{ color: [] }, { background: [] }],
+                [{ script: 'sub' }, { script: 'super' }],
                 [{ list: 'ordered' }, { list: 'bullet' }],
-                [{ indent: '-1' }, { indent: '+1' }],           // Indent
-                [{ align: [] }],                      // Text alignments
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ align: [] }],
                 ['link', 'image', 'video'],
-                ['clean']                             // Remove formatting button
+                ['clean']
             ]
         },
-        bounds: '#documentModal .modal-content' // Confine dropdowns/popups within modal for better UX
+        bounds: '#documentModal .modal-content'
     });
-
 
     document.getElementById("openAddDocumentModal").addEventListener("click", openAddDocumentModal);
 
@@ -88,9 +87,8 @@ function renderDocumentsTable(docs) {
                 <button class="btn btn-sm btn-outline-danger" title="Delete">🗑</button>
             </td>
         `;
-        tr.querySelector("button[title='Edit']").addEventListener("click", () => openEditDocumentModal(doc));
+        tr.querySelector("button[title='Edit']").addEventListener("click", () => openEditDocumentModal(doc.id));
         tr.querySelector("button[title='Delete']").addEventListener("click", () => openDeleteDocumentModal(doc));
-
         tbody.appendChild(tr);
     });
 }
@@ -103,16 +101,26 @@ function openAddDocumentModal() {
     documentModal.show();
 }
 
-function openEditDocumentModal(doc) {
-    editingId = doc.id;
-    document.getElementById("documentModalTitle").textContent = "Edit Document";
-    document.getElementById("documentId").value = doc.id;
-    document.getElementById("docTitle").value = doc.title;
-    document.getElementById("docCategory").value = doc.category || "";
-    document.getElementById("docDescription").value = doc.description || "";
-    // Manually sanitize minimal harmful tags and attributes
-    quill.root.innerHTML = sanitizeHtmlContent(doc.content || "");
-    documentModal.show();
+async function openEditDocumentModal(id) {
+    showLoader();
+    try {
+        const doc = await apiClient.get(apiEndpoints.documents.getById(id)); // fetch full content
+
+        editingId = doc.id;
+        document.getElementById("documentModalTitle").textContent = "Edit Document";
+        document.getElementById("documentId").value = doc.id;
+        document.getElementById("docTitle").value = doc.title;
+        document.getElementById("docCategory").value = doc.category || "";
+        document.getElementById("docDescription").value = doc.description || "";
+        quill.root.innerHTML = sanitizeHtmlContent(doc.content || "");
+
+        documentModal.show();
+    } catch (err) {
+        console.error("Failed to load document for editing", err);
+        alert("Could not load document content. Please try again.");
+    } finally {
+        hideLoader();
+    }
 }
 
 async function saveDocument() {
@@ -120,8 +128,7 @@ async function saveDocument() {
     const category = document.getElementById("docCategory").value.trim();
     const description = document.getElementById("docDescription").value.trim();
 
-    let contentHtml = quill.root.innerHTML;
-    contentHtml = sanitizeHtmlContent(contentHtml);
+    let contentHtml = sanitizeHtmlContent(quill.root.innerHTML);
 
     if (!title) {
         alert("Title is required.");
@@ -184,7 +191,6 @@ async function deleteDocument(id) {
 }
 
 // Helpers
-
 function escapeHtml(str) {
     return String(str)
         .replace(/&/g, "&amp;")
@@ -199,21 +205,11 @@ function formatDate(dt) {
     return new Date(dt).toLocaleString();
 }
 
-/**
- * Basic HTML sanitizer to remove <script> tags and on* event handlers.
- * Preserves allowed tags used by Quill like p, b, i, u, strike, ul, ol, li, a, img, code-block, etc.
- * Be cautious: this is NOT a complete sanitizer but protects against common XSS.
- */
 function sanitizeHtmlContent(html) {
     if (!html) return "";
 
-    // Remove script tags entirely (case insensitive)
     html = html.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
-
-    // Remove event handler attributes like onclick, onerror, onload...
     html = html.replace(/\s(on\w+)=["'][^"']*["']/gi, "");
-
-    // Remove javascript: scheme in href or src attributes
     html = html.replace(/\s(href|src)=["']javascript:[^"']*["']/gi, "");
 
     return html;

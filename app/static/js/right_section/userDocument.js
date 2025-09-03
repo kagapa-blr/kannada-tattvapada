@@ -21,12 +21,12 @@ let currentPage = 1;
 const pageSize = 6; // documents per page in grid
 let currentDocIndex = 0;
 
-// Load all documents from API
+// Load all documents metadata (no content)
 async function loadDocuments() {
     try {
         documents = await apiClient.get(apiEndpoints.documents.list);
         renderPage(1);
-        overlay.style.display = 'none'; // make sure viewer is hidden initially
+        overlay.style.display = 'none'; // hide viewer initially
     } catch (err) {
         console.error('Failed to load documents:', err);
         container.innerHTML = '<p class="text-danger">Failed to load documents.</p>';
@@ -95,21 +95,28 @@ function renderPagination() {
     }
 }
 
-// Open fullscreen document viewer and update content
-function openDocViewer(index) {
+// Open fullscreen document viewer and fetch full content by ID
+async function openDocViewer(index) {
     currentDocIndex = index;
     const doc = documents[index];
 
-    viewerTitle.textContent = doc.title;
-    viewerCategory.textContent = doc.category || 'N/A';
-    viewerDescription.textContent = doc.description || '';
-    viewerContent.innerHTML = doc.content || '';
+    try {
+        const fullDoc = await apiClient.get(apiEndpoints.documents.getById(doc.id));
 
-    viewerPageIndicator.textContent = `Document ${index + 1} of ${documents.length}`;
-    prevBtn.disabled = (index === 0);
-    nextBtn.disabled = (index === documents.length - 1);
+        viewerTitle.textContent = fullDoc.title;
+        viewerCategory.textContent = fullDoc.category || 'N/A';
+        viewerDescription.textContent = fullDoc.description || '';
+        viewerContent.innerHTML = fullDoc.content || '';
 
-    overlay.style.display = 'flex';
+        viewerPageIndicator.textContent = `Document ${index + 1} of ${documents.length}`;
+        prevBtn.disabled = (index === 0);
+        nextBtn.disabled = (index === documents.length - 1);
+
+        overlay.style.display = 'flex';
+    } catch (err) {
+        console.error('Failed to load document content:', err);
+        alert('Failed to load document content.');
+    }
 }
 
 // Close the fullscreen viewer
@@ -122,12 +129,10 @@ function printDocument() {
     const printContainer = document.getElementById('print-container');
     printContainer.innerHTML = ''; // clear previous content
 
-    // Grab the content
-    const category = document.getElementById('doc-viewer-category').textContent;
-    const description = document.getElementById('doc-viewer-description').textContent;
-    const contentHTML = document.getElementById('doc-viewer-content').innerHTML;
+    const category = viewerCategory.textContent;
+    const description = viewerDescription.textContent;
+    const contentHTML = viewerContent.innerHTML;
 
-    // Wrap content for A4 print
     const page = document.createElement('div');
     page.className = 'print-page';
     page.innerHTML = `
@@ -140,7 +145,6 @@ function printDocument() {
 
     printContainer.appendChild(page);
 
-    // Delay to ensure DOM updates
     setTimeout(() => {
         window.print();
         printContainer.innerHTML = '';
