@@ -1,13 +1,3 @@
-/* =======================================================
-   FONT SETUP
-======================================================= */
-@font-face {
-  font-family: "NudiParijatha";
-  src: url("/static/fonts/Nudi_fonts/NudiParijatha.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* =======================================================
    BASE STYLES
