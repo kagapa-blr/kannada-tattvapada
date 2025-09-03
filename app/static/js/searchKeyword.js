@@ -1,22 +1,17 @@
 import apiClient from "./apiClient.js";
 import apiEndpoints from "./apiEndpoints.js";
 import { showLoader, hideLoader } from "./loader.js";
-// Escape HTML characters to avoid XSS
+
+// Escape HTML safely
 function escapeHtml(text) {
   if (!text) return '';
   return text.replace(/[&<>"'`=\/]/g, s => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '/': '&#x2F;',
-    '`': '&#x60;',
-    '=': '&#x3D;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+    "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
   })[s]);
 }
 
-// Highlight keyword in Tatvapada text
+// Highlight search keyword
 function highlightKeyword(text, keyword) {
   if (!keyword) return escapeHtml(text);
 
@@ -26,11 +21,55 @@ function highlightKeyword(text, keyword) {
 
   return escapeHtml(text).replace(
     regex,
-    '<span style="background-color: yellow; color: black; font-weight: bold; padding: 0 2px; border-radius: 2px;">$1</span>'
+    '<span style="background-color: yellow;color: black; font-weight: bold">$1</span>'
   );
 }
 
-// Main search function
+// Render search results
+function renderResults(data, keyword) {
+  const resultsDiv = document.getElementById('searchResults');
+  const template = document.getElementById('searchResultTemplate');
+
+  resultsDiv.innerHTML = '';
+
+  const safeValue = (value) => (!value || value === "-") ? "" : escapeHtml(value.toString());
+
+  data.forEach((item, idx) => {
+    const clone = template.content.cloneNode(true);
+
+    // Fill text fields
+    clone.querySelector('[data-field="samputa_sankhye"]').innerHTML = safeValue(item.samputa_sankhye);
+    clone.querySelector('[data-field="tatvapadakarara_hesaru"]').innerHTML = safeValue(item.tatvapadakarara_hesaru);
+    clone.querySelector('[data-field="tatvapada_sankhye"]').innerHTML = safeValue(item.tatvapada_sankhye);
+    clone.querySelector('[data-field="tatvapadakosha_sheershike"]').innerHTML = safeValue(item.tatvapadakosha_sheershike);
+    clone.querySelector('[data-field="tatvapada_sheershike"]').innerHTML = safeValue(item.tatvapada_sheershike);
+    clone.querySelector('[data-field="tatvapada_first_line"]').innerHTML = safeValue(item.tatvapada_first_line);
+
+    // Vibhag
+    if (item.vibhag && item.vibhag !== "-") {
+      const vibhagEl = clone.querySelector('[data-section="vibhag"]');
+      vibhagEl.classList.remove('d-none');
+      vibhagEl.querySelector('[data-field="vibhag"]').innerHTML = safeValue(item.vibhag);
+    }
+
+    // Tatvapada
+    if (item.tatvapada && item.tatvapada.trim() !== "-") {
+      const tatvapadaEl = clone.querySelector('[data-section="tatvapada"]');
+      tatvapadaEl.classList.remove('d-none');
+      tatvapadaEl.querySelector('[data-field="tatvapada"]').innerHTML =
+        highlightKeyword(item.tatvapada.trimStart(), keyword);
+    }
+
+    resultsDiv.appendChild(clone);
+
+    // Add divider between results
+    if (idx < data.length - 1) {
+      resultsDiv.appendChild(document.createElement("hr"));
+    }
+  });
+}
+
+// Handle search
 async function handleSearchClick() {
   const keywordInput = document.getElementById('searchKeyword');
   const keyword = keywordInput.value.trim();
@@ -46,7 +85,7 @@ async function handleSearchClick() {
 
   countDiv.innerHTML = '';
   resultsDiv.innerHTML = '<p>ಶೋಧನೆ ನಡೆಯುತ್ತಿದೆ...</p>';
-  showLoader(); // Show global loader
+  showLoader();
 
   try {
     const data = await apiClient.post(apiEndpoints.tatvapada.searchByWord, { keyword });
@@ -58,54 +97,17 @@ async function handleSearchClick() {
     }
 
     countDiv.innerHTML = `ಒಟ್ಟು ತತ್ವಪದ ಸಂಕೇತಗಳು ಸಿಕ್ಕಿವೆ: ${data.length}`;
-
-    resultsDiv.innerHTML = data.map(item => `
-      <div class="card mb-3 shadow-sm border-0 rounded">
-        <div class="card-body">
-          <div class="row g-2">
-            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapada_sheershike)}</div>
-            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span><br>${escapeHtml(item.tatvapadakosha_sheershike)}</div>
-            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span><br>${escapeHtml(item.tatvapadakarara_hesaru)}</div>
-          </div>
-          <div class="row g-2 mt-2">
-            <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span><br>${escapeHtml(item.samputa_sankhye?.toString())}</div>
-            <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ :</span><br>${escapeHtml(item.tatvapada_sankhye)}</div>
-            <div class="col-md-4"><span class="fw-bold">ಮೊದಲ ಸಾಲು :</span><br>${escapeHtml(item.tatvapada_first_line)}</div>
-          </div>
-          <hr>
-          <div>
-            <span class="fw-bold">ತತ್ವಪದ :</span>
-            <div style="white-space: pre-wrap; margin-top: 4px;">
-              ${highlightKeyword(item.tatvapada?.trimStart(), keyword)}
-            </div>
-          </div>
-          <hr>
-          <div class="mb-2">
-            <span class="fw-bold">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ :</span>
-            <div style="white-space: pre-wrap; margin-top: 4px;">${escapeHtml(item.klishta_padagalu_artha)}</div>
-          </div>
-          <div class="mb-2">
-            <span class="fw-bold">ಭಾವಾನುವಾದ :</span>
-            <div style="white-space: pre-wrap; margin-top: 4px;">${escapeHtml(item.bhavanuvada)}</div>
-          </div>
-          <div class="mb-2">
-            <span class="fw-bold">ಟಿಪ್ಪಣಿ :</span>
-            <div style="white-space: pre-wrap; margin-top: 4px;">${escapeHtml(item.tippani)}</div>
-          </div>
-          <div class="mb-2"><span class="fw-bold">ವಿಭಾಗ :</span> ${escapeHtml(item.vibhag)}</div>
-        </div>
-      </div>
-    `).join('');
+    renderResults(data, keyword);
 
   } catch (error) {
     countDiv.innerHTML = '';
     resultsDiv.innerHTML = `<p class="text-danger">ಶೋಧನೆಯಲ್ಲಿ ದೋಷ: ${escapeHtml(error.message)}</p>`;
   } finally {
-    hideLoader(); // Always hide loader
+    hideLoader();
   }
 }
 
-// Show modal and initialize inputs
+// Open modal
 function searchContent() {
   const searchModal = new bootstrap.Modal(document.getElementById('searchModal'));
   searchModal.show();
@@ -119,11 +121,10 @@ function searchContent() {
   countDiv.innerHTML = '<p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>';
 
   const btnSearch = document.getElementById('btnSearch');
-  btnSearch.onclick = null; // Remove any existing handler
   btnSearch.onclick = handleSearchClick;
 }
 
-// Attach search modal trigger on DOM ready
+// Attach trigger
 document.addEventListener('DOMContentLoaded', () => {
   const openSearchBtn = document.getElementById('searchBtn');
   if (openSearchBtn) {

@@ -140,33 +140,75 @@
     </div>
   </div>
 
-  <!-- Search Modal -->
-  <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
-      <div class="modal-content" style="height: 90vh;">
-        <div class="modal-header py-2 px-3">
-          <h5 class="modal-title">ತತ್ವಪದ ಶೋಧನೆ</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Search Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
+    <div class="modal-content" style="height: 90vh; font-family: 'NudiParijatha', sans-serif;">
+      <!-- Header -->
+      <div class="modal-header py-2 px-3">
+        <h5 class="modal-title">ತತ್ವಪದ ಶೋಧನೆ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-2">
+        <!-- Sticky result count -->
+        <div id="resultCount" class="sticky-result-count">
+          <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
         </div>
-        <div class="modal-body d-flex flex-column p-2" style="height: calc(100% - 56px);">
-          <div id="resultCount" class="sticky-result-count">
-            <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
-          </div>
-          <div class="d-flex align-items-center my-2 gap-2">
-            <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ:</label>
-            <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
-            <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
-          </div>
-          <div id="searchResults" class="results-box">
-            <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
-          </div>
+
+        <!-- Search Input -->
+        <div class="d-flex align-items-center my-2 gap-2">
+          <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ:</label>
+          <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
+          <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
         </div>
-        <div class="modal-footer py-2 px-3">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+
+        <!-- Search Results -->
+        <div id="searchResults">
+          <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
         </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer py-2 px-3">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Result Template -->
+<template id="searchResultTemplate">
+  <div class="card mb-3 shadow-sm border-0 rounded">
+    <div class="card-body">
+      <!-- Row 1 -->
+      <div class="row mb-2">
+        <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span> <span data-field="samputa_sankhye"></span></div>
+        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span> <span data-field="tatvapadakarara_hesaru"></span></div>
+        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ :</span> <span data-field="tatvapada_sankhye"></span></div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="row mb-2">
+        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span> <span data-field="tatvapadakosha_sheershike"></span></div>
+        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span> <span data-field="tatvapada_sheershike"></span></div>
+        <div class="col-md-4"><span class="fw-bold">ಮೊದಲ ಸಾಲು :</span> <span data-field="tatvapada_first_line"></span></div>
+      </div>
+
+      <!-- Vibhag -->
+      <div class="mb-3 d-none" data-section="vibhag">
+        <span class="fw-bold">ವಿಭಾಗ :</span> <span data-field="vibhag"></span>
+      </div>
+
+      <!-- Tatvapada -->
+      <div class="d-none" data-section="tatvapada">
+        <span class="fw-bold">ತತ್ವಪದ :</span>
+        <div data-field="tatvapada" style="white-space: pre-wrap; margin-top: 4px;"></div>
+      </div>
+    </div>
+  </div>
+</template>
 
   {% include 'customLoader.html' %}
   {% include 'footer.html' %}
