@@ -1,11 +1,6 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.exceptions import NotFound, BadRequest
-
-from app.services.document_service import (create_document,
-                                           get_all_documents,
-                                           get_document_by_id,
-                                           update_document,
-                                           delete_document)
+from werkzeug.exceptions import BadRequest, NotFound
+from app.services.document_service import DocumentService
 
 documents_bp = Blueprint("kannada_documents", __name__, url_prefix="/api/documents")
 
@@ -17,65 +12,59 @@ def create_doc():
     if not data or "title" not in data or "content" not in data:
         raise BadRequest("Title and Content are required")
 
-    doc = create_document(
+    result = DocumentService.create_document(
         title=data["title"],
         description=data.get("description"),
         category=data.get("category"),
         content=data["content"]
     )
 
-    return jsonify({"id": doc.id, "message": "Document created successfully"}), 201
+    if not result.success:
+        raise BadRequest(result.message or "Failed to create document")
+
+    return jsonify({"id": result.data["id"], "message": result.message}), 201
 
 
 # ---------------- READ (All) ----------------
 @documents_bp.route("/", methods=["GET"])
 def list_docs():
-    docs = get_all_documents()
-    return jsonify([
-        {
-            "id": d.id,
-            "title": d.title,
-            "description": d.description,
-            "category": d.category,
-            "content": d.content,
-            "created_at": d.created_at.isoformat(),
-            "updated_at": d.updated_at.isoformat()
-        }
-        for d in docs
-    ])
+    result = DocumentService.get_all_documents()
+    if not result.success:
+        return jsonify({"message": result.message, "error": result.error}), 500
+
+    return jsonify(result.data), 200
 
 
 # ---------------- READ (Single) ----------------
 @documents_bp.route("/<int:doc_id>", methods=["GET"])
 def get_doc(doc_id):
-    doc = get_document_by_id(doc_id)
-    if not doc:
-        raise NotFound("Document not found")
-    return jsonify({
-        "id": doc.id,
-        "title": doc.title,
-        "description": doc.description,
-        "category": doc.category,
-        "content": doc.content,
-        "created_at": doc.created_at.isoformat(),
-        "updated_at": doc.updated_at.isoformat()
-    })
+    result = DocumentService.get_document_by_id(doc_id)
+    if not result.success:
+        raise NotFound(result.message or "Document not found")
+
+    return jsonify(result.data), 200
 
 
 # ---------------- UPDATE ----------------
 @documents_bp.route("/<int:doc_id>", methods=["PUT"])
 def update_doc(doc_id):
     data = request.get_json()
-    doc = update_document(doc_id, **data)
-    if not doc:
-        raise NotFound("Document not found")
-    return jsonify({"message": "Document updated successfully"})
+    result = DocumentService.update_document(doc_id, **data)
+
+    if not result.success:
+        if result.message == "Document not found":
+            raise NotFound(result.message)
+        raise BadRequest(result.message or "Failed to update document")
+
+    return jsonify({"message": result.message}), 200
 
 
 # ---------------- DELETE ----------------
 @documents_bp.route("/<int:doc_id>", methods=["DELETE"])
 def delete_doc(doc_id):
-    success = delete_document(doc_id)
-    if not success:
-        raise NotFound("Document not found")
-    return jsonify({"message": "Document deleted successfully"})
+    result = DocumentService.delete_document(doc_id)
+
+    if not result.success:
+        raise NotFound(result.message or "Document not found")
+
+    return jsonify({"message": result.message}), 200
