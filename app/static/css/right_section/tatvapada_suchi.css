@@ -1,5 +1,5 @@
 body {
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
     background: #f7f9fb;
     color: #2c3e50;
     margin: 0;
@@ -69,7 +69,7 @@ h2 {
     padding: 10px 16px;
     border: 1px solid #bbb;
     font-size: 20px;
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
 }
 
 .dataTables_wrapper .dataTables_filter input:focus {
@@ -161,7 +161,7 @@ h2 {
 /* Simple & clean DataTable search box */
 .dt-search {
     font-size: 20px;
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
     padding: 8px 12px;
     border: 1px solid #bbb;
     border-radius: 6px;
@@ -175,6 +175,6 @@ h2 {
 }
 
 .dt-layout-row {
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
     font-size: 20px;
 }

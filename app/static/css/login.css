@@ -5,7 +5,7 @@
 
 body,
 html {
-  font-family: 'Noto Sans Kannada', sans-serif !important;
+  font-family: 'NotoSansKannada', sans-serif !important;
   background: linear-gradient(120deg, #2196f3 0%, #e3f2fd 100%);
   min-height: 100vh;
   scroll-behavior: smooth;

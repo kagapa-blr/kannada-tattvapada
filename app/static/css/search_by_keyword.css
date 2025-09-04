@@ -1,7 +1,7 @@
 /* Modal body flex and font */
 .modal-body.d-flex {
   padding: 1.5rem;
-  font-family: 'Noto Sans Kannada', sans-serif; /* Choose your preferred Kannada font */
+  font-family: 'NotoSansKannada', sans-serif; /* Choose your preferred Kannada font */
   color: #333;
 }
 

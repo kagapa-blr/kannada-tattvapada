@@ -102,7 +102,8 @@ class DocumentUploader:
 
 if __name__ == "__main__":
     # ========== CONFIG ==========
-    API_URL = "http://127.0.0.1:5000/api/documents/"
+    API_URL = "https://kagapa.com/kannada-tattvapada/api/documents/"
+    #API_URL = "http://127.0.0.1:5000/api/documents/"
     folder_path = input("Enter DOCX folder path: ").strip()
     # ============================
 

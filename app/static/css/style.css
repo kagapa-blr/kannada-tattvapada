@@ -2,7 +2,7 @@
    BASE STYLES
 ======================================================= */
 body {
-  font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+  font-family: "NudiParijatha", "NotoSansKannada", "NotoSansKannada", sans-serif;
   background: #f7f8fd;
   margin: 0;
   padding: 0;
@@ -46,11 +46,24 @@ body {
   box-shadow: none;
 }
 
+
 .dropdown-choice,
 .choices {
   font-size: 1.15rem;
+  /* readable font */
   border-radius: 8px;
+  height: auto;
+  /* let padding define height */
+  min-height: 36px;
+  /* compact but clickable */
+  padding: 4px 10px;
+  /* reduce vertical padding */
+  display: flex;
+  align-items: center;
+  /* vertically center text */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
 
 .choices__placeholder {
   color: #888 !important;
@@ -123,7 +136,7 @@ body {
   top: 0;
   left: 16px;
   transform: translateY(-50%);
-  background: #ffffff;
+  background: #fff;
   padding: 2px 10px;
   font-weight: 600;
   font-size: 0.95rem;
@@ -341,69 +354,57 @@ body {
 }
 
 
+
+
+
+
 /* =======================================================
-   CUSTOMIZED CHOICES.JS
+   CHOICES.JS CUSTOMIZATION - CLEAN & OPTIMIZED
 ======================================================= */
 
-/* Focus state for input */
-.choices.is-focused {
-  border-color: #6c5ce7;
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+/* Main container for single/multi select */
+.choices {
+  font-size: 1.25rem;
+  /* readable font */
+  border-radius: 8px;
+  border: 1.4px solid #e2e2f2;
+  background-color: #fff;
+  min-height: auto;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* Main dropdown container */
-.choices {
-  font-size: 1.2rem;
-  min-height: auto;
-  /* remove extra height */
-  padding: 0;
-  border: none;
+/* Inner input container */
+.choices__inner {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  padding: 4px 12px;
+  font-size: 1.25rem;
   border-radius: 8px;
-  background-color: transparent;
   box-shadow: none;
 }
 
-/* Inner input box */
-.choices__inner {
-  background: #fff;
-  border: 1.5px solid #d1d1e9;
-  border-radius: 8px;
-  min-height: 32px;
-  /* reduced input height */
-  padding: 2px 12px;
-  /* less vertical padding */
-  font-size: 1.2rem;
-  /* input font size */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-  display: flex;
-  align-items: center;
-  /* vertically center selected item */
-}
-
-/* Single select - selected item */
+/* Single select item */
 .choices__list--single .choices__item {
-  font-size: 1.25rem !important;
-  /* increase font size */
+  font-size: 1.25rem;
   font-weight: 500;
-  color: #222;
-  padding: 4px 8px;
-  /* smaller height */
-  line-height: 1.2;
+  padding: 4px 6px;
+  line-height: 1.4;
 }
 
-/* Multi-select tags */
+/* Multi-select tag items */
 .choices__list--multiple .choices__item {
   background-color: #6c5ce7;
   color: #fff;
   border-radius: 6px;
-  padding: 8px 12px;
-  margin: 4px 6px 0 0;
-  font-size: 1.25rem;
+  padding: 6px 10px;
+  margin: 2px 4px 0 0;
+  font-size: 1.2rem;
   font-weight: 500;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Remove button inside multi-select */
 .choices__list--multiple .choices__item .choices__button {
   border: none;
   background: transparent;
@@ -417,26 +418,25 @@ body {
   opacity: 1;
 }
 
-/* Dropdown container */
+/* Dropdown list */
 .choices__list--dropdown {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   padding: 4px 0;
   border-radius: 8px;
-  border: 1.5px solid #d1d1e9;
+  border: 1.4px solid #d1d1e9;
   background-color: #fff;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   margin-top: 4px;
   z-index: 9999 !important;
 }
 
-/* Each dropdown option */
+/* Dropdown options inside Choices.js */
 .choices__list--dropdown .choices__item {
-  font-size: 1.45rem;
-  /* larger option font */
+  font-size: 1.35rem !important;
+  /* increase font size */
   padding: 10px 16px;
+  line-height: 1.5;
   color: #222;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 /* Highlighted / hovered option */

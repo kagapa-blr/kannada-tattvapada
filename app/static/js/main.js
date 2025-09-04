@@ -189,8 +189,9 @@ function displayOtherFields(data) {
     document.getElementById('tatvapadakosha_sheershike_value').textContent = data.tatvapadakosha_sheershike || "";
     document.getElementById('tatvapadakarara_hesaru_value').textContent = data.tatvapadakarara_hesaru || "";
     document.getElementById('tatvapada_sheershike_value').textContent = data.tatvapada_sheershike || "";
-    document.getElementById('klishta_padagalu_artha_value').textContent = data.klishta_padagalu_artha || "";
-    document.getElementById('tippani_value').textContent = data.tippani || "";
+    // Removed fields:
+    // document.getElementById('klishta_padagalu_artha_value').textContent = data.klishta_padagalu_artha || "";
+    // document.getElementById('tippani_value').textContent = data.tippani || "";
     document.getElementById('tatvapada_first_line_value').textContent = data.tatvapada_first_line || "";
     document.getElementById('bhavanuvada_value').textContent = data.bhavanuvada || "";
 }

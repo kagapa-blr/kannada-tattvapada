@@ -59,28 +59,28 @@
         <!-- Metadata Fields -->
         <div class="other-fields mt-4">
           <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="field-box">
                 <div class="field-label">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</div>
                 <div id="tatvapadakosha_sheershike_value"></div>
               </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="field-box">
                 <div class="field-label">ತತ್ವಪದಕಾರರ ಹೆಸರು</div>
                 <div id="tatvapadakarara_hesaru_value"></div>
               </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="field-box">
                 <div class="field-label">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</div>
                 <div id="tatvapada_sheershike_value"></div>
               </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="field-box">
                 <div class="field-label">ಮೊದಲ ಸಾಲು</div>
                 <div id="tatvapada_first_line_value"></div>
@@ -88,20 +88,6 @@
             </div>
 
             <!-- FULL WIDTH blocks -->
-            <div class="col-md-12">
-              <div class="field-box gloss-box">
-                <div class="field-label">ಕ್ಲಿಷ್ಟ ಪದಗಳ ಅರ್ಥ</div>
-                <div id="klishta_padagalu_artha_value"></div>
-              </div>
-            </div>
-
-            <div class="col-md-12">
-              <div class="field-box tippani-box">
-                <div class="field-label">ಟಿಪ್ಪಣಿ</div>
-                <div id="tippani_value"></div>
-              </div>
-            </div>
-
             <div class="col-md-12">
               <div class="field-box bhavanuvada-box">
                 <div class="field-label">ಭಾವಾನುವಾದ</div>
@@ -113,7 +99,6 @@
                 <div class="field-label">ತತ್ವಪದ</div>
                 <div id="poem-display-area" class="poem-display enhanced">
                   <h3 class="poem-title" id="tatvapada_sheershike">📝 ತತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ</h3>
-                  <!-- scrollable area -->
                   <div class="poem-content" id="tatvapada_content">
                     <p>📜 ತತ್ವಪದ ಪಂಕ್ತಿಗಳು ಇಲ್ಲಿ ತೋರುತ್ತವೆ</p>
                     <p>⬆ ಮೇಲಿನ ಡ್ರಾಪ್‌ಡೌನ್‌ಗಳಿಂದ ತತ್ವಪದ ಆಯ್ಕೆಮಾಡಿ</p>
@@ -140,75 +125,81 @@
     </div>
   </div>
 
-<!-- Search Modal -->
-<div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
-    <div class="modal-content" style="height: 90vh; font-family: 'NudiParijatha', sans-serif;">
-      <!-- Header -->
-      <div class="modal-header py-2 px-3">
-        <h5 class="modal-title">ತತ್ವಪದ ಶೋಧನೆ</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <!-- Body -->
-      <div class="modal-body p-2">
-        <!-- Sticky result count -->
-        <div id="resultCount" class="sticky-result-count">
-          <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+  <!-- Search Modal -->
+  <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 98vw; max-height: 90vh;">
+      <div class="modal-content" style="height: 90vh; font-family: 'NudiParijatha', sans-serif;">
+        <!-- Header -->
+        <div class="modal-header py-2 px-3">
+          <h5 class="modal-title">ತತ್ವಪದ ಶೋಧನೆ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
-        <!-- Search Input -->
-        <div class="d-flex align-items-center my-2 gap-2">
-          <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ:</label>
-          <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
-          <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
+        <!-- Body -->
+        <div class="modal-body p-2">
+          <!-- Sticky result count -->
+          <div id="resultCount" class="sticky-result-count">
+            <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          </div>
+
+          <!-- Search Input -->
+          <div class="d-flex align-items-center my-2 gap-2">
+            <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ:</label>
+            <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
+            <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
+          </div>
+
+          <!-- Search Results -->
+          <div id="searchResults">
+            <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          </div>
         </div>
 
-        <!-- Search Results -->
-        <div id="searchResults">
-          <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+        <!-- Footer -->
+        <div class="modal-footer py-2 px-3">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer py-2 px-3">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Result Template -->
-<template id="searchResultTemplate">
-  <div class="card mb-3 shadow-sm border-0 rounded">
-    <div class="card-body">
-      <!-- Row 1 -->
-      <div class="row mb-2">
-        <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span> <span data-field="samputa_sankhye"></span></div>
-        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span> <span data-field="tatvapadakarara_hesaru"></span></div>
-        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ :</span> <span data-field="tatvapada_sankhye"></span></div>
-      </div>
+  <!-- Result Template -->
+  <template id="searchResultTemplate">
+    <div class="card mb-3 shadow-sm border-0 rounded">
+      <div class="card-body">
+        <!-- Row 1 -->
+        <div class="row mb-2">
+          <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span> <span data-field="samputa_sankhye"></span>
+          </div>
+          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span> <span
+              data-field="tatvapadakarara_hesaru"></span></div>
+          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ :</span> <span
+              data-field="tatvapada_sankhye"></span></div>
+        </div>
 
-      <!-- Row 2 -->
-      <div class="row mb-2">
-        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span> <span data-field="tatvapadakosha_sheershike"></span></div>
-        <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span> <span data-field="tatvapada_sheershike"></span></div>
-        <div class="col-md-4"><span class="fw-bold">ಮೊದಲ ಸಾಲು :</span> <span data-field="tatvapada_first_line"></span></div>
-      </div>
+        <!-- Row 2 -->
+        <div class="row mb-2">
+          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span> <span
+              data-field="tatvapadakosha_sheershike"></span></div>
+          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span> <span
+              data-field="tatvapada_sheershike"></span></div>
+          <div class="col-md-4"><span class="fw-bold">ಮೊದಲ ಸಾಲು :</span> <span data-field="tatvapada_first_line"></span>
+          </div>
+        </div>
 
-      <!-- Vibhag -->
-      <div class="mb-3 d-none" data-section="vibhag">
-        <span class="fw-bold">ವಿಭಾಗ :</span> <span data-field="vibhag"></span>
-      </div>
+        <!-- Vibhag -->
+        <div class="mb-3 d-none" data-section="vibhag">
+          <span class="fw-bold">ವಿಭಾಗ :</span> <span data-field="vibhag"></span>
+        </div>
 
-      <!-- Tatvapada -->
-      <div class="d-none" data-section="tatvapada">
-        <span class="fw-bold">ತತ್ವಪದ :</span>
-        <div data-field="tatvapada" style="white-space: pre-wrap; margin-top: 4px;"></div>
+        <!-- Tatvapada -->
+        <div class="d-none" data-section="tatvapada">
+          <span class="fw-bold">ತತ್ವಪದ :</span>
+          <div data-field="tatvapada" style="white-space: pre-wrap; margin-top: 4px;"></div>
+        </div>
       </div>
     </div>
-  </div>
-</template>
+  </template>
 
   {% include 'customLoader.html' %}
   {% include 'footer.html' %}

@@ -1,5 +1,5 @@
 body {
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
     background: #f7f9fb;
     color: #2c3e50;
     margin: 0;
@@ -57,7 +57,7 @@ table.dataTable tbody tr:hover {
     padding: 8px 14px;
     border: 1px solid #bbb;
     font-size: 18px;
-    font-family: "NudiParijatha", "Noto Sans Kannada", sans-serif;
+    font-family: "NudiParijatha", "NotoSansKannada", sans-serif;
     transition: all 0.3s ease;
 }
 
