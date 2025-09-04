@@ -70,7 +70,7 @@ class Arthakosha(db_instance.Model):
     """
     __tablename__ = "arthakosha"
     __table_args__ = (
-        UniqueConstraint('author_id', 'title', name='uq_arthakosha_author_title'),
+        UniqueConstraint('author_id', 'word', 'meaning', name='uq_arthakosha_author_word_meaning'),
         {
             'mysql_engine': 'InnoDB',
             'mysql_charset': 'utf8mb4',

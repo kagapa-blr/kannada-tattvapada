@@ -6,6 +6,8 @@ import hashlib
 from typing import List, Dict, Tuple, Optional
 import docx
 
+from tatvapada_Extraction.tatvapada_extractorv2 import kannada_to_arabic
+
 # ---------------- Constants ----------------
 SAMPUTA_RE = re.compile(r"ಸಂಪುಟ\s*[-–]?\s*([೦-೯0-9]+)")
 
@@ -22,6 +24,12 @@ def stable_id(author: str) -> int:
     return int(hashlib.md5(author.encode("utf-8")).hexdigest(), 16) % 100000
 
 # ---------------- DOCX Processing ----------------
+# ---------------- Utilities ----------------
+def clean_text(text: str) -> str:
+    """Remove invisible unicode chars and trim spaces."""
+    return re.sub(r"[\u200b-\u200d\uFEFF]", "", text).strip()
+
+# ---------------- DOCX Processing ----------------
 def process_docx_file(file_path: str,
                       author_id_map: Dict[str, int]) -> Tuple[Optional[List[Dict]], Optional[List[Dict]]]:
     doc = docx.Document(file_path)
@@ -36,7 +44,7 @@ def process_docx_file(file_path: str,
     last_row = None
 
     for para in doc.paragraphs:
-        text = para.text.strip()
+        text = clean_text(para.text)
         if not text:
             continue
 
@@ -47,12 +55,12 @@ def process_docx_file(file_path: str,
                 samputa_sankhye = normalize_digits(m.group(1))
             continue
 
-        # Detect author line
-        if "ತತ್ವಪದಗಳು" in text:
+        # Detect author line (always ends with ತತ್ವಪದಗಳು / ತತ್ತ್ವಪದಗಳು)
+        if text.endswith("ತತ್ವಪದಗಳು") or text.endswith("ತತ್ತ್ವಪದಗಳು"):
             author_name = text
-            if text not in author_id_map:
-                author_id_map[text] = stable_id(text)
-            tatvapada_author_id = author_id_map[text]
+            if author_name not in author_id_map:
+                author_id_map[author_name] = stable_id(author_name)
+            tatvapada_author_id = author_id_map[author_name]
             continue
 
         # Detect section headers
@@ -73,7 +81,7 @@ def process_docx_file(file_path: str,
                     title, content = parts
                     last_row = {
                         "samputa_sankhye": samputa_sankhye,
-                        "author_name": author_name,
+                        "tatvapadakarara_hesaru": author_name,
                         "tatvapada_author_id": tatvapada_author_id,
                         "paribhashika_padavivarana_title": title.strip(),
                         "paribhashika_padavivarana_content": content.strip()
@@ -85,26 +93,14 @@ def process_docx_file(file_path: str,
         # ---------------- Arthakosha ----------------
         elif current_section == "arthakosha":
             if "-" in text or "–" in text:
-                parts = re.split(r"[-–]", text, maxsplit=2)
+                parts = re.split(r"[-–]", text, maxsplit=1)
                 if len(parts) == 2:
                     word, meaning = parts
                     last_row = {
                         "author_id": tatvapada_author_id,
                         "author_name": author_name,
                         "samputa": samputa_sankhye,
-                        "title": None,
-                        "word": word.strip(),
-                        "meaning": meaning.strip(),
-                        "notes": None
-                    }
-                    arthakosha_rows.append(last_row)
-                elif len(parts) == 3:
-                    title, word, meaning = parts
-                    last_row = {
-                        "author_id": tatvapada_author_id,
-                        "author_name": author_name,
-                        "samputa": samputa_sankhye,
-                        "title": title.strip(),
+                        "title": word.strip(),
                         "word": word.strip(),
                         "meaning": meaning.strip(),
                         "notes": None
@@ -136,9 +132,9 @@ def process_folder(input_folder: str,
                 csv_path = os.path.join(padavivarana_output_folder, f"{os.path.splitext(filename)[0]}_padavivarana.csv")
                 with open(csv_path, "w", newline="", encoding="utf-8") as f:
                     fieldnames = [
-                        "samputa_sankhye",
-                        "author_name",
                         "tatvapada_author_id",
+                        "samputa_sankhye",
+                        "tatvapadakarara_hesaru",
                         "paribhashika_padavivarana_title",
                         "paribhashika_padavivarana_content"
                     ]
@@ -166,9 +162,41 @@ def process_folder(input_folder: str,
                     writer.writerows(arthakosha_rows)
                 print(f"Wrote Arthakosha CSV: {csv_path}")
 
+def rename_docx_files(directory):
+    for filename in os.listdir(directory):
+        if filename.lower().endswith(".docx"):
+            # Remove extra spaces for easier matching
+            clean_name = re.sub(r'\s+', '', filename)
+            # Convert Kannada digits to Arabic
+            clean_name = clean_name.translate(kannada_to_arabic)
+
+            # Extract all numbers from the filename
+            numbers = re.findall(r'\d+', clean_name)
+
+            if numbers:
+                if len(numbers) >= 2:
+                    # Format as main.sub (e.g., 8.1)
+                    new_name = f"samputa_{numbers[0]}.{numbers[1]}.docx"
+                else:
+                    # Only main number
+                    new_name = f"samputa_{numbers[0]}.docx"
+
+                old_path = os.path.join(directory, filename)
+                new_path = os.path.join(directory, new_name)
+
+                if not os.path.exists(new_path):
+                    os.rename(old_path, new_path)
+                    print(f"Renamed: {filename} → {new_name}")
+                else:
+                    print(f"Skipped (already exists): {new_name}")
+
+# Example usage:
+# rename_docx_files(r"C:\path\to\your\docx\folder")
+
 # ---------------- Main ----------------
 if __name__ == "__main__":
     input_folder = input("Enter the folder path containing DOCX files: ").strip()
+    #rename_docx_files(input_folder)
     output_folder = "output_padavivarana_arthakosha"
     padavivarana_output_folder = os.path.join(output_folder, "output_padavivarana")
     arthakosha_output_folder = os.path.join(output_folder, "output_arthakosha")

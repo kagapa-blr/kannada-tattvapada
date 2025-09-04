@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask
-from flask_migrate import Migrate, init as migrate_init, migrate as flask_migrate, upgrade
+from flask_migrate import Migrate, init as migrate_init, upgrade
 from app.config.database import db_instance, init_db
 from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
@@ -63,26 +63,26 @@ logger.info(
     "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"
 )
 
-# -------------------- Step 8: Fully Automatic Migrations -------------------- #
+# -------------------- Step 8: Automatic Upgrade (without autogeneration) -------------------- #
 def auto_upgrade():
-    """Automatically generate migration scripts and apply pending migrations."""
+    """Apply existing migrations if any, don't autogenerate each time."""
     migrations_path = os.path.join(app_root, "migrations")
 
-    # 1️ Initialize migrations folder if missing
+    # Initialize migrations folder if missing
     if not os.path.exists(migrations_path):
         logger.info("Migrations folder not found. Initializing...\n")
         migrate_init(directory=migrations_path)
-        logger.info("Migrations folder created.")
+        logger.info("Migrations folder created (empty).")
+        logger.info("No migrations yet. Run 'flask db migrate' manually to create one.")
+        return
 
-    # 2️ Autogenerate a migration script for any changes
-    logger.info("Autogenerating migration script for model changes...")
-    flask_migrate(directory=migrations_path, message="Auto migration")
-    logger.info("Migration script generated.")
-
-    # 3️ Apply all migrations
+    # Apply pending migrations only
     logger.info("Applying pending database migrations...")
-    upgrade(directory=migrations_path)
-    logger.info("Database migrations applied successfully.")
+    try:
+        upgrade(directory=migrations_path)
+        logger.info("Database migrations applied successfully.")
+    except Exception as e:
+        logger.error(f"Migration failed: {e}")
 
 # -------------------- Step 9: Entry Point -------------------- #
 if __name__ == "__main__":

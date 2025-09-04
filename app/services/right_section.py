@@ -414,7 +414,7 @@ class BulkUploadService:
         self.db = db_session or db_instance.session
 
     def upload_paribhashika_padavivarana(self, file_stream) -> Tuple[int, List[str]]:
-        """Bulk upload ParibhashikaPadavivarana from CSV"""
+        """Bulk upload ParibhashikaPadavivarana from CSV."""
         records_added = 0
         errors: List[str] = []
 
@@ -425,8 +425,10 @@ class BulkUploadService:
                 return 0, ["CSV file has no header row."]
 
             required_cols = {
-                "tatvapada_author_id", "samputa_sankhye",
-                "paribhashika_padavivarana_title", "paribhashika_padavivarana_content"
+                "tatvapada_author_id",
+                "samputa_sankhye",
+                "paribhashika_padavivarana_title",
+                "paribhashika_padavivarana_content",
             }
             missing_cols = required_cols - set(reader.fieldnames)
             if missing_cols:
@@ -441,7 +443,6 @@ class BulkUploadService:
                         paribhashika_padavivarana_content=row.get("paribhashika_padavivarana_content"),
                     )
                     self.db.add(padavivarana)
-                    self.db.flush()
                     records_added += 1
                 except IntegrityError:
                     self.db.rollback()
@@ -449,8 +450,10 @@ class BulkUploadService:
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
+            self.db.commit()  #  commit after loop
             return records_added, errors
         except Exception as e:
+            self.db.rollback()
             return 0, [f"Unexpected error: {str(e)}"]
 
     def upload_arthakosha(self, file_stream) -> Tuple[int, List[str]]:
