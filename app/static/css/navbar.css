@@ -7,19 +7,22 @@
   font-display: swap;
 }
 
-/* NotoSansKannada */
+/* NotoSansKannada - Regular 400 */
 @font-face {
-  font-family: "NotoSansKannada";
-  src: url("/static/fonts/noto/NotoSansKannada-Regular.ttf") format("truetype");
-  font-weight: 400;
+  font-family: 'NotoSansKannada';
   font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/noto/NotoSansKannada-Regular.ttf') format('truetype');
 }
 
+/* NotoSansKannada - Bold 700 */
 @font-face {
-  font-family: "NotoSansKannada";
-  src: url("/static/fonts/noto/NotoSansKannada-Bold.ttf") format("truetype");
-  font-weight: 700;
+  font-family: 'NotoSansKannada';
   font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/noto/NotoSansKannada-Bold.ttf') format('truetype');
 }
 
 :root {
