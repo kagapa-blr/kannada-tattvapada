@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>📄 Documents</title>
+    <title>📖 ಸಂಪಾದಕರ ನುಡಿ</title>
 
     <!-- 1. Bootstrap CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
@@ -20,7 +20,14 @@
 
     <!-- Main Container -->
     <div class="container py-4">
-        <h4 class="user-document-title mb-4 text-center">📄 Available Documents</h4>
+        <h4 class="user-document-title mb-4 text-center">📖 ಸಂಪಾದಕರ ನುಡಿ</h4>
+
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+                <input type="text" id="search-bar" class="form-control" placeholder="🔍 ಸಂಪುಟ ಅಥವಾ ವಿವರಣೆ ಹುಡುಕಿ...">
+            </div>
+        </div>
 
         <!-- Document Cards Container -->
         <div id="user-document-container" class="row g-3">
@@ -41,22 +48,22 @@
         <!-- Top Navigation Bar -->
         <div class="doc-viewer-navbar">
             <div class="left-controls">
-                <button class="nav-btn" onclick="closeDocViewer()">✕ Close</button>
-                <button id="doc-prev" class="nav-btn">⟨ Prev</button>
+                <button class="nav-btn" onclick="closeDocViewer()">✕ ಮುಚ್ಚು</button>
+                <button id="doc-prev" class="nav-btn">⟨ ಹಿಂದಿನದು</button>
             </div>
 
-            <h4 id="doc-viewer-title" class="doc-title">Document Title</h4>
+            <h4 id="doc-viewer-title" class="doc-title">ಸಂಪಾದಕರ ನುಡಿ</h4>
 
             <div class="right-controls">
-                <button id="print-doc" class="nav-btn secondary">🖨 Print</button>
-                <button id="doc-next" class="nav-btn">Next ⟩</button>
+                <button id="print-doc" class="nav-btn secondary">🖨 ಮುದ್ರಿಸು</button>
+                <button id="doc-next" class="nav-btn">ಮುಂದಿನದು ⟩</button>
             </div>
         </div>
 
         <!-- Scrollable Document Body -->
         <div class="doc-viewer-body" id="print-area">
-            <p><strong>Category:</strong> <span id="doc-viewer-category"></span></p>
-            <p><strong>Description:</strong></p>
+            <p><strong>ವರ್ಗ:</strong> <span id="doc-viewer-category"></span></p>
+            <p><strong>ವಿವರಣೆ:</strong></p>
             <p id="doc-viewer-description"></p>
             <hr />
             <div id="doc-viewer-content" class="doc-viewer-content">
@@ -64,10 +71,10 @@
             </div>
         </div>
 
-
         <!-- Floating Pagination Indicator -->
-        <div class="page-indicator" id="doc-page-indicator">Document 1 of 10</div>
+        <div class="page-indicator" id="doc-page-indicator">ದಸ್ತಾವೇಜು 1 / 10</div>
     </div>
+
     <!-- Hidden print container for printing -->
     <div id="print-container" style="display: none;"></div>
 
@@ -82,7 +89,7 @@
 
     <!-- 2. Custom JS -->
     <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/right_section/userDocument.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/right_section/sampadakaraNudi.js') }}"></script>
 </body>
 
 </html>

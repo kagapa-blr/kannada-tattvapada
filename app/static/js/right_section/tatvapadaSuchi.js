@@ -1,31 +1,35 @@
 import apiClient from '../apiClient.js';
 import apiEndpoints from '../apiEndpoints.js';
+import { showLoader, hideLoader } from "../loader.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const letters = [
-        "ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ೠ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ",
+        // Vowels
+        "ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ೠ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ", "ಅಂ", "ಅಃ",
+        // Consonants
         "ಕ", "ಖ", "ಗ", "ಘ", "ಙ",
         "ಚ", "ಛ", "ಜ", "ಝ", "ಞ",
         "ಟ", "ಠ", "ಡ", "ಢ", "ಣ",
         "ತ", "ಥ", "ದ", "ಧ", "ನ",
         "ಪ", "ಫ", "ಬ", "ಭ", "ಮ",
         "ಯ", "ರ", "ಲ", "ವ",
-        "ಶ", "ಷ", "ಸ", "ಹ", "ಳ"
+        "ಶ", "ಷ", "ಸ", "ಹ", "ಳ",
+        // Conjuncts / special
+        "ಕ್ಷ", "ಜ್ಞ"
     ];
 
-    // Initialize DataTable with server-side processing
+    // ----------------- Initialize DataTable -----------------
     function initializeTable() {
         return new DataTable("#tatvapadaTable", {
             processing: true,
             serverSide: true,
             ajax: (data, callback) => {
+                showLoader();
                 const offset = data.start || 0;
                 const limit = data.length || 10;
                 const search = data.search.value || "";
 
-                apiClient.get(
-                    `${apiEndpoints.rightSection.tatvapadaSuchi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`
-                )
+                apiClient.get(`${apiEndpoints.rightSection.tatvapadaSuchi}?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`)
                     .then(res => {
                         callback({
                             recordsTotal: res.total,
@@ -42,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     .catch(err => {
                         console.error("Error loading data:", err);
                         callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
-                    });
+                    })
+                    .finally(() => hideLoader());
             },
             pageLength: 10,
             columns: [
@@ -66,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Show tatvapada details in modal
+    // ----------------- Show Tatvapada modal -----------------
     function showTatvapadaModal(tatvapadaData) {
         document.getElementById("modalSamputa").textContent = tatvapadaData.samputa_sankhye;
         document.getElementById("modalTatvapadaNumber").textContent = tatvapadaData.tatvapada_sankhye;
@@ -81,27 +86,39 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.show();
     }
 
-    // Fetch tatvapada details by keys
-    function fetchTatvapadaDetails(samputa, authorId, number) {
-        return apiClient.get(apiEndpoints.rightSection.getTatvapada(samputa, authorId, number));
+    // ----------------- Fetch Tatvapada details -----------------
+    async function fetchTatvapadaDetails(samputa, authorId, number) {
+        try {
+            showLoader();
+            const res = await apiClient.get(apiEndpoints.rightSection.getTatvapada(samputa, authorId, number));
+            return res;
+        } catch (err) {
+            console.error("Failed to fetch Tatvapada details:", err);
+            throw err;
+        } finally {
+            hideLoader();
+        }
     }
 
-    // Handle row click to fetch and show details
+    // ----------------- Attach row click listener -----------------
     function attachRowClickListener(table) {
-        document.querySelector("#tatvapadaTable tbody").addEventListener("click", (event) => {
+        document.querySelector("#tatvapadaTable tbody").addEventListener("click", async (event) => {
             const tr = event.target.closest("tr");
             if (!tr) return;
 
             const rowData = table.row(tr).data();
             if (!rowData) return;
 
-            fetchTatvapadaDetails(rowData.samputa, rowData.authorId, rowData.number)
-                .then(showTatvapadaModal)
-                .catch(() => alert("Tatvapada details not found!"));
+            try {
+                const tatvapada = await fetchTatvapadaDetails(rowData.samputa, rowData.authorId, rowData.number);
+                showTatvapadaModal(tatvapada);
+            } catch {
+                alert("Tatvapada details not found!");
+            }
         });
     }
 
-    // Create Kannada letters grid for search input
+    // ----------------- Create letters grid -----------------
     function createLettersGrid(table) {
         const grid = document.getElementById("letters-grid");
         letters.forEach(ch => {
@@ -116,14 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Attach clear search button event
+    // ----------------- Attach clear search -----------------
     function attachClearSearchListener(table) {
         document.getElementById("clearSearch").addEventListener("click", () => {
             table.search("").draw();
         });
     }
 
-    // Initialization
+    // ----------------- Initialization -----------------
     const tatvapadaTable = initializeTable();
     attachRowClickListener(tatvapadaTable);
     createLettersGrid(tatvapadaTable);

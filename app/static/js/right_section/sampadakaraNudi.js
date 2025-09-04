@@ -1,10 +1,12 @@
 import apiClient from '../apiClient.js';
 import apiEndpoints from '../apiEndpoints.js';
+import { showLoader, hideLoader } from "../loader.js";
 
 const container = document.getElementById('user-document-container');
 const pagination = document.getElementById('user-document-pagination');
+const searchBar = document.getElementById('search-bar'); // search input
 
-// Fullscreen overlay elements (hidden initially)
+// Fullscreen overlay elements
 const overlay = document.getElementById('doc-viewer-overlay');
 const viewerTitle = document.getElementById('doc-viewer-title');
 const viewerCategory = document.getElementById('doc-viewer-category');
@@ -17,28 +19,33 @@ const prevBtn = document.getElementById('doc-prev');
 const printBtn = document.getElementById('print-doc');
 
 let documents = [];
+let filteredDocuments = [];
 let currentPage = 1;
-const pageSize = 6; // documents per page in grid
+const pageSize = 6;
 let currentDocIndex = 0;
 
-// Load all documents metadata (no content)
+// ----------------- Load all documents metadata -----------------
 async function loadDocuments() {
     try {
+        showLoader(); // show loader while fetching
         documents = await apiClient.get(apiEndpoints.documents.list);
+        filteredDocuments = documents.slice();
         renderPage(1);
-        overlay.style.display = 'none'; // hide viewer initially
+        overlay.style.display = 'none';
     } catch (err) {
         console.error('Failed to load documents:', err);
         container.innerHTML = '<p class="text-danger">Failed to load documents.</p>';
+    } finally {
+        hideLoader(); // hide loader after fetching
     }
 }
 
-// Render document cards for a page
+// ----------------- Render page -----------------
 function renderPage(page) {
     currentPage = page;
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
-    const pageDocs = documents.slice(start, end);
+    const pageDocs = filteredDocuments.slice(start, end);
 
     container.innerHTML = '';
     pageDocs.forEach((doc, idx) => {
@@ -49,7 +56,7 @@ function renderPage(page) {
     renderPagination();
 }
 
-// Create single document card element
+// ----------------- Create single document card -----------------
 function createDocumentCard(doc, index) {
     const cardCol = document.createElement('div');
     cardCol.className = 'col-md-4';
@@ -71,9 +78,9 @@ function createDocumentCard(doc, index) {
     return cardCol;
 }
 
-// Render pagination control for grid
+// ----------------- Pagination -----------------
 function renderPagination() {
-    const totalPages = Math.ceil(documents.length / pageSize);
+    const totalPages = Math.ceil(filteredDocuments.length / pageSize);
     pagination.innerHTML = '';
 
     if (totalPages <= 1) return;
@@ -95,12 +102,13 @@ function renderPagination() {
     }
 }
 
-// Open fullscreen document viewer and fetch full content by ID
+// ----------------- Open document viewer -----------------
 async function openDocViewer(index) {
     currentDocIndex = index;
-    const doc = documents[index];
+    const doc = filteredDocuments[index];
 
     try {
+        showLoader(); // show loader while fetching document content
         const fullDoc = await apiClient.get(apiEndpoints.documents.getById(doc.id));
 
         viewerTitle.textContent = fullDoc.title;
@@ -108,26 +116,28 @@ async function openDocViewer(index) {
         viewerDescription.textContent = fullDoc.description || '';
         viewerContent.innerHTML = fullDoc.content || '';
 
-        viewerPageIndicator.textContent = `Document ${index + 1} of ${documents.length}`;
+        viewerPageIndicator.textContent = `ದಸ್ತಾವೇಜು ${index + 1} / ${filteredDocuments.length}`;
         prevBtn.disabled = (index === 0);
-        nextBtn.disabled = (index === documents.length - 1);
+        nextBtn.disabled = (index === filteredDocuments.length - 1);
 
         overlay.style.display = 'flex';
     } catch (err) {
         console.error('Failed to load document content:', err);
         alert('Failed to load document content.');
+    } finally {
+        hideLoader(); // hide loader after fetching
     }
 }
 
-// Close the fullscreen viewer
+// ----------------- Close viewer -----------------
 function closeDocViewer() {
     overlay.style.display = 'none';
 }
 
-// Print the current document content
+// ----------------- Print document -----------------
 function printDocument() {
     const printContainer = document.getElementById('print-container');
-    printContainer.innerHTML = ''; // clear previous content
+    printContainer.innerHTML = '';
 
     const category = viewerCategory.textContent;
     const description = viewerDescription.textContent;
@@ -136,8 +146,8 @@ function printDocument() {
     const page = document.createElement('div');
     page.className = 'print-page';
     page.innerHTML = `
-        <p><strong>Category:</strong> ${category}</p>
-        <p><strong>Description:</strong></p>
+        <p><strong>ವರ್ಗ:</strong> ${category}</p>
+        <p><strong>ವಿವರಣೆ:</strong></p>
         <p>${description}</p>
         <hr/>
         <div>${contentHTML}</div>
@@ -151,9 +161,9 @@ function printDocument() {
     }, 50);
 }
 
-// Event listeners for navigation buttons
+// ----------------- Navigation buttons -----------------
 nextBtn.addEventListener('click', () => {
-    if (currentDocIndex < documents.length - 1) {
+    if (currentDocIndex < filteredDocuments.length - 1) {
         openDocViewer(currentDocIndex + 1);
     }
 });
@@ -163,17 +173,16 @@ prevBtn.addEventListener('click', () => {
     }
 });
 
-// Event listener for print button
 if (printBtn) {
     printBtn.addEventListener('click', printDocument);
 }
 
-// Keyboard event handlers to navigate and close overlay
+// ----------------- Keyboard navigation -----------------
 document.addEventListener('keydown', (e) => {
     if (overlay.style.display !== 'flex') return;
 
     if (e.key === 'Escape') closeDocViewer();
-    if (e.key === 'ArrowRight' && currentDocIndex < documents.length - 1) {
+    if (e.key === 'ArrowRight' && currentDocIndex < filteredDocuments.length - 1) {
         openDocViewer(currentDocIndex + 1);
     }
     if (e.key === 'ArrowLeft' && currentDocIndex > 0) {
@@ -181,10 +190,42 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Make close function globally accessible for inline onclick attribute
 window.closeDocViewer = closeDocViewer;
 
-// Initial load
+
+
+
+
+// Helper: convert English digits to Kannada digits
+function engToKannadaDigits(str) {
+    return str.replace(/\d/g, d => String.fromCharCode(0x0CE6 + Number(d)));
+}
+
+// Normalize string for search: lower case + convert digits
+function normalizeForSearch(str) {
+    if (!str) return '';
+    return engToKannadaDigits(str.toLowerCase());
+}
+
+// ----------------- Search functionality -----------------
+if (searchBar) {
+    searchBar.addEventListener('input', () => {
+        const query = normalizeForSearch(searchBar.value);
+
+        filteredDocuments = documents.filter(doc => {
+            const title = normalizeForSearch(doc.title);
+            const description = normalizeForSearch(doc.description);
+            return title.includes(query) || description.includes(query);
+        });
+
+        renderPage(1);
+    });
+}
+
+
+
+
+// ----------------- Initial load -----------------
 loadDocuments();
 
 export {

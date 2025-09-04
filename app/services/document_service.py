@@ -1,7 +1,9 @@
 # app/services/document_service.py
+
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
 from app.config.database import db_instance
 from app.models.documents import KannadaDocument
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class ServiceResponse:
@@ -27,6 +29,14 @@ class DocumentService:
     @staticmethod
     def create_document(title, description, category, content):
         try:
+            existing = KannadaDocument.query.filter_by(title=title).first()
+            if existing:
+                return ServiceResponse(
+                    success=False,
+                    data={"id": existing.id},
+                    message="Document with this title already exists"
+                )
+
             doc = KannadaDocument(
                 title=title,
                 description=description,

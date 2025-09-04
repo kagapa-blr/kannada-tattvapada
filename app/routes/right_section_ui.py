@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
+from flask import render_template
+
 right_section_bp = Blueprint(
     'right_section', __name__,
     template_folder='templates/right_section',
@@ -25,16 +26,11 @@ def tippani():
 def tatvapadakara_vivarane():
     return render_template('right_section/tatvapadakara_vivarane.html')
 
-@right_section_bp.route('/pradhana_sampadakaru_nudi', methods=['GET'])
-def pradhana_sampadakaru_nudi():
-    return render_template('right_section/pradhana_sampadakaru_nudi.html')
 
-@right_section_bp.route('/user_document', methods=['GET'])
+@right_section_bp.route('/sampadakaru_nudi', methods=['GET'])
 def samputa_sampadakaru_nudi():
-    return render_template('right_section/user_document.html')
+    return render_template('right_section/sampadakara_nudi.html')
 
-@right_section_bp.route('/paramarshana_sahitya', methods=['GET'])
-def paramarshana_sahitya():
-    return render_template('right_section/paramarshana_sahitya.html')
+
 
 

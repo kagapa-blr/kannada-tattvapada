@@ -8,9 +8,9 @@ documents_bp = Blueprint("kannada_documents", __name__, url_prefix="/api/documen
 # ---------------- CREATE ----------------
 @documents_bp.route("/", methods=["POST"])
 def create_doc():
-    data = request.get_json()
+    data = request.get_json(silent=True)
     if not data or "title" not in data or "content" not in data:
-        raise BadRequest("Title and Content are required")
+        return jsonify({"message": "Title and Content are required"}), 400
 
     result = DocumentService.create_document(
         title=data["title"],
@@ -20,9 +20,15 @@ def create_doc():
     )
 
     if not result.success:
-        raise BadRequest(result.message or "Failed to create document")
+        return jsonify({
+            "message": result.message or "Failed to create document",
+            "error": result.error
+        }), 400
 
-    return jsonify({"id": result.data["id"], "message": result.message}), 201
+    return jsonify({
+        "id": result.data["id"],
+        "message": result.message
+    }), 201
 
 
 # ---------------- READ (All) ----------------

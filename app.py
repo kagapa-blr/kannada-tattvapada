@@ -65,24 +65,23 @@ logger.info(
 
 # -------------------- Step 8: Automatic Upgrade (without autogeneration) -------------------- #
 def auto_upgrade():
-    """Apply existing migrations if any, don't autogenerate each time."""
+    """Apply migrations if any, else create tables directly from models."""
     migrations_path = os.path.join(app_root, "migrations")
 
-    # Initialize migrations folder if missing
     if not os.path.exists(migrations_path):
-        logger.info("Migrations folder not found. Initializing...\n")
-        migrate_init(directory=migrations_path)
-        logger.info("Migrations folder created (empty).")
-        logger.info("No migrations yet. Run 'flask db migrate' manually to create one.")
+        logger.info("Migrations folder not found. Initializing with create_all...\n")
+        db_instance.create_all()   # <-- directly create tables
+        logger.info("All tables created from models.")
         return
 
-    # Apply pending migrations only
     logger.info("Applying pending database migrations...")
     try:
         upgrade(directory=migrations_path)
         logger.info("Database migrations applied successfully.")
     except Exception as e:
         logger.error(f"Migration failed: {e}")
+        logger.info("Falling back to create_all()...")
+        db_instance.create_all()
 
 # -------------------- Step 9: Entry Point -------------------- #
 if __name__ == "__main__":

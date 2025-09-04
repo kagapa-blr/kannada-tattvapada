@@ -1,13 +1,21 @@
 import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
+import { showLoader, hideLoader } from "../loader.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const letters = [
-        "ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ೠ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ",
-        "ಕ", "ಖ", "ಗ", "ಘ", "ಙ", "ಚ", "ಛ", "ಜ", "ಝ", "ಞ",
-        "ಟ", "ಠ", "ಡ", "ಢ", "ಣ", "ತ", "ಥ", "ದ", "ಧ", "ನ",
-        "ಪ", "ಫ", "ಬ", "ಭ", "ಮ", "ಯ", "ರ", "ಲ", "ವ",
-        "ಶ", "ಷ", "ಸ", "ಹ", "ಳ"
+        // Vowels
+        "ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ೠ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ", "ಅಂ", "ಅಃ",
+        // Consonants
+        "ಕ", "ಖ", "ಗ", "ಘ", "ಙ",
+        "ಚ", "ಛ", "ಜ", "ಝ", "ಞ",
+        "ಟ", "ಠ", "ಡ", "ಢ", "ಣ",
+        "ತ", "ಥ", "ದ", "ಧ", "ನ",
+        "ಪ", "ಫ", "ಬ", "ಭ", "ಮ",
+        "ಯ", "ರ", "ಲ", "ವ",
+        "ಶ", "ಷ", "ಸ", "ಹ", "ಳ",
+        // Conjuncts / special
+        "ಕ್ಷ", "ಜ್ಞ"
     ];
 
     // ✅ Initialize DataTable
@@ -15,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
         processing: true,
         serverSide: true,
         ajax: async (data, callback) => {
+            showLoader(); // Show loader before fetching
             const offset = data.start || 0;
             const limit = data.length || 50;
             const search = data.search.value || "";
@@ -32,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (err) {
                 console.error("Error loading Padavivarana list:", err);
                 callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+            } finally {
+                hideLoader(); // Hide loader after fetch
             }
         },
         columns: [
@@ -67,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const rowData = table.row(tr).data();
         if (!rowData) return;
 
+        showLoader(); // Show loader while fetching row details
         try {
             const url = `${apiEndpoints.rightSection.padavivaranaApi}/${rowData.samputa_sankhye}/${rowData.tatvapada_author_id}/${rowData.id}`;
             const res = await apiClient.get(url);
@@ -82,6 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.error("Error fetching Padavivarana:", err);
+        } finally {
+            hideLoader(); // Hide loader after fetch
         }
     });
 
