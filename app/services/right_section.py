@@ -414,47 +414,56 @@ class BulkUploadService:
         self.db = db_session or db_instance.session
 
     def upload_paribhashika_padavivarana(self, file_stream) -> Tuple[int, List[str]]:
-        """Bulk upload ParibhashikaPadavivarana from CSV."""
-        records_added = 0
-        errors: List[str] = []
+            """Bulk upload ParibhashikaPadavivarana from CSV.
+            Ignores duplicates but logs them in errors.
+            """
+            records_added = 0
+            errors: List[str] = []
 
-        try:
-            file_content = file_stream.read().decode("utf-8-sig")
-            reader = csv.DictReader(io.StringIO(file_content))
-            if not reader.fieldnames:
-                return 0, ["CSV file has no header row."]
+            try:
+                file_content = file_stream.read().decode("utf-8-sig")
+                reader = csv.DictReader(io.StringIO(file_content))
+                if not reader.fieldnames:
+                    return 0, ["CSV file has no header row."]
 
-            required_cols = {
-                "tatvapada_author_id",
-                "samputa_sankhye",
-                "paribhashika_padavivarana_title",
-                "paribhashika_padavivarana_content",
-            }
-            missing_cols = required_cols - set(reader.fieldnames)
-            if missing_cols:
-                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
+                required_cols = {
+                    "tatvapada_author_id",
+                    "samputa_sankhye",
+                    "paribhashika_padavivarana_title",
+                    "paribhashika_padavivarana_content",
+                }
+                missing_cols = required_cols - set(reader.fieldnames)
+                if missing_cols:
+                    return 0, [f"Missing columns: {', '.join(missing_cols)}"]
 
-            for i, row in enumerate(reader, 1):
-                try:
-                    padavivarana = ParibhashikaPadavivarana(
-                        tatvapada_author_id=row.get("tatvapada_author_id"),
-                        samputa_sankhye=row.get("samputa_sankhye"),
-                        paribhashika_padavivarana_title=row.get("paribhashika_padavivarana_title"),
-                        paribhashika_padavivarana_content=row.get("paribhashika_padavivarana_content"),
-                    )
-                    self.db.add(padavivarana)
-                    records_added += 1
-                except IntegrityError:
-                    self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate entry or invalid tatvapada_author_id")
-                except Exception as row_err:
-                    self.db.rollback()
-                    errors.append(f"Row {i}: {str(row_err)}")
-            self.db.commit()  #  commit after loop
-            return records_added, errors
-        except Exception as e:
-            self.db.rollback()
-            return 0, [f"Unexpected error: {str(e)}"]
+                for i, row in enumerate(reader, 1):
+                    try:
+                        padavivarana = ParibhashikaPadavivarana(
+                            tatvapada_author_id=int(row.get("tatvapada_author_id")),
+                            samputa_sankhye=row.get("samputa_sankhye").strip(),
+                            paribhashika_padavivarana_title=row.get("paribhashika_padavivarana_title").strip(),
+                            paribhashika_padavivarana_content=row.get("paribhashika_padavivarana_content").strip(),
+                        )
+                        self.db.add(padavivarana)
+                        self.db.flush()  # check constraints immediately
+                        records_added += 1
+                    except IntegrityError:
+                        self.db.rollback()  # rollback only this failed row
+                        errors.append(
+                            f"Row {i}: Duplicate entry (title='{row.get('paribhashika_padavivarana_title')}', "
+                            f"author_id={row.get('tatvapada_author_id')})"
+                        )
+                    except Exception as row_err:
+                        self.db.rollback()
+                        errors.append(f"Row {i}: {str(row_err)}")
+
+                # commit only successful ones
+                self.db.commit()
+                return records_added, errors
+
+            except Exception as e:
+                self.db.rollback()
+                return 0, [f"Unexpected error: {str(e)}"]
 
     def upload_arthakosha(self, file_stream) -> Tuple[int, List[str]]:
         """Bulk upload Arthakosha from CSV"""
