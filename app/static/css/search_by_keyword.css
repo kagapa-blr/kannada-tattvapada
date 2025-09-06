@@ -1,7 +1,8 @@
 /* Modal body flex and font */
 .modal-body.d-flex {
   padding: 1.5rem;
-  font-family: 'NotoSansKannada', sans-serif; /* Choose your preferred Kannada font */
+  font-family: 'Noto Sans Kannada', sans-serif;
+  /* Choose your preferred Kannada font */
   color: #333;
 }
 
@@ -15,7 +16,8 @@
 }
 
 #searchResults .card:hover {
-  background-color: #fffbea; /* Light yellow */
+  background-color: #fffbea;
+  /* Light yellow */
   box-shadow: 0 6px 20px rgba(255, 235, 59, 0.3);
   z-index: 10;
 }
