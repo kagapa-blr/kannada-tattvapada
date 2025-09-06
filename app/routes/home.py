@@ -7,8 +7,6 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from app.utils.auth_decorator import login_required
 from app.utils.logger import setup_logger
 
-# Set up logger for this module
-logger = setup_logger("home", "home.log")
 
 # Create a Blueprint for home
 home_bp = Blueprint("home", __name__)

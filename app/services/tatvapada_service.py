@@ -1,10 +1,11 @@
 import csv
 import io
 from collections import defaultdict
-from typing import List, Tuple
+from typing import List
 from typing import Optional
+from typing import Tuple
 
-from sqlalchemy import distinct
+from sqlalchemy import distinct, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config.database import db_instance
@@ -214,18 +215,34 @@ class TatvapadaService:
             self.logger.error(f"Unexpected error during delete: {ex}")
             raise ValueError("An unexpected error occurred while deleting the Tatvapada.")
 
+
+
     def search_by_keyword(self, keyword: str) -> List[Tatvapada]:
         """
-        Search Tatvapada entries filtering by keyword in tatvapada text.
+        Search Tatvapada entries filtering by keyword
+        in tatvapada text OR tatvapadakarara_hesaru (author name).
 
         Returns matching Tatvapada list.
         """
         try:
-            results = Tatvapada.query.filter(
-                Tatvapada.tatvapada.ilike(f"%{keyword}%")
-            ).all()
-            self.logger.info(f"Found {len(results)} entries containing keyword='{keyword}'")
+            results = (
+                Tatvapada.query
+                .join(Tatvapada.tatvapadakarara_hesaru)  # join author info table
+                .filter(
+                    or_(
+                        Tatvapada.tatvapada.ilike(f"%{keyword}%"),
+                        TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%")
+                    )
+                )
+                .all()
+            )
+
+            self.logger.info(
+                f"Found {len(results)} entries containing keyword='{keyword}' "
+                f"in tatvapada or author name"
+            )
             return results
+
         except SQLAlchemyError as e:
             self.logger.error(f"Error searching Tatvapada by keyword '{keyword}': {e}")
             return []

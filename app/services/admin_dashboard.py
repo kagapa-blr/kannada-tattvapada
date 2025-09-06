@@ -1,9 +1,10 @@
 from sqlalchemy import func
+
 from app.config.database import db_instance
 from app.models.documents import TatvapadakararaVivara, KannadaDocument
 from app.models.tatvapada import Tatvapada, ParibhashikaPadavivarana, Arthakosha
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
-from app.models.user_management import Admin
+from app.models.user_management import User
 from app.utils.logger import setup_logger
 
 
@@ -79,7 +80,7 @@ class DashboardService:
             ]
 
             # --- Admin Users ---
-            total_admins = db_instance.session.query(func.count(Admin.id)).scalar()
+            total_admins = db_instance.session.query(func.count(User.id)).scalar()
 
             return {
                 "success": True,

@@ -20,7 +20,7 @@ from app.utils.logger import setup_logger
 # Setup
 # ==========================================================
 tatvapada_bp = Blueprint("tatvapada", __name__)
-logger = setup_logger("tatvapada_routes", "tatvapada_routes.log")
+logger = setup_logger("tatvapada_routes")
 
 tatvapada_service = TatvapadaService()
 bulk_service = BulkService(db_instance.session)
