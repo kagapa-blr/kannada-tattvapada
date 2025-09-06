@@ -144,10 +144,17 @@ function fetchSpecificTatvapada(samputa, authorId, sankhye) {
 }
 
 // --------- Choices Utilities ---------
-function updateChoices(id, options) {
+function updateChoices(id, options, autoSelectFirst = true) {
     const instance = choicesInstances[id];
     instance.clearChoices();
     instance.setChoices(options, 'value', 'label', true);
+
+    if (autoSelectFirst && options.length > 0) {
+        instance.setChoiceByValue(options[0].value);  // ✅ Select first option
+        const el = document.getElementById(id);
+        el.dispatchEvent(new Event("change"));        // ✅ Trigger change event
+    }
+
     instance.enable();
 }
 
