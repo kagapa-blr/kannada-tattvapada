@@ -1,9 +1,12 @@
 <!-- Overview Section -->
 <section class="mt-3" id="admin-overview-section">
 
+    <!-- Error container -->
+    <div id="admin-overview-error-container"></div>
+
     <!-- Overview Heading -->
-    <div class="p-3 mb-3" style="background:#f8f9fa; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-        <h2 class="fw-bold mb-2" style="color:#2c3e50;">ಸಾರಾಂಶ</h2>
+    <div class="admin-overview-header p-3 mb-3 bg-light shadow rounded-3">
+        <h2 class="fw-bold mb-2 text-dark">ಸಾರಾಂಶ</h2>
         <p class="mb-0 text-muted" style="font-size:0.95rem;">
             ಸ್ವಾಗತ! ಇಲ್ಲಿ ನಿಮ್ಮ ತತ್ವಪದ ನಿರ್ವಹಣಾ ವ್ಯವಸ್ಥೆಯ ಸ್ಥಿತಿಯ ಒಂದು ಚಿಕ್ಕ ಚಿತ್ರಣ ನೀಡಲಾಗಿದೆ.
             ಕೆಳಗಿನ ಕಾರ್ಡ್‌ಗಳಲ್ಲಿ ಒಟ್ಟು ಸಂಪುಟ, ತತ್ವಪದ, ತತ್ವಪದಕಾರರು, ನಿರ್ವಾಹಕರು,
@@ -12,140 +15,168 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="row g-3 mt-2" id="admin-overview-stats">
+    <div class="row g-3" id="admin-overview-cards">
 
-        <!-- Card Template -->
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ಸಂಪುಟಗಳು</h6>
-                    <h3 id="admin-overview-totalSamputa" class="fw-bold text-primary">--</h3>
+                    <h3 id="admin-overview-total-samputa" class="fw-bold text-primary admin-overview-counter">--</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ತತ್ವಪದಗಳು</h6>
-                    <h3 id="admin-overview-totalTatvapada" class="fw-bold text-success">--</h3>
+                    <h3 id="admin-overview-total-tatvapada" class="fw-bold text-success admin-overview-counter">--</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ತತ್ವಪದಕಾರರು</h6>
-                    <h3 id="admin-overview-totalAuthors" class="fw-bold text-info">--</h3>
+                    <h3 id="admin-overview-total-authors" class="fw-bold text-info admin-overview-counter">--</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ನಿರ್ವಾಹಕರು</h6>
-                    <h3 id="admin-overview-totalAdmins" class="fw-bold text-danger">--</h3>
+                    <h3 id="admin-overview-total-admins" class="fw-bold text-danger admin-overview-counter">--</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ಪಾರಿಭಾಷಿಕ ಪದವಿವರಣೆಗಳು</h6>
-                    <h3 id="admin-overview-totalParibhashika" class="fw-bold text-warning">--</h3>
+                    <h3 id="admin-overview-total-paribhashika" class="fw-bold text-warning admin-overview-counter">--
+                    </h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ಅರ್ಥಕೋಶ ದಾಖಲೆಗಳು</h6>
-                    <h3 id="admin-overview-totalArthakosha" class="fw-bold text-dark">--</h3>
+                    <h3 id="admin-overview-total-arthakosha" class="fw-bold text-dark admin-overview-counter">--</h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ಸಂಪಾದಕರ ನುಡಿಗಳು</h6>
-                    <h3 id="admin-overview-totalDocuments" class="fw-bold text-secondary">--</h3>
+                    <h3 id="admin-overview-total-documents" class="fw-bold text-secondary admin-overview-counter">--
+                    </h3>
                 </div>
             </div>
         </div>
 
         <div class="col-6 col-md-3">
-            <div class="card shadow-sm border-0 text-center h-100" style="border-radius:12px;">
+            <div class="card admin-overview-card shadow-sm text-center h-100 rounded-3">
                 <div class="card-body">
                     <h6 class="text-secondary">ಒಟ್ಟು ತತ್ವಪದಕಾರರ ವಿವರಗಳು</h6>
-                    <h3 id="admin-overview-totalAuthorVivaras" class="fw-bold text-muted">--</h3>
+                    <h3 id="admin-overview-total-author-vivaras" class="fw-bold text-muted admin-overview-counter">--
+                    </h3>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Tatvapada per Samputa Table -->
+    <!-- Tatvapada Table -->
     <div class="mt-4">
-        <button class="btn btn-outline-primary mb-2" onclick="toggleTable('samputaTableWrapper')">ತತ್ವಪದ ಸಂಪುಟ ಕೋಷ್ಟಕ
-            ತೋರಿಸಿ / ಮರೆಮಾಡಿ</button>
-        <div class="table-responsive shadow-sm" id="samputaTableWrapper"
-            style="display:none; max-height:400px; max-width:650px; overflow-y:auto; border-radius:12px;">
-            <table class="table table-hover align-middle mb-0" style="font-size:0.95rem;">
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>#</th>
-                        <th>ಸಂಪುಟ</th>
-                        <th>ಒಟ್ಟು ತತ್ವಪದಗಳು</th>
-                        <th>ಒಟ್ಟು ತತ್ವಪದಕಾರರು</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-overview-samputaTableBody"></tbody>
-            </table>
+        <p>
+            <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse"
+                data-bs-target="#admin-overview-samputa-wrapper" aria-expanded="false"
+                aria-controls="admin-overview-samputa-wrapper">
+                ತತ್ವಪದ ಸಂಪುಟ ಕೋಷ್ಟಕ ತೋರಿಸಿ / ಮರೆಮಾಡಿ
+            </button>
+        </p>
+        <div class="collapse" id="admin-overview-samputa-wrapper">
+            <div class="table-responsive shadow-sm rounded-3">
+                <table class="table table-hover align-middle admin-overview-table">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>ಸಂಪುಟ</th>
+                            <th>ಒಟ್ಟು ತತ್ವಪದಗಳು</th>
+                            <th>ಒಟ್ಟು ತತ್ವಪದಕಾರರು</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-overview-samputa-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Paribhashika per Samputa Table -->
+    <!-- Paribhashika Table -->
     <div class="mt-4">
-        <button class="btn btn-outline-primary mb-2" onclick="toggleTable('paribhashikaTableWrapper')">ಪರಿಭಾಷಿಕಾ
-            ಸಂಪುಟ ಕೋಷ್ಟಕಗಳು ತೋರಿಸಿ / ಮರೆಮಾಡಿ</button>
-        <div class="table-responsive shadow-sm" id="paribhashikaTableWrapper"
-            style="display:none; max-height:400px; max-width:650px; overflow-y:auto; border-radius:12px;">
-            <table class="table table-hover align-middle mb-0" style="font-size:0.95rem;">
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>#</th>
-                        <th>ಸಂಪುಟ</th>
-                        <th>ಒಟ್ಟು ಪರಿಭಾಷಿಕಾ</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-overview-paribhashikaTableBody"></tbody>
-            </table>
+        <p>
+            <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse"
+                data-bs-target="#admin-overview-paribhashika-wrapper" aria-expanded="false"
+                aria-controls="admin-overview-paribhashika-wrapper">
+                ಪರಿಭಾಷಿಕಾ ಸಂಪುಟ ಕೋಷ್ಟಕಗಳು ತೋರಿಸಿ / ಮರೆಮಾಡಿ
+            </button>
+        </p>
+        <div class="collapse" id="admin-overview-paribhashika-wrapper">
+            <div class="table-responsive shadow-sm rounded-3">
+                <table class="table table-hover align-middle admin-overview-table">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>ಸಂಪುಟ</th>
+                            <th>ಪಾರಿಭಾಷಿಕ ಪದವಿವರಣೆಗಳು</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-overview-paribhashika-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Arthakosha per Samputa Table -->
+    <!-- Arthakosha Table -->
     <div class="mt-4">
-        <button class="btn btn-outline-primary mb-2" onclick="toggleTable('arthakoshaTableWrapper')">ಅರ್ಥಕೋಶ ಸಂಪುಟ
-            ಕೋಷ್ಟಕಗಳು
-            ತೋರಿಸಿ / ಮರೆಮಾಡಿ</button>
-        <div class="table-responsive shadow-sm" id="arthakoshaTableWrapper"
-            style="display:none; max-height:400px; max-width:650px; overflow-y:auto; border-radius:12px;">
-            <table class="table table-hover align-middle mb-0" style="font-size:0.95rem;">
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>#</th>
-                        <th>ಸಂಪುಟ</th>
-                        <th>ಒಟ್ಟು ಅರ್ಥಕೋಶ</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-overview-arthakoshaTableBody"></tbody>
-            </table>
+        <p>
+            <button class="btn btn-outline-primary mb-2" type="button" data-bs-toggle="collapse"
+                data-bs-target="#admin-overview-arthakosha-wrapper" aria-expanded="false"
+                aria-controls="admin-overview-arthakosha-wrapper">
+                ಅರ್ಥಕೋಶ ಸಂಪುಟ ಕೋಷ್ಟಕಗಳು ತೋರಿಸಿ / ಮರೆಮಾಡಿ
+            </button>
+        </p>
+        <div class="collapse" id="admin-overview-arthakosha-wrapper">
+            <div class="table-responsive shadow-sm rounded-3">
+                <table class="table table-hover align-middle admin-overview-table">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>ಸಂಪುಟ</th>
+                            <th>ಒಟ್ಟು ಅರ್ಥಕೋಶ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-overview-arthakosha-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
 </section>
+
+<style>
+    /* Hover shadow for cards */
+    .admin-overview-card:hover {
+        transform: translateY(-5px) scale(1.03);
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
