@@ -383,6 +383,7 @@ body {
   font-size: 1.25rem;
   border-radius: 8px;
   box-shadow: none;
+  padding: 12px;
 }
 
 /* Single select item */
