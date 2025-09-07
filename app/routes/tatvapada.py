@@ -12,7 +12,7 @@ from sqlalchemy.inspection import inspect
 
 from app.config.database import db_instance
 from app.services.tatvapada_service import TatvapadaService, BulkService
-from app.utils.auth_decorator import login_required
+from app.utils.auth_decorator import login_required, admin_required
 from app.utils.helper import kannada_to_english_digits
 from app.utils.logger import setup_logger
 
@@ -56,7 +56,7 @@ def _serialize_tatvapada(t):
 
 # ---------- CREATE ----------
 @tatvapada_bp.route("/api/tatvapada/add", methods=["POST"])
-@login_required
+@admin_required
 def add_tatvapada():
     """Insert a new Tatvapada entry."""
     # if request.method == "GET":
@@ -163,7 +163,7 @@ def get_authors_and_sankhyes_by_samputa(samputa_sankhye):
 
 # ---------- UPDATE ----------
 @tatvapada_bp.route("/api/tatvapada/update", methods=["PUT"])
-@login_required
+@admin_required
 def update_tatvapada_by_composite_keys():
     """Update a tatvapada entry using composite keys."""
     try:
@@ -190,7 +190,7 @@ def update_tatvapada_by_composite_keys():
 
 # ---------- DELETE ----------
 @tatvapada_bp.route("/tatvapada/delete-by-samputa/<samputa_sankhye>", methods=["DELETE"])
-@login_required
+@admin_required
 def delete_tatvapada_by_samputa(samputa_sankhye):
     """Delete all tatvapadas under a samputa."""
     try:
@@ -203,7 +203,7 @@ def delete_tatvapada_by_samputa(samputa_sankhye):
 
 
 @tatvapada_bp.route("/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>", methods=["DELETE"])
-@login_required
+@admin_required
 def delete_specific_tatvapada(samputa_sankhye, tatvapada_sankhye, tatvapada_author_id):
     """Delete a single tatvapada by composite keys."""
     try:
@@ -234,14 +234,14 @@ def get_delete_keys():
 # ==========================================================
 
 @tatvapada_bp.route("/tatvapada/add", methods=["GET"])
-@login_required
+@admin_required
 def tatvapada_add_form():
     """Admin form: add a Tatvapada."""
     return render_template("admin_tabs/add_tatvapada.html")
 
 
 @tatvapada_bp.route("/tatvapada/update", methods=["GET", "POST"])
-@login_required
+@admin_required
 def tatvapada_update_form():
     """Admin form: update a Tatvapada."""
     return render_template("admin_tabs/update_tatvapada.html")
@@ -252,7 +252,7 @@ def tatvapada_update_form():
 # ==========================================================
 
 @tatvapada_bp.route("/bulk-upload", methods=["POST"])
-@login_required
+@admin_required
 def bulk_upload():
     """Handle CSV bulk upload of Tatvapada + authors."""
     if 'file' not in request.files:

@@ -1,120 +1,114 @@
-<!-- templates/login.html -->
 <!DOCTYPE html>
 <html lang="kn">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ಲಾಗಿನ್</title>
+  <title>ಲಾಗಿನ್ / ಸೈನ್ ಅಪ್</title>
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-  <!-- Google Fonts (Noto Sans Kannada for improved typography) -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+
+
 </head>
 
 <body>
   <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center custom-bg">
     <div class="login-card shadow-lg p-4 rounded-4 bg-white border-0">
-      <div class="text-center mb-3">
-        <img src="{{ url_for('static', filename='/images/kanakadasLogo.jpg') }}" alt="Logo" class="mb-2" width="56">
-        <h2 class="text-primary mb-1" style="font-weight:700;">ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಮಾಡಿ</h2>
-        <div class="text-muted mb-3">ಸ್ವಾಗತ!</div>
+
+      <!-- Branding -->
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='images/kanakadasLogo.jpg') }}" alt="Logo" width="56" class="mb-2">
+        <h2 class="text-primary mb-1" style="font-weight:700;">ಸ್ವಾಗತ! ಲಾಗಿನ್ ಮಾಡಿ</h2>
+        <p class="text-muted">ಅಥವಾ ಹೊಸ ಖಾತೆ ಸೈನ್ ಅಪ್ ಮಾಡಿ</p>
       </div>
-      <form id="loginForm" action="{{ url_for('auth.login') }}" method="post" novalidate>
+
+      <!-- Login Form -->
+      <form id="loginForm" novalidate>
         <div class="mb-3">
-          <label for="username" class="form-label">ಬಳಕೆದಾರಹೆಸರು <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" id="username" name="username" required autofocus maxlength="32"
-            placeholder="ದಯವಿಟ್ಟು ಬಳಕೆದಾರಹೆಸರನ್ನು ನಮೂದಿಸಿ">
+          <label for="username" class="form-label">ಬಳಕೆದಾರಹೆಸರು</label>
+          <input type="text" class="form-control" id="username" name="username" required placeholder="ಬಳಕೆದಾರಹೆಸರು">
         </div>
-        <div class="mb-2">
-          <label for="password" class="form-label">ಗುಪ್ತಪದ <span class="text-danger">*</span></label>
-          <input type="password" class="form-control" id="password" name="password" required maxlength="32"
-            placeholder="ಗುಪ್ತಪದವನ್ನು ನಮೂದಿಸಿ">
+        <div class="mb-3">
+          <label for="password" class="form-label">ಗುಪ್ತಪದ</label>
+          <input type="password" class="form-control" id="password" name="password" required placeholder="ಗುಪ್ತಪದ">
         </div>
-        <div class="d-flex justify-content-between align-items-center my-3">
-          <a href="#" class="small link-primary" data-bs-toggle="modal" data-bs-target="#signupModal">ಹೊಸ
-            ಬಳಕೆದಾರರಾಗಿದ್ದೀರಾ? ಸೈನ್ ಅಪ್ ಮಾಡಿ</a>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <a href="#" class="link-primary" data-bs-toggle="modal" data-bs-target="#signupModal">ಹೊಸ ಬಳಕೆದಾರ? ದಯವಿಟ್ಟು
+            ನೋಂದಣಿ ಮಾಡಿ</a>
         </div>
         <button type="submit" class="btn btn-primary w-100 mb-2 py-2">ಲಾಗಿನ್</button>
       </form>
 
-      {% if error %}
-      <div class="alert alert-danger mt-3 text-center" role="alert">
-        {{ error }}
-      </div>
-      {% endif %}
-
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
-      <div class="alert alert-{{ category }} mt-3 text-center" role="alert">
-        {{ message }}
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
-    </div>
-  </div>
-
-  <!-- Signup Modal -->
-  <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-4">
-        <h5 class="modal-title text-center mb-3" id="signupModalLabel">ಸೈನ್ ಅಪ್ ಮಾಡಿ</h5>
-        <form id="signupForm" autocomplete="off" novalidate>
-          <div class="mb-3">
-            <label for="name" class="form-label">ಹೆಸರು <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="name" required maxlength="64" placeholder="ಪೂರ್ಣ ಹೆಸರು">
+      <!-- Signup Modal -->
+      <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content p-4">
+            <h5 class="modal-title text-center mb-3" id="signupModalLabel">ದಯವಿಟ್ಟು ನೋಂದಣಿ ಮಾಡಿ</h5>
+            <form id="signupForm" novalidate autocomplete="off">
+              <div class="mb-3">
+                <label for="name" class="form-label">ಹೆಸರು</label>
+                <input type="text" class="form-control" id="name" required maxlength="64" placeholder="ಪೂರ್ಣ ಹೆಸರು">
+              </div>
+              <div class="mb-3">
+                <label for="phone" class="form-label">ದೂರವಾಣಿ</label>
+                <input type="tel" class="form-control" id="phone" required pattern="\d{10}" maxlength="10"
+                  placeholder="10 ಅಂಕಿ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ">
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">ಇಮೇಲ್</label>
+                <input type="email" class="form-control" id="email" required maxlength="64"
+                  placeholder="mail@example.com">
+              </div>
+              <div class="mb-3">
+                <label for="signup-username" class="form-label">ಬಳಕೆದಾರಹೆಸರು</label>
+                <input type="text" class="form-control" id="signup-username" required maxlength="32"
+                  placeholder="ಬಳಕೆದಾರಹೆಸರು">
+              </div>
+              <div class="mb-4">
+                <label for="signup-password" class="form-label">ಗುಪ್ತಪದ</label>
+                <input type="password" class="form-control" id="signup-password" required maxlength="32"
+                  placeholder="ಗುಪ್ತಪದ">
+              </div>
+              <button type="submit" class="btn btn-success w-100 py-2 mb-2">ಸೈನ್ ಅಪ್</button>
+              <button type="button" class="btn btn-outline-primary w-100 py-2" id="switchToLogin">ಲಾಗಿನ್ ಗೆ
+                ಹೋಗಿ</button>
+            </form>
           </div>
-          <div class="mb-3">
-            <label for="phone" class="form-label">ದೂರವಾಣಿ ಸಂಖ್ಯೆ <span class="text-danger">*</span></label>
-            <input type="tel" class="form-control" id="phone" required maxlength="10" pattern="\d{10}"
-              placeholder="10 ಅಂಕಿ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ">
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">ಇಮೇಲ್ ವಿಳಾಸ <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" id="email" required maxlength="64" placeholder="mail@example.com">
-          </div>
-          <div class="mb-3">
-            <label for="signup-username" class="form-label">ಬಳಕೆದಾರಹೆಸರು <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="signup-username" required maxlength="32"
-              placeholder="ಬಳಕೆದಾರಹೆಸರು">
-          </div>
-          <div class="mb-4">
-            <label for="signup-password" class="form-label">ಗುಪ್ತಪದ <span class="text-danger">*</span></label>
-            <input type="password" class="form-control" id="signup-password" required maxlength="32"
-              placeholder="ಗುಪ್ತಪದ">
-          </div>
-          <button type="submit" class="btn btn-success w-100 py-2">ಸೈನ್ ಅಪ್</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Message/Error Modal -->
-  <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0">
-        <div class="modal-header bg-danger text-white" id="messageModalHeader">
-          <h5 class="modal-title" id="messageModalLabel">ದೋಷ</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center fs-5" id="messageModalBody"></div>
-        <div class="modal-footer justify-content-center border-0">
-          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">ಸರಿ</button>
         </div>
       </div>
+
+
+      <!-- Message Modal -->
+      <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0">
+            <div class="modal-header text-white" id="messageModalHeader">
+              <h5 class="modal-title" id="messageModalLabel">ದೋಷ</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center fs-5" id="messageModalBody"></div>
+            <div class="modal-footer justify-content-center border-0">
+              <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">ಸರಿ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
+
 
   {% include 'customLoader.html' %}
   {% include 'footer.html' %}
 
 
-  <!-- Bootstrap Bundle JS -->
+  <!-- Bootstrap JS -->
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <!-- Custom JS -->
   <script type="module" src="{{ url_for('static', filename='js/login.js') }}"></script>

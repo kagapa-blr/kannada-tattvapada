@@ -57,30 +57,37 @@ class UserService:
         db_instance.session.commit()
         return new_admin
 
-    def create_default_admin(self, payload: dict) -> dict:
-        """
-        Ensure a user exists and is marked as admin.
-        1. Check Admin table first.
-        2. If not found, create User if missing.
-        3. Create Admin entry.
-        """
-        try:
-            username = payload.get("username")
-            email = payload.get("email")
-            password = payload.get("password")
-            name = payload.get("name")
-            phone = payload.get("phone")
 
-            if not all([username, email, password, name]):
-                return {
-                    "status": "error",
-                    "message": "Missing required fields: name, email, username, password",
-                    "user_id": None,
-                }
+    def create_default_admin(self) -> dict:
+        """
+        Ensure a default admin exists.
+        1. Reads credentials from env (or fallback defaults).
+        2. Checks Admin table.
+        3. Ensures User exists.
+        4. Creates Admin entry if missing.
+        """
+
+        DEFAULT_ADMIN_USERNAME = os.getenv("KAGAPA_USERNAME", "kagapa")
+        DEFAULT_ADMIN_PASSWORD = os.getenv("KAGAPA_PASSWORD", "kagapa")
+        DEFAULT_ADMIN_PAYLOAD = {
+            "name": "kagapa",
+            "phone": "1233333423",
+            "email": "kagapa@gmail.com",
+            "username": DEFAULT_ADMIN_USERNAME,
+            "password": DEFAULT_ADMIN_PASSWORD,
+        }
+
+        try:
+            username = DEFAULT_ADMIN_PAYLOAD["username"]
+            email = DEFAULT_ADMIN_PAYLOAD["email"]
+            password = DEFAULT_ADMIN_PAYLOAD["password"]
+            name = DEFAULT_ADMIN_PAYLOAD["name"]
+            phone = DEFAULT_ADMIN_PAYLOAD["phone"]
 
             # Step 1: Already admin?
             admin_entry = Admin.query.filter_by(username=username).first()
             if admin_entry:
+                self.logger.info(f"Default admin '{username}' already exists.")
                 return {
                     "status": "exists",
                     "message": f"User '{username}' already exists as an admin.",
@@ -106,6 +113,7 @@ class UserService:
                 db_instance.session.add(user)
                 db_instance.session.commit()
                 user_created = True
+                self.logger.info(f"Default admin user '{username}' created.")
 
             # Step 3: Add to admin table
             new_admin = Admin(
@@ -122,13 +130,15 @@ class UserService:
                 else f"User '{username}' already existed and promoted to admin."
             )
 
+            self.logger.info(message)
             return {"status": "success", "message": message, "user_id": user.id}
 
         except Exception as e:
             db_instance.session.rollback()
+            self.logger.exception("Failed to create default admin")
             return {
                 "status": "error",
-                "message": f"Failed to create user/admin: {str(e)}",
+                "message": f"Failed to create default admin: {str(e)}",
                 "user_id": None,
             }
 
@@ -265,3 +275,13 @@ class UserService:
 
         db_instance.session.commit()
         return True
+    @staticmethod
+    def is_jwt_expired(token: str) -> bool:
+        """Check if a JWT token is expired without raising exceptions."""
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            return False  # Not expired
+        except jwt.ExpiredSignatureError:
+            return True   # Expired
+        except jwt.InvalidTokenError:
+            return True   # Treat invalid tokens as expired/invalid

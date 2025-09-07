@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.services.delete_service import DeleteService
 from app.config.database import db_instance
+from app.utils.auth_decorator import admin_required
 
 delete_bp = Blueprint("delete_bp", __name__)
 delete_service = DeleteService(db_instance.session)   # instantiate once
@@ -14,6 +15,7 @@ def error(message, code=400):
 
 
 @delete_bp.route("/delete/<samputa>/<tatvapada_sankhye>/<int:author_id>", methods=["DELETE"])
+@admin_required
 def delete_entry(samputa, tatvapada_sankhye, author_id):
     try:
         deleted = delete_service.delete_entry(samputa, tatvapada_sankhye, author_id)
@@ -29,6 +31,7 @@ def delete_entry(samputa, tatvapada_sankhye, author_id):
 
 
 @delete_bp.route("/delete-by-author/<author_name>", methods=["DELETE"])
+@admin_required
 def delete_by_author(author_name):
     try:
         deleted, author = delete_service.delete_by_author(author_name)
@@ -46,6 +49,7 @@ def delete_by_author(author_name):
 
 
 @delete_bp.route("/delete-by-samputa/<samputa>", methods=["DELETE"])
+@admin_required
 def delete_by_samputa(samputa):
     try:
         deleted = delete_service.delete_by_samputa(samputa)
@@ -61,6 +65,7 @@ def delete_by_samputa(samputa):
 
 
 @delete_bp.route("/delete-by-samputa-author/<samputa>/<int:author_id>", methods=["DELETE"])
+@admin_required
 def delete_by_samputa_and_author(samputa, author_id):
     try:
         deleted, author_name = delete_service.delete_by_samputa_and_author(samputa, author_id)
@@ -81,6 +86,7 @@ def delete_by_samputa_and_author(samputa, author_id):
 
 
 @delete_bp.route("/bulk-delete", methods=["DELETE"])
+@admin_required
 def bulk_delete():
     try:
         items = request.json.get("items", [])

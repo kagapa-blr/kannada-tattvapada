@@ -13,10 +13,26 @@ from app.routes.right_section_api import right_section_impl_bp
 from app.routes.right_section_ui import right_section_bp
 from app.routes.tatvapada import tatvapada_bp
 from app.routes.tatvapadakarara_vivara import tatvapadakarara_bp
+from app.services.user_manage_service import UserService
 from app.utils.logger import setup_logger
 
 # -------------------- Step 1: Load Environment -------------------- #
 load_dotenv()
+
+
+
+# ------------------- Default Admin Config ------------------- #
+DEFAULT_ADMIN_USERNAME = os.getenv("KAGAPA_USERNAME", "kagapa")
+DEFAULT_ADMIN_PASSWORD = os.getenv("KAGAPA_PASSWORD", "kagapa")
+DEFAULT_ADMIN_PAYLOAD = {
+    "name": "kagapa",
+    "phone": "1233333423",
+    "email": "kagapa@gmail.com",
+    "username": DEFAULT_ADMIN_USERNAME,
+    "password": DEFAULT_ADMIN_PASSWORD,
+}
+
+
 
 # -------------------- Step 2: Logger Setup -------------------- #
 logger = setup_logger("main", "main.log")
@@ -94,6 +110,10 @@ if __name__ == "__main__":
         inspector = db_instance.inspect(db_instance.engine)
         tables = inspector.get_table_names()
         logger.info(f"Tables in the database: {tables}")
+        user_service = UserService()
+        result = user_service.create_default_admin()
+        logger.info(f"default user creation : {result}")
+        print(f"default user creation : {result}")
         if tables:
             tables_list = "\n".join([f"  {i + 1}. {table}" for i, table in enumerate(tables)])
             print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")

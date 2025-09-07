@@ -6,7 +6,7 @@ from app.services.right_section import (
     ArthakoshaService,
     BulkUploadService, TatvapadaSuchiService,
 )
-from app.utils.auth_decorator import login_required
+from app.utils.auth_decorator import login_required, admin_required
 
 # Blueprint with url_prefix for API versioning
 right_section_impl_bp = Blueprint(
@@ -98,6 +98,7 @@ def get_padavivarana(samputa, author_id, entry_id):
 
 
 @right_section_impl_bp.route("/padavivarana", methods=["POST"])
+@admin_required
 def create_padavivarana():
     data = request.get_json()
     try:
@@ -115,6 +116,7 @@ def create_padavivarana():
 
 
 @right_section_impl_bp.route("/padavivarana/<samputa>/<int:author_id>/<int:entry_id>", methods=["PUT"])
+@admin_required
 def update_padavivarana(samputa, author_id, entry_id):
     data = request.get_json()
     entry = padavivarana_service.update(
@@ -126,6 +128,7 @@ def update_padavivarana(samputa, author_id, entry_id):
 
 
 @right_section_impl_bp.route("/padavivarana/<samputa>/<int:author_id>/<int:entry_id>", methods=["DELETE"])
+@admin_required
 def delete_padavivarana(samputa, author_id, entry_id):
     success = padavivarana_service.delete(samputa, author_id, entry_id)
     if success:
@@ -141,6 +144,7 @@ def get_arthakosha_by_samputa_author(samputa, author_id):
 
 
 @right_section_impl_bp.route("/arthakosha", methods=["POST"])
+@admin_required
 def create_arthakosha():
     data = request.json or {}
     entry = arthakosha_service.create(
@@ -178,6 +182,7 @@ def get_arthakosha(samputa, author_id, arthakosha_id):
 
 
 @right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>/<arthakosha_id>", methods=["PUT"])
+@admin_required
 def update_arthakosha(samputa, author_id, arthakosha_id):
     data = request.json or {}
     entry = arthakosha_service.update(
@@ -195,6 +200,7 @@ def update_arthakosha(samputa, author_id, arthakosha_id):
 
 
 @right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>/<arthakosha_id>", methods=["DELETE"])
+@admin_required
 def delete_arthakosha(samputa, author_id, arthakosha_id):
     success = arthakosha_service.delete(samputa, int(author_id), int(arthakosha_id))
     if success:
@@ -204,7 +210,7 @@ def delete_arthakosha(samputa, author_id, arthakosha_id):
 
 # ----------------- Bulk Upload Routes -----------------
 @right_section_impl_bp.route("/upload-padavivarana", methods=["POST"])
-@login_required
+@admin_required
 def bulk_upload_padavivarana():
     if "file" not in request.files or request.files["file"].filename.strip() == "":
         return jsonify({"success": False, "message": "No file selected"}), 400
@@ -220,7 +226,7 @@ def bulk_upload_padavivarana():
 
 
 @right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
-@login_required
+@admin_required
 def bulk_upload_arthakosha():
     if "file" not in request.files or request.files["file"].filename.strip() == "":
         return jsonify({"success": False, "message": "No file selected"}), 400

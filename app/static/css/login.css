@@ -6,40 +6,35 @@
 body,
 html {
   font-family: 'Noto Sans Kannada', sans-serif !important;
-  background: linear-gradient(120deg, #2196f3 0%, #e3f2fd 100%);
   min-height: 100vh;
-  scroll-behavior: smooth;
+  background: linear-gradient(120deg, #e3f2fd 0%, #e8f5e9 100%);
   color: #323232;
+  scroll-behavior: smooth;
 }
 
 .custom-bg {
-  background: linear-gradient(120deg, #e3f2fd 0%, #e8f5e9 100%);
+  background: linear-gradient(120deg, #214c6c 0%, #c9cfca 100%);
 }
 
-/* Increase max width and make mobile responsive */
 .login-card {
   max-width: 480px;
-  /* Increased width */
   width: 90vw;
-  /* Responsive width for small devices */
   min-width: 330px;
   padding: 2.75rem 2rem;
-  border-radius: 1.5rem !important;
-  box-shadow: 0px 8px 32px 0px rgba(23, 36, 64, 0.05), 0 2px 8px 0 rgba(23, 36, 64, 0.04);
-  border: none !important;
-  outline: none !important;
+  border-radius: 1.5rem;
+  box-shadow: 0px 8px 32px rgba(23, 36, 64, 0.05), 0 2px 8px rgba(23, 36, 64, 0.04);
+  background: #fff;
   transition: box-shadow 0.2s;
+  margin-bottom: 20px;
 }
 
-/* Adjust for smaller devices */
 @media (max-width: 575px) {
   .login-card {
     max-width: 95vw;
     min-width: auto;
-    padding: 1.2rem 1rem;
+    padding: 1.5rem 1rem;
   }
 }
-
 
 .form-label {
   font-weight: 600;
@@ -48,7 +43,6 @@ html {
 
 .form-control {
   border-radius: 0.7rem;
-  box-shadow: none;
   border: 1px solid #bdbdbd;
   font-size: 1.03rem;
   padding: 0.65rem 0.95rem;
@@ -60,21 +54,12 @@ html {
   box-shadow: 0 0 0 0.14rem rgba(25, 118, 210, 0.16);
 }
 
-button,
-.btn {
-  font-size: 1.08rem;
-  border-radius: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
 .btn-primary {
   background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
   border: none;
 }
 
-.btn-primary:hover,
-.btn-primary:focus {
+.btn-primary:hover {
   background: linear-gradient(90deg, #0d47a1 0%, #1e88e5 100%);
 }
 
@@ -83,8 +68,7 @@ button,
   border: none;
 }
 
-.btn-success:hover,
-.btn-success:focus {
+.btn-success:hover {
   background: linear-gradient(90deg, #388e3c 0%, #43a047 100%);
 }
 
@@ -101,7 +85,7 @@ a.link-primary:hover {
 .modal-content {
   border-radius: 1.1rem;
   border: none;
-  box-shadow: 0 4px 32px 0 rgba(20, 40, 50, 0.09);
+  box-shadow: 0 4px 32px rgba(20, 40, 50, 0.09);
 }
 
 #messageModal .modal-header.bg-danger {
@@ -116,18 +100,21 @@ a.link-primary:hover {
   background: linear-gradient(90deg, #1976d2, #42a5f5);
 }
 
-#messageModal .modal-header.bg-secondary {
-  background: #455a64;
-}
-
 #messageModalBody {
-  padding: 1.15rem 0 0.4rem;
+  padding: 1rem 0 0.5rem;
 }
 
-@media (max-width: 575px) {
-  .login-card {
-    max-width: 95vw;
-    min-width: 90vw;
-    padding: 1.2rem 0.75rem;
+/* Increase Signup Modal Width */
+#signupModal .modal-dialog {
+  max-width: 600px;
+  /* Increase from default 500px */
+  width: 90%;
+  /* Make it responsive */
+}
+
+@media (max-width: 768px) {
+  #signupModal .modal-dialog {
+    max-width: 95%;
+    /* Adjust for tablets and small screens */
   }
 }

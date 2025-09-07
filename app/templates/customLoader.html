@@ -1,9 +1,43 @@
-<!-- Global Loading Spinner -->
+<!-- 🌐 Global Loading Overlay -->
 <div id="global-loader"
-    class="d-none position-fixed top-0 start-0 w-100 h-100 bg-light bg-opacity-75 d-flex flex-column justify-content-center align-items-center"
-    style="z-index: 9999; transition: opacity 0.3s ease;">
-    <div class="spinner-border text-primary mb-4" role="status" style="width: 3.5rem; height: 3.5rem;">
-        <span class="visually-hidden">Loading...</span>
+    class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center"
+    style="
+        z-index: 1050;
+        background: rgba(255,255,255,0.95);
+        transition: opacity 0.4s ease;
+    ">
+
+    <!-- Modern Animated Loader -->
+    <div style="
+        width: 70px;
+        height: 70px;
+        border: 6px solid rgba(0,0,0,0.1);
+        border-top: 6px solid #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1.5rem;
+    "></div>
+
+    <!-- Loading Text (Clean & Minimal) -->
+    <div style="
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #212529;
+        letter-spacing: 0.3px;
+    ">
+        ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ...
     </div>
-    <div class="text-primary fw-semibold" style="font-size: 1.25rem;">ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ...</div>
 </div>
+
+<!-- Animations -->
+<style>
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>

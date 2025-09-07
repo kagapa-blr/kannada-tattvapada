@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import BadRequest, NotFound
 from app.services.document_service import DocumentService
+from app.utils.auth_decorator import admin_required
 
 documents_bp = Blueprint("kannada_documents", __name__, url_prefix="/api/documents")
 
 
 # ---------------- CREATE ----------------
 @documents_bp.route("/", methods=["POST"])
+@admin_required
 def create_doc():
     data = request.get_json(silent=True)
     if not data or "title" not in data or "content" not in data:
@@ -53,6 +55,7 @@ def get_doc(doc_id):
 
 # ---------------- UPDATE ----------------
 @documents_bp.route("/<int:doc_id>", methods=["PUT"])
+@admin_required
 def update_doc(doc_id):
     data = request.get_json()
     result = DocumentService.update_document(doc_id, **data)
@@ -67,6 +70,7 @@ def update_doc(doc_id):
 
 # ---------------- DELETE ----------------
 @documents_bp.route("/<int:doc_id>", methods=["DELETE"])
+@admin_required
 def delete_doc(doc_id):
     result = DocumentService.delete_document(doc_id)
 

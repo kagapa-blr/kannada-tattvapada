@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from app.services.right_section import TatvapadakararaVivaraService
+from app.utils.auth_decorator import admin_required
 
 tatvapadakarara_bp = Blueprint("tatvapadakarara", __name__, url_prefix="/api/v1")
 
@@ -8,6 +9,7 @@ tatvapadakarara_bp = Blueprint("tatvapadakarara", __name__, url_prefix="/api/v1"
 # CREATE
 # ---------------------------
 @tatvapadakarara_bp.route("/authors", methods=["POST"])
+@admin_required
 def create_author():
     data = request.get_json()
     if not data or "author_name" not in data or "content" not in data:
@@ -72,6 +74,7 @@ def get_author(author_id):
 # UPDATE
 # ---------------------------
 @tatvapadakarara_bp.route("/authors/<int:author_id>", methods=["PUT"])
+@admin_required
 def update_author(author_id):
     data = request.get_json()
     author, error = TatvapadakararaVivaraService.update_author(
@@ -97,6 +100,7 @@ def update_author(author_id):
 # DELETE
 # ---------------------------
 @tatvapadakarara_bp.route("/authors/<int:author_id>", methods=["DELETE"])
+@admin_required
 def delete_author(author_id):
     success, error = TatvapadakararaVivaraService.delete_author(author_id)
     if not success:

@@ -1,14 +1,11 @@
 import os
-from datetime import datetime, timezone, timedelta
 
-import bcrypt
-import jwt
 from dotenv import load_dotenv
 from flask import (
     Blueprint, request, render_template, make_response, jsonify
 )
+from flask import redirect, url_for
 
-from app.models.user_management import User, Admin
 from app.services.user_manage_service import UserService
 from app.utils.auth_decorator import admin_required
 from app.utils.logger import setup_logger
@@ -24,16 +21,7 @@ logger = setup_logger("auth", "auth.log")
 auth_bp = Blueprint("auth", __name__)
 user_service = UserService()
 
-# ------------------- Default Admin Config ------------------- #
-DEFAULT_ADMIN_USERNAME = os.getenv("KAGAPA_USERNAME", "kagapa")
-DEFAULT_ADMIN_PASSWORD = os.getenv("KAGAPA_PASSWORD", "kagapa")
-DEFAULT_ADMIN_PAYLOAD = {
-    "name": "kagapa",
-    "phone": "1233333423",
-    "email": "kagapa@gmail.com",
-    "username": DEFAULT_ADMIN_USERNAME,
-    "password": DEFAULT_ADMIN_PASSWORD,
-}
+
 
 
 # ------------------- Cache Control ------------------- #
@@ -57,7 +45,9 @@ def signup():
 
         new_user = user_service.create_user(**data)
         logger.info(f"User '{new_user.username}' created successfully")
-        return jsonify({"message": "ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ."}), 201
+
+        # ✅ Redirect to login page after successful signup
+        return redirect(url_for("auth.login"))
 
     except ValueError as e:
         logger.warning(f"Signup failed: {str(e)}")
@@ -65,7 +55,6 @@ def signup():
     except Exception as e:
         logger.error(f"Unexpected error during signup: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
-
 
 # ------------------- Admin Creation ------------------- #
 @auth_bp.route("/admin/create", methods=["POST"])
@@ -92,71 +81,85 @@ def create_admin_route():
 
 
 # ------------------- Login ------------------- #
+# ------------------- Login ------------------- #
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "GET":
-        logger.info("Login page rendered")
-        return render_template("login.html")
-    try:
-       result =  user_service.create_default_admin(payload=DEFAULT_ADMIN_PAYLOAD)
-       logger.info(result)
-       print(result)
-    except Exception as e:
-        print(e)
 
+    # ----------------------------
+    # Check if user is already logged in
+    # ----------------------------
+    token = request.cookies.get("access_token")
+    if token and not user_service.is_jwt_expired(token):
+        try:
+            user_data = user_service.decode_jwt_token(token)
+            if user_data:
+                return redirect(url_for("home.home_page"))  # ✅ redirect to home_bp
+        except ValueError:
+            pass  # Token invalid, allow login
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # ----------------------------
+    # POST login request
+    # ----------------------------
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "message": "Invalid request"}), 400
+
         username = data.get("username")
         password = data.get("password")
 
         if not username or not password:
-            return jsonify({"error": "Username and password are required"}), 400
+            return jsonify({
+                "success": False,
+                "message": "Username and password are required"
+            }), 400
 
-        logger.info(f"Login attempt for username: {username}")
-
-        # Authenticate user via UserService
         user = user_service.verify_user_credentials(username, password)
         if not user:
-            logger.warning(f"Failed login attempt for user: {username}")
-            return jsonify({"error": "Invalid username or password"}), 401
+            return jsonify({
+                "success": False,
+                "message": "User not found or incorrect password"
+            }), 404
 
-        # Check if admin
-        is_admin = user_service.is_admin(user.id)
-        user_type = "admin" if is_admin else "user"
-
-        # Generate JWT
+        user_type = "admin" if user_service.is_admin(user.id) else "user"
         token = user_service.generate_jwt_token(user, user_type)
 
         response = make_response(jsonify({
+            "success": True,
             "message": "Login successful",
             "token": token,
             "username": username,
             "user_type": user_type
         }))
+
         response.set_cookie(
             "access_token",
             token,
             httponly=True,
-            samesite="Lax",
-            secure=False  # True in production with HTTPS
+            secure=True,       # ⚠️ Use False for local dev without HTTPS
+            samesite="Strict",
+            max_age=60 * 60 * 24 * 7  # 7 days
         )
 
-        logger.info(f"{user_type.capitalize()} '{username}' logged in successfully")
         return response
 
     except Exception as e:
-        logger.exception(f"Unexpected error during login: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({
+            "success": False,
+            "message": f"Internal server error: {str(e)}"
+        }), 500
 
 # ------------------- Logout ------------------- #
 @auth_bp.route("/logout", methods=["GET"])
 def logout():
-    """Clear the JWT cookie."""
-    response = make_response(jsonify({"message": "Logged out successfully"}))
-    response.set_cookie("access_token", "", expires=0)
+    """Clear the JWT cookie and redirect to login page."""
+    response = make_response(redirect(url_for("auth.login")))  # Redirect to login route
+    response.set_cookie("access_token", "", expires=0)  # Clear cookie
     logger.info("User logged out and token cleared")
     return response
-
 
 # ------------------- Current User Info ------------------- #
 @auth_bp.route("/me", methods=["GET"])

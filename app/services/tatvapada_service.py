@@ -1,5 +1,6 @@
 import csv
 import io
+import time
 from collections import defaultdict
 from typing import List
 from typing import Optional
@@ -21,7 +22,6 @@ class TatvapadaService:
 
     def __init__(self):
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
-
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
         """
         Insert a new Tatvapada entry with author management.
