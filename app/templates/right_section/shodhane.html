@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="kn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ತತ್ವಪದ ಶೋಧನೆ</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/right_section/shodhane.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+
+    <!-- jQuery + DataTables -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/right_section/shodhane.js') }}"></script>
+</head>
+
+<body style="font-family: 'Noto Sans Kannada', sans-serif;">
+    {% include 'navbar.html' %}
+
+    <div class="container-fluid my-3">
+        <h4 class="mb-3">ತತ್ವಪದ ಶೋಧನೆ</h4>
+
+        <!-- Filters + Keyword -->
+        <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-3">
+                <label for="samputaSelect" class="form-label fw-bold mb-0">ಸಂಪುಟ</label>
+                <select id="samputaSelect" class="form-select form-select-sm">
+                    <option value="">ಎಲ್ಲಾ ಸಂಪುಟಗಳು</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="authorSelect" class="form-label fw-bold mb-0">ತತ್ವಪದಕಾರ</label>
+                <select id="authorSelect" class="form-select form-select-sm">
+                    <option value="">ಎಲ್ಲಾ ತತ್ವಪದಕಾರರು</option>
+                </select>
+            </div>
+            <div class="col-md-5 d-flex gap-2">
+                <div class="flex-grow-1">
+                    <label for="searchKeyword" class="form-label fw-bold mb-0">ಶೋಧಿಸಿ ಪದ</label>
+                    <input type="text" class="form-control form-control-sm" id="searchKeyword" placeholder="ಪದ ಹುಡುಕಿ">
+                </div>
+                <button type="button" class="btn btn-primary btn-sm align-self-end" id="btnSearch">ಶೋಧಿಸಿ</button>
+            </div>
+        </div>
+
+        <!-- Result Count -->
+        <div id="resultCount" class="mb-2">
+            <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+        </div>
+
+        <!-- DataTable -->
+        <div class="table-responsive">
+            <table id="searchResultsTable" class="table table-bordered table-hover table-sm align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
+                        <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
+                        <th>ತತ್ವಪದ ಸಂಖ್ಯೆ</th>
+                        <th>ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</th>
+                        <th>ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</th>
+                        <th>ಮೊದಲ ಸಾಲು</th>
+                        <th>ವಿಭಾಗ</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2 px-3">
+                    <h5 class="modal-title">ತತ್ವಪದ ವಿವರಗಳು</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <dl class="row">
+                        <dt class="col-sm-4">ಸಂಪುಟ ಸಂಖ್ಯೆ</dt>
+                        <dd class="col-sm-8" id="detail_samputa"></dd>
+
+                        <dt class="col-sm-4">ತತ್ವಪದಕಾರರ ಹೆಸರು</dt>
+                        <dd class="col-sm-8" id="detail_author"></dd>
+
+                        <dt class="col-sm-4">ತತ್ವಪದ ಸಂಖ್ಯೆ</dt>
+                        <dd class="col-sm-8" id="detail_number"></dd>
+
+                        <dt class="col-sm-4">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</dt>
+                        <dd class="col-sm-8" id="detail_kosha"></dd>
+
+                        <dt class="col-sm-4">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</dt>
+                        <dd class="col-sm-8" id="detail_title"></dd>
+
+                        <dt class="col-sm-4">ಮೊದಲ ಸಾಲು</dt>
+                        <dd class="col-sm-8" id="detail_first_line"></dd>
+
+                        <dt class="col-sm-4">ವಿಭಾಗ</dt>
+                        <dd class="col-sm-8" id="detail_vibhag"></dd>
+
+                        <dt class="col-sm-4">ತತ್ವಪದ</dt>
+                        <dd class="col-sm-8" id="detail_tatvapada" style="white-space: pre-wrap;"></dd>
+                    </dl>
+                </div>
+                <div class="modal-footer py-2 px-3">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}
+</body>
+
+</html>

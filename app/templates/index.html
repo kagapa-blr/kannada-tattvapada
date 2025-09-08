@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
   <!-- Choices.js CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='cdn/choices/choices.min.css') }}">
   <!-- Custom CSS -->
@@ -17,13 +19,20 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/search_by_keyword.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 
+
   <!-- Scripts -->
   <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="{{ url_for('static', filename='cdn/choices/choices.min.js') }}"></script>
 
+
+  <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script type="module" src="{{ url_for('static', filename='js/searchKeyword.js') }}"></script>
+
+
+
 </head>
 
 <body>
@@ -151,10 +160,25 @@
             <button type="button" class="btn btn-primary btn-sm" id="btnSearch">ಶೋಧಿಸಿ</button>
           </div>
 
-          <!-- Search Results -->
-          <div id="searchResults">
-            <p class="text-muted">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಶೋಧಿಸಿ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+          <!-- Search Results Table -->
+          <div class="table-responsive">
+            <table id="searchResultsTable" class="table table-bordered table-hover table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
+                  <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
+                  <th>ತತ್ವಪದ ಸಂಖ್ಯೆ</th>
+                  <th>ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</th>
+                  <th>ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</th>
+                  <th>ಮೊದಲ ಸಾಲು</th>
+                  <th>ವಿಭಾಗ</th>
+                  <th>ತತ್ವಪದ</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
+
         </div>
 
         <!-- Footer -->
@@ -165,43 +189,6 @@
     </div>
   </div>
 
-  <!-- Result Template -->
-  <template id="searchResultTemplate">
-    <div class="card mb-3 shadow-sm border-0 rounded">
-      <div class="card-body">
-        <!-- Row 1 -->
-        <div class="row mb-2">
-          <div class="col-md-4"><span class="fw-bold">ಸಂಪುಟ ಸಂಖ್ಯೆ :</span> <span data-field="samputa_sankhye"></span>
-          </div>
-          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕಾರರ ಹೆಸರು :</span> <span
-              data-field="tatvapadakarara_hesaru"></span></div>
-          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ :</span> <span
-              data-field="tatvapada_sankhye"></span></div>
-        </div>
-
-        <!-- Row 2 -->
-        <div class="row mb-2">
-          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ :</span> <span
-              data-field="tatvapadakosha_sheershike"></span></div>
-          <div class="col-md-4"><span class="fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ :</span> <span
-              data-field="tatvapada_sheershike"></span></div>
-          <div class="col-md-4"><span class="fw-bold">ಮೊದಲ ಸಾಲು :</span> <span data-field="tatvapada_first_line"></span>
-          </div>
-        </div>
-
-        <!-- Vibhag -->
-        <div class="mb-3 d-none" data-section="vibhag">
-          <span class="fw-bold">ವಿಭಾಗ :</span> <span data-field="vibhag"></span>
-        </div>
-
-        <!-- Tatvapada -->
-        <div class="d-none" data-section="tatvapada">
-          <span class="fw-bold">ತತ್ವಪದ :</span>
-          <div data-field="tatvapada" style="white-space: pre-wrap; margin-top: 4px;"></div>
-        </div>
-      </div>
-    </div>
-  </template>
 
   {% include 'customLoader.html' %}
   {% include 'footer.html' %}

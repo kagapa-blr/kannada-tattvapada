@@ -1,11 +1,9 @@
 # app/routes/admin_routes.py
 from flask import request, render_template, Blueprint, jsonify, g
-from werkzeug.exceptions import BadRequest
 
 from app.config.database import db_instance
 from app.services.admin_dashboard import DashboardService
 from app.services.user_manage_service import UserService
-
 from app.utils.auth_decorator import login_required, admin_required
 from app.utils.logger import setup_logger
 

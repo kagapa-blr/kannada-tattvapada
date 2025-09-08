@@ -1,12 +1,12 @@
 import csv
 import io
-import time
 from collections import defaultdict
 from typing import List
 from typing import Optional
 from typing import Tuple
 
 from sqlalchemy import distinct, or_
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config.database import db_instance
@@ -217,35 +217,61 @@ class TatvapadaService:
 
 
 
-    def search_by_keyword(self, keyword: str) -> List[Tatvapada]:
+    def search_by_keyword(
+            self,
+            keyword: str,
+            offset: int = 0,
+            limit: int = 10,
+            samputa: str | None = None,
+            author_id: int | None = None
+    ) -> Tuple[List[Tatvapada], int]:
         """
-        Search Tatvapada entries filtering by keyword
-        in tatvapada text OR tatvapadakarara_hesaru (author name).
+        Search Tatvapada entries by keyword (in tatvapada text or author name),
+        with optional samputa and author filters, and pagination.
 
-        Returns matching Tatvapada list.
+        Behavior:
+        1. Only keyword → search all entries.
+        2. Keyword + samputa → search within that samputa (all authors).
+        3. Keyword + samputa + author → search only that author's tatvapadas in that samputa.
+
+        Returns:
+            (results list, total_count)
         """
         try:
+            # Trim inputs to avoid whitespace issues
+            keyword = (keyword or "").strip()
+            samputa = (samputa or "").strip() or None
+            author_id = int(author_id) if author_id else None
+
+            query = Tatvapada.query.join(Tatvapada.tatvapadakarara_hesaru)
+
+            # Keyword filter using bitwise OR
+            query = query.filter(
+                (Tatvapada.tatvapada.ilike(f"%{keyword}%")) |
+                (TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%"))
+            )
+
+            # Optional samputa filter
+            if samputa:
+                query = query.filter(func.trim(Tatvapada.samputa_sankhye) == samputa)
+
+            # Optional author filter
+            if author_id:
+                query = query.filter(Tatvapada.tatvapada_author_id == author_id)
+
+            total = query.count()
+
             results = (
-                Tatvapada.query
-                .join(Tatvapada.tatvapadakarara_hesaru)  # join author info table
-                .filter(
-                    or_(
-                        Tatvapada.tatvapada.ilike(f"%{keyword}%"),
-                        TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%")
-                    )
-                )
+                query.order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_sankhye)
+                .offset(offset)
+                .limit(limit)
                 .all()
             )
 
-            self.logger.info(
-                f"Found {len(results)} entries containing keyword='{keyword}' "
-                f"in tatvapada or author name"
-            )
-            return results
+            return results, total
 
-        except SQLAlchemyError as e:
-            self.logger.error(f"Error searching Tatvapada by keyword '{keyword}': {e}")
-            return []
+        except SQLAlchemyError:
+            return [], 0
 
     def get_all_samputa_sankhye(self) -> List[int]:
         """

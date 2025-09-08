@@ -32,5 +32,7 @@ def samputa_sampadakaru_nudi():
     return render_template('right_section/sampadakara_nudi.html')
 
 
-
+@right_section_bp.route('/shodhane', methods=['GET'])
+def shodhane():
+    return render_template('right_section/shodhane.html')
 

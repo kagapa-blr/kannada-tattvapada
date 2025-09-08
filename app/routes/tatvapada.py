@@ -103,18 +103,54 @@ def add_tatvapada():
         return jsonify({"error": "Unexpected error occurred."}), 500
 
 
-# ---------- READ ----------
+# ---------- SEARCH TATVAPADA ----------
 @tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
 def search_tatvapada():
-    """Search tatvapada entries by keyword."""
+    """
+    Search Tatvapada entries by keyword with optional samputa/author filters and pagination.
+    """
     data = request.get_json() or {}
-    keyword = data.get("keyword", "").strip()
+
+    # Log the incoming payload
+    print("Received search payload:", data)
+    # Or using logger
+    tatvapada_service.logger.info(f"Received search payload: {data}")
+
+    keyword = (data.get("keyword") or "").strip()
+    samputa = (data.get("samputa") or "").strip() or None
+    author_id = data.get("author_id", None)
+
+    offset = max(int(data.get("offset", 0)), 0)
+    limit = min(max(int(data.get("limit", 10)), 1), 100)
+
     if not keyword:
         return jsonify({"error": "Keyword is required"}), 400
 
-    results = tatvapada_service.search_by_keyword(keyword)
-    return jsonify([_serialize_tatvapada(t) for t in results])
+    try:
+        results, total = tatvapada_service.search_by_keyword(
+            keyword=keyword,
+            offset=offset,
+            limit=limit,
+            samputa=samputa,
+            author_id=int(author_id) if author_id else None
+        )
 
+        return jsonify({
+            "results": [_serialize_tatvapada(t) for t in results],
+            "pagination": {
+                "total": total,
+                "offset": offset,
+                "limit": limit,
+                "has_more": (offset + limit) < total
+            }
+        })
+
+    except Exception as e:
+        tatvapada_service.logger.error(
+            f"Error in search_tatvapada route (keyword='{keyword}', "
+            f"samputa={samputa}, author_id={author_id}): {e}"
+        )
+        return jsonify({"error": "Internal server error"}), 500
 
 @tatvapada_bp.route("/api/tatvapada/<samputa_sankhye>/<tatvapada_author_id>/<tatvapada_sankhye>", methods=["GET"])
 def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):

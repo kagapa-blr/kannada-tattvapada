@@ -1,47 +1,68 @@
 /* Modal body flex and font */
-.modal-body.d-flex {
+.modal-body {
   padding: 1.5rem;
   font-family: 'Noto Sans Kannada', sans-serif;
-  /* Choose your preferred Kannada font */
   color: #333;
 }
 
-/* Cards and hover effect */
-#searchResults .card {
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
-  transition: box-shadow 0.3s ease, background-color 0.3s ease;
-  cursor: default;
+/* DataTable general styling */
+#searchResultsTable {
+  font-size: 0.9rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
 }
 
-#searchResults .card:hover {
-  background-color: #fffbea;
-  /* Light yellow */
-  box-shadow: 0 6px 20px rgba(255, 235, 59, 0.3);
-  z-index: 10;
-}
-
-/* Bold labels with Bootstrap primary color */
-#searchResults .fw-bold {
+#searchResultsTable th {
+  white-space: nowrap;
+  font-weight: 600;
+  background-color: #f8f9fa;
   color: #0d6efd;
 }
 
-/* Scrollbar for search results */
-#searchResults::-webkit-scrollbar {
+#searchResultsTable td {
+  vertical-align: top;
+  padding: 0.5rem;
+}
+
+/* Special Tatvapada column styling */
+#searchResultsTable td.tatvapada-cell {
+  white-space: pre-wrap;
+  /* preserve line breaks */
+  font-family: 'NudiParijatha', serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 0.75rem;
+  background-color: #fdfdfd;
+  max-width: 600px;
+  min-width: 350px;
+  word-wrap: break-word;
+}
+
+/* Hover row effect */
+#searchResultsTable tbody tr:hover {
+  background-color: #fffbea;
+  /* light yellow */
+  box-shadow: inset 0 0 0 9999px rgba(255, 235, 59, 0.1);
+  cursor: pointer;
+}
+
+/* Scrollbar for table container */
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
   width: 8px;
 }
 
-#searchResults::-webkit-scrollbar-thumb {
+.table-responsive::-webkit-scrollbar-thumb {
   background-color: rgba(13, 110, 253, 0.5);
   border-radius: 4px;
 }
 
-#searchResults::-webkit-scrollbar-track {
+.table-responsive::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-/* Reduced padding and font size for search input area */
+/* Search input + button refinements */
 #searchModal .form-label {
   font-weight: 600;
   font-size: 0.9rem;
@@ -58,12 +79,10 @@
   font-size: 0.875rem;
 }
 
+/* Modal header/footer compact */
 #searchModal .modal-header,
 #searchModal .modal-footer {
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding: 0.4rem 1rem;
 }
 
 /* Sticky total count container styles are inline in HTML */
