@@ -140,14 +140,22 @@ function showDetailsModal(rowData, keyword) {
 
 // Handle Search
 function handleSearchClick() {
-    const keyword = document.getElementById("searchKeyword").value.trim();
+    // Get keyword and normalize spaces
+    let keyword = document.getElementById("searchKeyword").value
+        .replace(/\s+/g, ' ')   // replace multiple spaces with single space
+        .trim();                // trim leading/trailing spaces
+
     const samputa = document.getElementById("samputaSelect").value;
     const authorId = document.getElementById("authorSelect").value;
 
-    if (!keyword) { alert("ಶೋಧನೆಗಾಗಿ ಪದವನ್ನು ನಮೂದಿಸಿ."); return; }
+    if (!keyword) {
+        alert("ಶೋಧನೆಗಾಗಿ ಪದವನ್ನು ನಮೂದಿಸಿ.");
+        return;
+    }
 
     initDataTable(keyword, samputa, authorId);
 }
+
 
 // DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
