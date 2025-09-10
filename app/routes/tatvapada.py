@@ -102,7 +102,6 @@ def add_tatvapada():
         logger.error("Unexpected error in add_tatvapada", exc_info=True)
         return jsonify({"error": "Unexpected error occurred."}), 500
 
-
 # ---------- SEARCH TATVAPADA ----------
 @tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
 def search_tatvapada():
@@ -110,10 +109,6 @@ def search_tatvapada():
     Search Tatvapada entries by keyword with optional samputa/author filters and pagination.
     """
     data = request.get_json() or {}
-
-    # Log the incoming payload
-    print("Received search payload:", data)
-    # Or using logger
     tatvapada_service.logger.info(f"Received search payload: {data}")
 
     keyword = (data.get("keyword") or "").strip()
@@ -147,8 +142,7 @@ def search_tatvapada():
 
     except Exception as e:
         tatvapada_service.logger.error(
-            f"Error in search_tatvapada route (keyword='{keyword}', "
-            f"samputa={samputa}, author_id={author_id}): {e}"
+            f"Error in search_tatvapada route (keyword='{keyword}', samputa={samputa}, author_id={author_id}): {e}"
         )
         return jsonify({"error": "Internal server error"}), 500
 

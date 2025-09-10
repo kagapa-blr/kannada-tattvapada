@@ -1,12 +1,11 @@
 import csv
 import io
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 from typing import Optional
-from typing import Tuple
 
-from sqlalchemy import distinct, or_
-from sqlalchemy import func
+from sqlalchemy import distinct
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config.database import db_instance
@@ -215,8 +214,6 @@ class TatvapadaService:
             self.logger.error(f"Unexpected error during delete: {ex}")
             raise ValueError("An unexpected error occurred while deleting the Tatvapada.")
 
-
-
     def search_by_keyword(
             self,
             keyword: str,
@@ -226,43 +223,43 @@ class TatvapadaService:
             author_id: int | None = None
     ) -> Tuple[List[Tatvapada], int]:
         """
-        Search Tatvapada entries by keyword (in tatvapada text or author name),
-        with optional samputa and author filters, and pagination.
-
-        Behavior:
-        1. Only keyword → search all entries.
-        2. Keyword + samputa → search within that samputa (all authors).
-        3. Keyword + samputa + author → search only that author's tatvapadas in that samputa.
-
-        Returns:
-            (results list, total_count)
+        Search Tatvapada entries by keyword in tatvapada text or author name.
+        Supports optional samputa and author filters, with pagination.
+        Joins explicitly via tatvapada_author_id -> TatvapadaAuthorInfo.id.
+        Returns a tuple: (list of Tatvapada objects, total count of matching entries).
         """
         try:
-            # Trim inputs to avoid whitespace issues
             keyword = (keyword or "").strip()
             samputa = (samputa or "").strip() or None
             author_id = int(author_id) if author_id else None
 
-            query = Tatvapada.query.join(Tatvapada.tatvapadakarara_hesaru)
+            # Explicit join using foreign key
+            base_q = db_instance.session.query(Tatvapada).join(
+                TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id
+            )
 
-            # Keyword filter using bitwise OR
-            query = query.filter(
-                (Tatvapada.tatvapada.ilike(f"%{keyword}%")) |
-                (TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%"))
+            # Filter by tatvapada text or author name
+            base_q = base_q.filter(
+                or_(
+                    Tatvapada.tatvapada.ilike(f"%{keyword}%"),
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%")
+                )
             )
 
             # Optional samputa filter
             if samputa:
-                query = query.filter(func.trim(Tatvapada.samputa_sankhye) == samputa)
+                base_q = base_q.filter(func.trim(Tatvapada.samputa_sankhye) == samputa)
 
             # Optional author filter
             if author_id:
-                query = query.filter(Tatvapada.tatvapada_author_id == author_id)
+                base_q = base_q.filter(Tatvapada.tatvapada_author_id == author_id)
 
-            total = query.count()
+            # Correct total count using subquery
+            total = db_instance.session.query(func.count()).select_from(base_q.subquery()).scalar()
 
+            # Apply pagination
             results = (
-                query.order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_sankhye)
+                base_q.order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_sankhye)
                 .offset(offset)
                 .limit(limit)
                 .all()
@@ -270,7 +267,8 @@ class TatvapadaService:
 
             return results, total
 
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            self.logger.error(f"DB error in search_by_keyword: {e}")
             return [], 0
 
     def get_all_samputa_sankhye(self) -> List[int]:
