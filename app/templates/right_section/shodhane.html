@@ -26,7 +26,18 @@
     {% include 'navbar.html' %}
 
     <div class="container-fluid my-3">
-        <h4 class="mb-3">ತತ್ವಪದ ಶೋಧನೆ</h4>
+        <h4 class="mb-3" style="align-items: center;">ತತ್ವಪದ ಶೋಧನೆ</h4>
+
+
+        <!-- Search Info -->
+        <div id="searchInfo" class="alert alert-info py-2 px-3 small mb-3">
+            <strong>ℹ️ ಶೋಧನೆ ಬಗ್ಗೆ ಮಾಹಿತಿ:</strong><br>
+            - ನೀವು <span class="fw-bold">ಕೀವರ್ಡ್</span> ನಮೂದಿಸಿ ಶೋಧಿಸಬಹುದು.<br>
+            - ತತ್ವಪದ ಅಥವಾ ತತ್ವಪದಕಾರರ ಹೆಸರಿನಲ್ಲಿ ಹೊಂದಾಣಿಕೆ ಕಂಡುಬಂದರೆ ಫಲಿತಾಂಶ ತೋರಿಸಲಾಗುತ್ತದೆ.<br>
+            - ನೀವು ಆಯ್ಕೆಮಾಡಿದರೆ <span class="fw-bold">ಸಂಪುಟ</span> ಅಥವಾ <span class="fw-bold">ತತ್ವಪದಕಾರ</span> ಆಧಾರಿತ
+            ಫಿಲ್ಟರ್ ಬಳಸಬಹುದು.<br>
+            - ಫಲಿತಾಂಶಗಳು ಪುಟವಾರು (pagination) ರೂಪದಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.
+        </div>
 
         <!-- Filters + Keyword -->
         <div class="row g-2 align-items-end mb-3">
@@ -77,46 +88,70 @@
 
     <!-- Details Modal -->
     <div class="modal fade" id="detailsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header py-2 px-3">
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white py-2 px-3">
                     <h5 class="modal-title">ತತ್ವಪದ ವಿವರಗಳು</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
+                <!-- Body -->
                 <div class="modal-body p-3">
-                    <dl class="row">
-                        <dt class="col-sm-4">ಸಂಪುಟ ಸಂಖ್ಯೆ</dt>
-                        <dd class="col-sm-8" id="detail_samputa"></dd>
+                    <div class="row g-3">
+                        <!-- Left: Basic Info -->
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="detail_samputa"></span></p>
+                                    <p class="mb-2"><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="detail_author"></span>
+                                    </p>
+                                    <p class="mb-2"><strong>ತತ್ವಪದ ಸಂಖ್ಯೆ:</strong> <span id="detail_number"></span></p>
+                                    <p class="mb-2"><strong>ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ:</strong> <span id="detail_kosha"></span>
+                                    </p>
+                                    <p class="mb-2"><strong>ತತ್ವಪದ ಶೀರ್ಷಿಕೆ:</strong> <span id="detail_title"></span>
+                                    </p>
+                                    <p class="mb-2"><strong>ಮೊದಲ ಸಾಲು:</strong> <span id="detail_first_line"></span></p>
+                                    <p class="mb-2"><strong>ವಿಭಾಗ:</strong> <span id="detail_vibhag"></span></p>
+                                </div>
+                            </div>
+                        </div>
 
-                        <dt class="col-sm-4">ತತ್ವಪದಕಾರರ ಹೆಸರು</dt>
-                        <dd class="col-sm-8" id="detail_author"></dd>
+                        <!-- Right: Tabbed content -->
+                        <div class="col-lg-8">
+                            <ul class="nav nav-tabs mb-2" id="tatvapadaTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="tab-tatvapada" data-bs-toggle="tab"
+                                        data-bs-target="#content-tatvapada" type="button" role="tab">ತತ್ವಪದ</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="tab-bhavanuvada" data-bs-toggle="tab"
+                                        data-bs-target="#content-bhavanuvada" type="button"
+                                        role="tab">ಭಾವಾನುವಾದ</button>
+                                </li>
+                            </ul>
 
-                        <dt class="col-sm-4">ತತ್ವಪದ ಸಂಖ್ಯೆ</dt>
-                        <dd class="col-sm-8" id="detail_number"></dd>
-
-                        <dt class="col-sm-4">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</dt>
-                        <dd class="col-sm-8" id="detail_kosha"></dd>
-
-                        <dt class="col-sm-4">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</dt>
-                        <dd class="col-sm-8" id="detail_title"></dd>
-
-                        <dt class="col-sm-4">ಮೊದಲ ಸಾಲು</dt>
-                        <dd class="col-sm-8" id="detail_first_line"></dd>
-
-                        <dt class="col-sm-4">ವಿಭಾಗ</dt>
-                        <dd class="col-sm-8" id="detail_vibhag"></dd>
-
-                        <dt class="col-sm-4">ತತ್ವಪದ</dt>
-                        <dd class="col-sm-8" id="detail_tatvapada" style="white-space: pre-wrap;"></dd>
-                    </dl>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active p-3 border rounded bg-light"
+                                    id="content-tatvapada" role="tabpanel">
+                                    <div id="detail_tatvapada" class="tatvapada-content"></div>
+                                </div>
+                                <div class="tab-pane fade p-3 border rounded bg-light" id="content-bhavanuvada"
+                                    role="tabpanel">
+                                    <div id="detail_bhavanuvada" class="tatvapada-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Footer -->
                 <div class="modal-footer py-2 px-3">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
                 </div>
             </div>
         </div>
     </div>
-
     {% include 'footer.html' %}
 </body>
 

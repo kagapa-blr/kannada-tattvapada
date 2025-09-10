@@ -8,10 +8,7 @@ let samputaData = [];
 // Escape HTML
 function escapeHtml(text) {
     if (!text) return '';
-    return text.replace(/[&<>"'`=\/]/g, s => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
-        "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
-    })[s]);
+    return text.replace(/[&<>"'`=\/]/g, s => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }[s]));
 }
 
 // Highlight keyword
@@ -20,10 +17,7 @@ function highlightKeyword(text, keyword) {
     const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const trailingCombining = '(?:[\u0CCD\\p{M}])*';
     const regex = new RegExp(`(${escapedKeyword}${trailingCombining})`, 'giu');
-    return escapeHtml(text).replace(
-        regex,
-        '<span style="background-color: yellow; color: black; font-weight: bold">$1</span>'
-    );
+    return escapeHtml(text).replace(regex, '<span style="background-color: yellow; color: black; font-weight: bold">$1</span>');
 }
 
 // Load Samputa + Authors
@@ -139,6 +133,7 @@ function showDetailsModal(rowData, keyword) {
     document.getElementById("detail_first_line").innerText = rowData.tatvapada_first_line || "";
     document.getElementById("detail_vibhag").innerText = rowData.vibhag || "";
     document.getElementById("detail_tatvapada").innerHTML = highlightKeyword(rowData.tatvapada || "", keyword);
+    document.getElementById("detail_bhavanuvada").innerHTML = highlightKeyword(rowData.bhavanuvada || "", keyword);
 
     new bootstrap.Modal(document.getElementById("detailsModal")).show();
 }
