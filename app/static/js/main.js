@@ -218,23 +218,15 @@ function setupNavigation() {
 
     };
 
-    Object.entries(routes).forEach(([btnId, url]) => {
-        const button = document.getElementById(btnId);
-        if (!button) return;
+Object.entries(routes).forEach(([btnId, url]) => {
+    const button = document.getElementById(btnId);
+    if (!button) return;
 
-        button.addEventListener("click", async () => {
-            try {
-                const response = await apiClient.get(url, { responseType: "text" });
-                const container = document.getElementById("right-section-container");
-                if (container) {
-                    container.innerHTML = response;
-                } else {
-                    console.warn("right-section-container not found → falling back to redirect");
-                    window.location.href = url;
-                }
-            } catch (err) {
-                console.error(`Failed to fetch ${url}`, err);
-            }
-        });
+    button.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.open(url, "_blank"); // Open in a new tab
     });
+});
+
+
 }
