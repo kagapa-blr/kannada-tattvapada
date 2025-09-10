@@ -59,6 +59,7 @@ const apiEndpoints = {
         arthakosha: `${BASE_URL}/right-section/arthakosha`,
         sampadakaraNudi: `${BASE_URL}/right-section/sampadakaru_nudi`,
         tatvapadakara_vivarane: `${BASE_URL}/right-section/tatvapadakara_vivarane`,
+        tatvapadaShodhane: `${BASE_URL}/right-section/shodhane`,
     },
 
     rightSection: {
