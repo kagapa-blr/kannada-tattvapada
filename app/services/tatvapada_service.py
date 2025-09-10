@@ -217,10 +217,10 @@ class TatvapadaService:
     def search_by_keyword(
             self,
             keyword: str,
+            samputa: str,
+            author_id: int,
             offset: int = 0,
             limit: int = 10,
-            samputa: str | None = None,
-            author_id: int | None = None
     ) -> Tuple[List[Tatvapada], int]:
         """
         Search Tatvapada entries by keyword in tatvapada text or author name.
