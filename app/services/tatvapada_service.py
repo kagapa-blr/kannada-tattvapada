@@ -222,42 +222,40 @@ class TatvapadaService:
             offset: int = 0,
             limit: int = 10,
     ) -> Tuple[List[Tatvapada], int]:
-        """
-        Search Tatvapada entries by keyword in tatvapada text or author name.
-        Supports optional samputa and author filters, with pagination.
-        Joins explicitly via tatvapada_author_id -> TatvapadaAuthorInfo.id.
-        Returns a tuple: (list of Tatvapada objects, total count of matching entries).
-        """
         try:
             keyword = (keyword or "").strip()
             samputa = (samputa or "").strip() or None
             author_id = int(author_id) if author_id else None
 
-            # Explicit join using foreign key
+            if not keyword:
+                return [], 0
+
+            # MySQL whole word regex (handles Kannada and other unicode words too)
+            word_bound_regex = fr"(^|[^[:alnum:]_]){keyword}([^[:alnum:]_]|$)"
+
+            # Base query with explicit join
             base_q = db_instance.session.query(Tatvapada).join(
                 TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id
             )
 
-            # Filter by tatvapada text or author name
+            # Regex filters for exact whole word match
             base_q = base_q.filter(
                 or_(
-                    Tatvapada.tatvapada.ilike(f"%{keyword}%"),
-                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"%{keyword}%")
+                    Tatvapada.tatvapada.op("REGEXP")(word_bound_regex),
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.op("REGEXP")(word_bound_regex),
                 )
             )
 
-            # Optional samputa filter
+            # Optional filters
             if samputa:
                 base_q = base_q.filter(func.trim(Tatvapada.samputa_sankhye) == samputa)
-
-            # Optional author filter
             if author_id:
                 base_q = base_q.filter(Tatvapada.tatvapada_author_id == author_id)
 
-            # Correct total count using subquery
+            # Total count
             total = db_instance.session.query(func.count()).select_from(base_q.subquery()).scalar()
 
-            # Apply pagination
+            # Pagination
             results = (
                 base_q.order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_sankhye)
                 .offset(offset)
@@ -269,6 +267,9 @@ class TatvapadaService:
 
         except SQLAlchemyError as e:
             self.logger.error(f"DB error in search_by_keyword: {e}")
+            return [], 0
+        except ValueError as e:
+            self.logger.error(f"Invalid input in search_by_keyword: {e}")
             return [], 0
 
     def get_all_samputa_sankhye(self) -> List[int]:

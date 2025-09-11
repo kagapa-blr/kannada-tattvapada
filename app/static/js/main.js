@@ -190,6 +190,34 @@ function renderTatvapada(data) {
 
 
     displayOtherFields(data);
+
+    // ✅ Attach copy button functionality
+    const copyBtn = document.getElementById("copyTatvapadaBtn");
+    const tatvapadaContent = document.getElementById("tatvapada_content");
+
+    if (copyBtn) {
+        copyBtn.onclick = async () => {
+            try {
+                // Get raw text
+                let textToCopy = tatvapadaContent.innerText
+                    .split("\n")                          // split into lines
+                    .map(line => line.trim())             // trim each line
+                    .filter(line => line.length > 0)      // remove empty lines
+                    .join("\n");                          // rejoin
+
+                await navigator.clipboard.writeText(textToCopy);
+
+                copyBtn.textContent = "✅ Copied!";
+                setTimeout(() => {
+                    copyBtn.textContent = "📋 Copy";
+                }, 1500);
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        };
+    }
+
+
 }
 
 function displayOtherFields(data) {
@@ -218,15 +246,15 @@ function setupNavigation() {
 
     };
 
-Object.entries(routes).forEach(([btnId, url]) => {
-    const button = document.getElementById(btnId);
-    if (!button) return;
+    Object.entries(routes).forEach(([btnId, url]) => {
+        const button = document.getElementById(btnId);
+        if (!button) return;
 
-    button.addEventListener("click", (e) => {
-        e.preventDefault();
-        window.open(url, "_blank"); // Open in a new tab
+        button.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.open(url, "_blank"); // Open in a new tab
+        });
     });
-});
 
 
 }

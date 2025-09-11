@@ -142,13 +142,22 @@ class UserService:
                 "user_id": None,
             }
 
-    def is_admin(self, user_id: int) -> bool:
-        """Check if a user is an admin by username."""
-        user = User.query.get(user_id)
-        if not user:
+    def is_admin(self, user_id: int = None, username: str = None) -> bool:
+        """
+        Check if a user is an admin by user_id or username.
+        Assumes all admins are also users.
+        """
+        # Get username from user_id if provided
+        if user_id is not None and username is None:
+            username = db_instance.session.query(User.username).filter_by(id=user_id).scalar()
+            if not username:
+                return False
+
+        if not username:
             return False
-        admin_entry = Admin.query.filter_by(username=user.username).first()
-        return admin_entry is not None
+
+        # Check admin existence directly by username
+        return db_instance.session.query(Admin.id).filter_by(username=username).first() is not None
 
     # ----------------------
     # READ

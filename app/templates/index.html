@@ -16,7 +16,6 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/search_by_keyword.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 
 
@@ -106,6 +105,7 @@
             <div class="col-md-12">
               <div class="field-box tatvapada-box">
                 <div class="field-label">ತತ್ವಪದ</div>
+                <button class="btn btn-sm btn-outline-primary" id="copyTatvapadaBtn">📋 Copy</button>
                 <div id="poem-display-area" class="poem-display enhanced">
                   <h3 class="poem-title" id="tatvapada_sheershike">📝 ತತ್ವಪದ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿ ತೋರುತ್ತದೆ</h3>
                   <div class="poem-content" id="tatvapada_content">
