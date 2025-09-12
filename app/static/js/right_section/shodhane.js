@@ -157,9 +157,47 @@ function handleSearchClick() {
 }
 
 
-// DOM Ready
+
+function setupCopyButtons() {
+    const tatvapadaEl = document.getElementById("detail_tatvapada");
+    const bhavanuvadaEl = document.getElementById("detail_bhavanuvada");
+    const copyTatvapadaBtn = document.getElementById("copyTatvapadaBtn");
+    const copyBhavanuvadaBtn = document.getElementById("copyBhavanuvadaBtn");
+
+    function cleanAndCopy(el, btn) {
+        const textToCopy = el.innerText
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .join("\n");
+
+        if (!textToCopy) {
+            alert("ಯಾವುದೇ ಪಠ್ಯ ಲಭ್ಯವಿಲ್ಲ.");
+            return;
+        }
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            btn.textContent = "✅ Copied!";
+            setTimeout(() => btn.textContent = "📋 Copy", 1500);
+        }).catch(err => console.error("Copy failed:", err));
+    }
+
+    if (copyTatvapadaBtn) {
+        copyTatvapadaBtn.onclick = () => cleanAndCopy(tatvapadaEl, copyTatvapadaBtn);
+    }
+
+    if (copyBhavanuvadaBtn) {
+        copyBhavanuvadaBtn.onclick = () => cleanAndCopy(bhavanuvadaEl, copyBhavanuvadaBtn);
+    }
+}
+
+
+
+// Run after DOM ready
 document.addEventListener("DOMContentLoaded", () => {
     loadSamputaAuthors();
     document.getElementById("samputaSelect").addEventListener("change", e => populateAuthors(e.target.value));
     document.getElementById("btnSearch").onclick = handleSearchClick;
+
+    setupCopyButtons(); // ✅ enable copy buttons
 });
