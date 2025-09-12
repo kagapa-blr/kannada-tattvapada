@@ -11,6 +11,21 @@ body {
 }
 
 /* ============================= */
+/* Animations (for table & UI only) */
+/* ============================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================= */
 /* Sticky result count */
 /* ============================= */
 .sticky-result-count {
@@ -24,6 +39,7 @@ body {
   color: #0d6efd;
   border-radius: 4px 4px 0 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 /* ============================= */
@@ -37,7 +53,7 @@ body {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 #searchResultsTable th {
@@ -55,12 +71,11 @@ body {
   white-space: pre-wrap;
 }
 
-/* Row hover effect */
+/* Row hover effect (simple, subtle) */
 #searchResultsTable tbody tr:hover {
   background-color: #fffbea;
   cursor: pointer;
-  transition: background 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  box-shadow: inset 0 0 0 9999px rgba(255, 235, 59, 0.1);
+  transition: background 0.2s ease-in-out;
 }
 
 /* Striped rows */
@@ -68,34 +83,18 @@ body {
   background-color: #fdfdfd;
 }
 
-/* Highlight class for search matches */
+/* Highlight for search matches */
 .highlight {
   background-color: #ffeb3b;
   color: #000;
   font-weight: bold;
   padding: 0 3px;
   border-radius: 3px;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 /* ============================= */
-/* Scrollbar styling */
-/* ============================= */
-.table-responsive::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-  background-color: rgba(13, 110, 253, 0.5);
-  border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-  background: #e9ecef;
-}
-
-/* ============================= */
-/* Modal styling */
+/* Modal styling (NO OPEN EFFECT) */
 /* ============================= */
 #detailsModal .modal-dialog {
   max-width: 90%;
@@ -123,14 +122,13 @@ body {
 }
 
 /* ============================= */
-/* Tatvapada and Bhavanuvada blocks */
+/* Tatvapada & Bhavanuvada blocks */
 /* ============================= */
 #detail_tatvapada,
 #detail_bhavanuvada {
   max-height: 300px;
   overflow-y: auto;
   padding: 0.8rem 1.25rem;
-  /* extra right padding for scrollbar */
   font-size: 1.1rem;
   line-height: 1.5;
   text-align: justify;
@@ -140,17 +138,25 @@ body {
   border-radius: 6px;
   word-break: break-word;
   border: 1px solid #e9ecef;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* On focus highlight */
+/* Focus highlight */
 #detail_tatvapada:focus,
 #detail_bhavanuvada:focus {
   border-color: #0d6efd;
+  box-shadow: 0 0 4px rgba(13, 110, 253, 0.3);
   outline: none;
 }
 
-/* Scrollbar for Tatvapada/Bhavanuvada */
+/* Hover effect */
+#detail_tatvapada:hover,
+#detail_bhavanuvada:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+}
+
+/* Scrollbars */
 #detail_tatvapada::-webkit-scrollbar,
 #detail_bhavanuvada::-webkit-scrollbar {
   width: 6px;
@@ -185,8 +191,12 @@ body {
   color: #fff;
 }
 
+.copy-btn:active {
+  transform: scale(0.95);
+}
+
 /* ============================= */
-/* Dropdown and input styling */
+/* Inputs & Filters */
 /* ============================= */
 .form-select-sm,
 #searchKeyword {
@@ -202,15 +212,6 @@ body {
   border-color: #0d6efd;
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
   outline: none;
-}
-
-.form-select-sm:hover {
-  border-color: #86b7fe;
-}
-
-#searchKeyword::placeholder {
-  color: #6c757d;
-  font-style: italic;
 }
 
 #btnSearch {
@@ -237,7 +238,7 @@ a:focus-visible,
 }
 
 /* ============================= */
-/* Responsive spacing for filters */
+/* Responsive filters */
 /* ============================= */
 @media (max-width: 767px) {
 
@@ -263,6 +264,7 @@ a:focus-visible,
     border-radius: 8px;
     padding: 0.5rem;
     background: #fff;
+    animation: fadeIn 0.5s ease-in-out;
   }
 
   #searchResultsTable td {
