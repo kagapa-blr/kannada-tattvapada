@@ -27,33 +27,25 @@
     {% include 'navbar.html' %}
 
     <div class="container-fluid my-4">
-        <!-- Title -->
-        <h4 class="text-center d-flex justify-content-center align-items-center gap-2 mb-3">
-            <span class="fs-4 text-primary">🔍</span>
-            <span>ತತ್ವಪದ ಶೋಧನೆ</span>
+        <h4 class="text-center mb-3">
+            <span class="text-primary">🔍 ತತ್ವಪದ ಶೋಧನೆ</span>
         </h4>
 
-        <!-- Search Info -->
-        <div id="searchInfo" class="alert alert-info py-3 px-4 mb-4 small rounded-3 shadow-sm">
-            <div class="d-flex align-items-start gap-2">
-                <span class="fs-5">ℹ️</span>
-                <div>
-                    <strong>ಶೋಧನೆ ಬಗ್ಗೆ ಮಾಹಿತಿ:</strong>
-                    <ul class="mb-0 ps-3">
-                        <li><span class="fw-bold">ಶೋಧನೆ ಪದ</span> ನಮೂದಿಸಿ ಶೋಧಿಸಬಹುದು.</li>
-                        <li>ತತ್ವಪದ ಅಥವಾ ತತ್ವಪದಕಾರರ ಹೆಸರಿನಲ್ಲಿ ಹೊಂದಾಣಿಕೆ ಇದ್ದರೆ ಫಲಿತಾಂಶ ತೋರಿಸಲಾಗುತ್ತದೆ.</li>
-                        <li>ಡಿಫಾಲ್ಟ್ ಶೋಧನೆ ಎಲ್ಲಾ <span class="fw-bold">ಸಂಪುಟಗಳು</span> ಮತ್ತು ಎಲ್ಲಾ <span
-                                class="fw-bold">ತತ್ವಪದಕಾರರು</span> ಯಲ್ಲಿ ನಡೆಯುತ್ತದೆ.</li>
-                        <li>ಆಯ್ಕೆ ಮಾಡಿದರೆ <span class="fw-bold">ಸಂಪುಟ</span> ಅಥವಾ <span class="fw-bold">ತತ್ವಪದಕಾರ</span>
-                            ಆಧಾರಿತ ಫಿಲ್ಟರ್ ಬಳಕೆ ಮಾಡಬಹುದು.</li>
-                        <li>ಫಲಿತಾಂಶಗಳು ಪುಟವಾರು (pagination) ರೂಪದಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತವೆ.</li>
-                    </ul>
-                </div>
-            </div>
+
+        <!-- Info box -->
+        <div class="alert alert-info small" role="alert">
+            <strong>ℹ️ ಶೋಧನೆ ಬಗ್ಗೆ ಮಾಹಿತಿ:</strong>
+            <ul class="mb-0 mt-2">
+                <li>ಶೋಧನೆ ಪದ ನಮೂದಿಸಿ ಶೋಧಿಸಬಹುದು.</li>
+                <li>ತತ್ವಪದ ಅಥವಾ ತತ್ವಪದಕಾರರ ಹೆಸರಿನಲ್ಲಿ ಹೊಂದಾಣಿಕೆ ಇದ್ದರೆ ಫಲಿತಾಂಶ ತೋರಿಸಲಾಗುತ್ತದೆ.</li>
+                <li>ಡಿಫಾಲ್ಟ್ ಶೋಧನೆ ಎಲ್ಲಾ ಸಂಪುಟಗಳು ಮತ್ತು ಎಲ್ಲಾ ತತ್ವಪದಕಾರರು ಯಲ್ಲಿ ನಡೆಯುತ್ತದೆ.</li>
+                <li>ಆಯ್ಕೆ ಮಾಡಿದರೆ ಸಂಪುಟ ಅಥವಾ ತತ್ವಪದಕಾರ ಆಧಾರಿತ ಫಿಲ್ಟರ್ ಬಳಕೆ ಮಾಡಬಹುದು.</li>
+                <li>ಫಲಿತಾಂಶಗಳು ಪುಟವಾರು (pagination) ರೂಪದಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತವೆ.</li>
+            </ul>
         </div>
 
-        <!-- Filters + Keyword -->
-        <div class="row g-3 align-items-end mb-4">
+        <!-- Filters -->
+        <div class="row g-3 mb-3">
             <div class="col-md-3">
                 <label for="samputaSelect" class="form-label fw-bold">ಸಂಪುಟ</label>
                 <select id="samputaSelect" class="form-select form-select-sm">
@@ -66,33 +58,31 @@
                     <option value="">ಎಲ್ಲಾ ತತ್ವಪದಕಾರರು</option>
                 </select>
             </div>
-            <div class="col-md-5 d-flex gap-2">
-                <div class="flex-grow-1">
-                    <label for="searchKeyword" class="form-label fw-bold">ಶೋಧನೆ ಪದ</label>
-                    <input type="text" id="searchKeyword" class="form-control form-control-sm"
-                        placeholder="ಪದ ಹುಡುಕಿ...">
+            <div class="col-md-5">
+                <label for="searchKeyword" class="form-label fw-bold">ಶೋಧನೆ</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" id="searchKeyword" class="form-control" placeholder="ಪದ ಹುಡುಕಿ...">
+                    <button id="btnSearch" class="btn btn-primary">🔍 ಶೋಧಿಸಿ</button>
                 </div>
-                <button type="button" id="btnSearch" class="btn btn-primary btn-sm align-self-end">
-                    🔍 ಶೋಧಿಸಿ
-                </button>
             </div>
+
         </div>
 
-        <!-- Result Count -->
-        <div id="resultCount" class="mb-3">
-            <p class="mb-0 text-primary">ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು "ಶೋಧಿಸಿ" ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.</p>
+        <!-- Result count -->
+        <div id="resultCount" class="mb-2 text-primary small">
+            ಪದವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು "ಶೋಧಿಸಿ" ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿ.
         </div>
 
-        <!-- DataTable -->
-        <div class="table-responsive shadow-sm rounded">
-            <table id="searchResultsTable" class="table table-bordered table-hover table-sm align-middle mb-0">
+        <!-- Table -->
+        <div class="table-responsive">
+            <table id="searchResultsTable" class="table table-bordered table-hover table-sm align-middle w-100">
                 <thead class="table-light">
                     <tr>
-                        <th>ಸಂಪುಟ ಸಂಖ್ಯೆ</th>
-                        <th>ತತ್ವಪದಕಾರರ ಹೆಸರು</th>
-                        <th>ತತ್ವಪದ ಸಂಖ್ಯೆ</th>
-                        <th>ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ</th>
-                        <th>ತತ್ವಪದ ಶೀರ್ಷಿಕೆ</th>
+                        <th>ಸಂಪುಟ</th>
+                        <th>ತತ್ವಪದಕಾರ</th>
+                        <th>ಸಂಖ್ಯೆ</th>
+                        <th>ಕೋಶ ಶೀರ್ಷಿಕೆ</th>
+                        <th>ಶೀರ್ಷಿಕೆ</th>
                         <th>ಮೊದಲ ಸಾಲು</th>
                         <th>ವಿಭಾಗ</th>
                     </tr>
@@ -102,79 +92,82 @@
         </div>
     </div>
 
-    <!-- Details Modal -->
-    <!-- Details Modal -->
+    <!-- Modal -->
     <div class="modal fade" id="detailsModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
-                <!-- Sticky Header -->
-                <div class="modal-header bg-primary text-white py-2 px-3 position-sticky top-0 z-3">
+                <div class="modal-header bg-primary text-white py-2">
                     <h5 class="modal-title">📖 ತತ್ವಪದ ವಿವರಗಳು</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
-                <!-- Body -->
-                <div class="modal-body p-3">
+                <div class="modal-body">
                     <div class="row g-3">
-                        <!-- Left: Basic Info -->
+
+                        <!-- Left Section: Scrollable Details -->
                         <div class="col-lg-4">
-                            <div class="card shadow-sm">
-                                <div class="card-body small">
-                                    <p class="mb-2"><strong>ಸಂಪುಟ ಸಂಖ್ಯೆ:</strong> <span id="detail_samputa"></span></p>
-                                    <p class="mb-2"><strong>ತತ್ವಪದಕಾರರ ಹೆಸರು:</strong> <span id="detail_author"></span>
-                                    </p>
-                                    <p class="mb-2"><strong>ತತ್ವಪದ ಸಂಖ್ಯೆ:</strong> <span id="detail_number"></span></p>
-                                    <p class="mb-2"><strong>ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ:</strong> <span id="detail_kosha"></span>
-                                    </p>
-                                    <p class="mb-2"><strong>ತತ್ವಪದ ಶೀರ್ಷಿಕೆ:</strong> <span id="detail_title"></span>
-                                    </p>
-                                    <p class="mb-2"><strong>ಮೊದಲ ಸಾಲು:</strong> <span id="detail_first_line"></span></p>
-                                    <p class="mb-2"><strong>ವಿಭಾಗ:</strong> <span id="detail_vibhag"></span></p>
-                                </div>
+                            <div class="border rounded p-3 scrollable-left">
+                                <h6 class="fw-bold text-secondary mb-3">📑 ಮೂಲ ಮಾಹಿತಿ</h6>
+                                <dl class="row small mb-0">
+                                    <dt class="col-5 fw-bold">ಸಂಪುಟ:</dt>
+                                    <dd class="col-7 text-primary" id="detail_samputa"></dd>
+
+                                    <dt class="col-5 fw-bold">ತತ್ವಪದಕಾರರರು:</dt>
+                                    <dd class="col-7" id="detail_author"></dd>
+
+                                    <dt class="col-5 fw-bold">ತತ್ವಪದ ಸಂಖ್ಯೆ:</dt>
+                                    <dd class="col-7" id="detail_number"></dd>
+
+                                    <dt class="col-5 fw-bold">ತತ್ವಪದಕೋಶ ಶೀರ್ಷಿಕೆ:</dt>
+                                    <dd class="col-7" id="detail_kosha"></dd>
+
+                                    <dt class="col-5 fw-bold">ತತ್ವಪದ ಶೀರ್ಷಿಕೆ:</dt>
+                                    <dd class="col-7" id="detail_title"></dd>
+
+                                    <dt class="col-5 fw-bold">ಮೊದಲ ಸಾಲು:</dt>
+                                    <dd class="col-7" id="detail_first_line"></dd>
+
+                                    <dt class="col-5 fw-bold">ವಿಭಾಗ:</dt>
+                                    <dd class="col-7" id="detail_vibhag"></dd>
+                                </dl>
                             </div>
                         </div>
 
-                        <!-- Right: Tabbed content -->
+                        <!-- Right Section: Tatvapada / Bhavanuvada Tabs -->
                         <div class="col-lg-8">
-                            <ul class="nav nav-tabs mb-2" id="tatvapadaTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active fw-bold" id="tab-tatvapada" data-bs-toggle="tab"
-                                        data-bs-target="#content-tatvapada" type="button" role="tab">✍️ ತತ್ವಪದ</button>
+                            <ul class="nav nav-tabs mb-2">
+                                <li class="nav-item">
+                                    <button class="nav-link active" data-bs-toggle="tab"
+                                        data-bs-target="#tab-tatvapada">
+                                        ✍️ ತತ್ವಪದ
+                                    </button>
                                 </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link fw-bold" id="tab-bhavanuvada" data-bs-toggle="tab"
-                                        data-bs-target="#content-bhavanuvada" type="button" role="tab">💡
-                                        ಭಾವಾನುವಾದ</button>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-bhavanuvada">
+                                        💡 ಭಾವಾನುವಾದ
+                                    </button>
                                 </li>
                             </ul>
 
                             <div class="tab-content">
-                                <!-- Tatvapada -->
-                                <div class="tab-pane fade show active p-3 border rounded bg-light"
-                                    id="content-tatvapada" role="tabpanel">
-                                    <div class="d-flex justify-content-end mb-2">
-                                        <button id="copyTatvapadaBtn" class="btn btn-outline-primary btn-sm">📋
-                                            Copy</button>
-                                    </div>
-                                    <div id="detail_tatvapada" class="tatvapada-content small"></div>
+                                <div class="tab-pane fade show active" id="tab-tatvapada">
+                                    <button id="copyTatvapadaBtn" class="btn btn-outline-primary btn-sm mb-2">📋
+                                        Copy</button>
+                                    <div id="detail_tatvapada" class="border rounded p-2 small"></div>
                                 </div>
-                                <!-- Bhavanuvada -->
-                                <div class="tab-pane fade p-3 border rounded bg-light" id="content-bhavanuvada"
-                                    role="tabpanel">
-                                    <div class="d-flex justify-content-end mb-2">
-                                        <button id="copyBhavanuvadaBtn" class="btn btn-outline-primary btn-sm">📋
-                                            Copy</button>
-                                    </div>
-                                    <div id="detail_bhavanuvada" class="tatvapada-content small"></div>
+                                <div class="tab-pane fade" id="tab-bhavanuvada">
+                                    <button id="copyBhavanuvadaBtn" class="btn btn-outline-primary btn-sm mb-2">📋
+                                        Copy</button>
+                                    <div id="detail_bhavanuvada" class="border rounded p-2 small"></div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="modal-footer py-2 px-3">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+                <div class="modal-footer py-2">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
                 </div>
             </div>
         </div>

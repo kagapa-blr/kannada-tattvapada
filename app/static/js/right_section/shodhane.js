@@ -1,26 +1,23 @@
 import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
-import { showLoader, hideLoader } from "../loader.js";
 
 let dataTable = null;
 let samputaData = [];
 
-// Escape HTML
-function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/[&<>"'`=\/]/g, s => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }[s]));
-}
+// Escape HTML safely
+const escapeHtml = txt =>
+    txt
+        ? txt.replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]))
+        : "";
 
-// Highlight keyword
-function highlightKeyword(text, keyword) {
-    if (!keyword) return escapeHtml(text);
-    const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const trailingCombining = '(?:[\u0CCD\\p{M}])*';
-    const regex = new RegExp(`(${escapedKeyword}${trailingCombining})`, 'giu');
-    return escapeHtml(text).replace(regex, '<span style="background-color: yellow; color: black; font-weight: bold">$1</span>');
-}
+// Highlight keyword inside text
+const highlight = (txt, keyword) => {
+    if (!txt || !keyword) return escapeHtml(txt);
+    const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    return escapeHtml(txt).replace(regex, m => `<span class="highlight">${m}</span>`);
+};
 
-// Load Samputa + Authors
+// Load samputa & authors
 async function loadSamputaAuthors() {
     try {
         const resp = await apiClient.get(apiEndpoints.admin.samputaAuthor);
@@ -28,53 +25,42 @@ async function loadSamputaAuthors() {
 
         const samputaSelect = document.getElementById("samputaSelect");
         samputaSelect.innerHTML = `<option value="">ಎಲ್ಲಾ ಸಂಪುಟಗಳು</option>`;
-        samputaData.forEach(item => {
-            const opt = document.createElement("option");
-            opt.value = item.samputa;
-            opt.textContent = `ಸಂಪುಟ ${item.samputa}`;
-            samputaSelect.appendChild(opt);
-        });
 
-        populateAuthors(""); // default
+        samputaData.forEach(s =>
+            samputaSelect.insertAdjacentHTML("beforeend", `<option value="${s.samputa}">ಸಂಪುಟ ${s.samputa}</option>`)
+        );
     } catch (err) {
-        console.error("Samputa/Authors load error:", err);
+        console.error("Samputa load error:", err);
     }
 }
 
-// Populate authors based on selected samputa
-function populateAuthors(selectedSamputa) {
+// Populate authors dynamically
+function populateAuthors(samputa) {
     const authorSelect = document.getElementById("authorSelect");
     authorSelect.innerHTML = `<option value="">ಎಲ್ಲಾ ತತ್ವಪದಕಾರರು</option>`;
-    if (!selectedSamputa) return;
-    const match = samputaData.find(s => s.samputa === selectedSamputa);
-    if (match?.authors) {
-        match.authors.forEach(a => {
-            const opt = document.createElement("option");
-            opt.value = a.id;
-            opt.textContent = a.name;
-            authorSelect.appendChild(opt);
-        });
-    }
+
+    const match = samputaData.find(s => s.samputa === samputa);
+    match?.authors?.forEach(a =>
+        authorSelect.insertAdjacentHTML("beforeend", `<option value="${a.id}">${a.name}</option>`)
+    );
 }
 
 // Initialize DataTable
 function initDataTable(keyword, samputa, authorId) {
     if (dataTable) {
         dataTable.destroy();
-        $('#searchResultsTable').empty();
+        document.querySelector("#searchResultsTable tbody").innerHTML = "";
     }
 
-    dataTable = $('#searchResultsTable').DataTable({
+    dataTable = $("#searchResultsTable").DataTable({
         serverSide: true,
         processing: true,
         searching: false,
-        ajax: async (data, callback) => {
-            showLoader();
+        scrollX: true, // ✅ makes table horizontally scrollable on mobile
+        ajax: async (data, cb) => {
             try {
-                const offset = data.start || 0;
-                const limit = data.length || 10;
-
-                const response = await apiClient.post(apiEndpoints.tatvapada.searchByWord, {
+                const { start: offset, length: limit, draw } = data;
+                const res = await apiClient.post(apiEndpoints.tatvapada.searchByWord, {
                     keyword,
                     samputa: samputa || null,
                     author_id: authorId || null,
@@ -82,24 +68,22 @@ function initDataTable(keyword, samputa, authorId) {
                     limit
                 });
 
-                callback({
-                    draw: data.draw,
-                    recordsTotal: response.pagination.total,
-                    recordsFiltered: response.pagination.total,
-                    data: response.results
+                cb({
+                    draw,
+                    recordsTotal: res.pagination.total,
+                    recordsFiltered: res.pagination.total,
+                    data: res.results
                 });
 
-                document.getElementById("resultCount").innerHTML =
-                    `ಒಟ್ಟು ತತ್ವಪದಗಳು: ${response.pagination.total}`;
+                document.getElementById("resultCount").textContent = `ಒಟ್ಟು ತತ್ವಪದಗಳು: ${res.pagination.total}`;
             } catch (err) {
-                document.getElementById("resultCount").innerHTML =
-                    `<p class="text-danger">ಶೋಧನೆಯಲ್ಲಿ ದೋಷ: ${escapeHtml(err.message)}</p>`;
-                callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
-            } finally { hideLoader(); }
+                document.getElementById("resultCount").innerHTML = `<span class="text-danger">ದೋಷ: ${escapeHtml(err.message)}</span>`;
+                cb({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+            }
         },
         columns: [
             { data: "samputa_sankhye" },
-            { data: "tatvapadakarara_hesaru", render: d => highlightKeyword(d, keyword) },
+            { data: "tatvapadakarara_hesaru", render: d => highlight(d, keyword) },
             { data: "tatvapada_sankhye" },
             { data: "tatvapadakosha_sheershike" },
             { data: "tatvapada_sheershike" },
@@ -108,96 +92,75 @@ function initDataTable(keyword, samputa, authorId) {
         ],
         pageLength: 10,
         language: {
-            lengthMenu: "_MENU_ ದಾಖಲೆಗಳು",
-            zeroRecords: "ಯಾವುದೇ ಫಲಿತಾಂಶಗಳು ಸಿಕ್ಕಿಲ್ಲ",
-            info: "_TOTAL_ ದಾಖಲೆಗಳಲ್ಲಿ _START_ ರಿಂದ _END_ ತೋರಿಸಲಾಗುತ್ತಿದೆ",
-            infoEmpty: "ಯಾವುದೇ ದಾಖಲೆಗಳಿಲ್ಲ",
+            zeroRecords: "ಫಲಿತಾಂಶಗಳಿಲ್ಲ",
+            info: "_TOTAL_ ದಾಖಲೆಗಳಲ್ಲಿ _START_ - _END_ ತೋರಿಸಲಾಗುತ್ತಿದೆ",
             paginate: { first: "ಮೊದಲ", last: "ಕೊನೆಯ", next: "ಮುಂದೆ", previous: "ಹಿಂದೆ" }
         }
     });
 
-    // Row click → modal
-    $('#searchResultsTable tbody').on('click', 'tr', function () {
-        const rowData = dataTable.row(this).data();
-        if (rowData) showDetailsModal(rowData, keyword);
+    // Row click → show details modal
+    $("#searchResultsTable tbody").off("click").on("click", "tr", function () {
+        const row = dataTable.row(this).data();
+        if (row) showDetails(row, keyword);
     });
 }
 
-// Show details modal
-function showDetailsModal(rowData, keyword) {
-    document.getElementById("detail_samputa").innerText = rowData.samputa_sankhye || "";
-    document.getElementById("detail_author").innerHTML = highlightKeyword(rowData.tatvapadakarara_hesaru || "", keyword);
-    document.getElementById("detail_number").innerText = rowData.tatvapada_sankhye || "";
-    document.getElementById("detail_kosha").innerText = rowData.tatvapadakosha_sheershike || "";
-    document.getElementById("detail_title").innerText = rowData.tatvapada_sheershike || "";
-    document.getElementById("detail_first_line").innerText = rowData.tatvapada_first_line || "";
-    document.getElementById("detail_vibhag").innerText = rowData.vibhag || "";
-    document.getElementById("detail_tatvapada").innerHTML = highlightKeyword(rowData.tatvapada || "", keyword);
-    document.getElementById("detail_bhavanuvada").innerHTML = highlightKeyword(rowData.bhavanuvada || "", keyword);
+// Show details in modal
+function showDetails(row, keyword) {
+    document.getElementById("detail_samputa").textContent = row.samputa_sankhye || "";
+    document.getElementById("detail_author").innerHTML = highlight(row.tatvapadakarara_hesaru, keyword);
+    document.getElementById("detail_number").textContent = row.tatvapada_sankhye || "";
+    document.getElementById("detail_kosha").textContent = row.tatvapadakosha_sheershike || "";
+    document.getElementById("detail_title").textContent = row.tatvapada_sheershike || "";
+    document.getElementById("detail_first_line").textContent = row.tatvapada_first_line || "";
+    document.getElementById("detail_vibhag").textContent = row.vibhag || "";
+    document.getElementById("detail_tatvapada").innerHTML = highlight(row.tatvapada, keyword);
+    document.getElementById("detail_bhavanuvada").innerHTML = highlight(row.bhavanuvada, keyword);
 
     new bootstrap.Modal(document.getElementById("detailsModal")).show();
 }
 
-// Handle Search
-function handleSearchClick() {
-    // Get keyword and normalize spaces
-    let keyword = document.getElementById("searchKeyword").value
-        .replace(/\s+/g, ' ')   // replace multiple spaces with single space
-        .trim();                // trim leading/trailing spaces
+// Setup copy buttons
+function setupCopy(btnId, targetId) {
+    const btn = document.getElementById(btnId);
+    btn.onclick = () => {
+        const text = document.getElementById(targetId).innerText.trim();
+        if (!text) return alert("ಯಾವುದೇ ಪಠ್ಯ ಇಲ್ಲ");
 
-    const samputa = document.getElementById("samputaSelect").value;
-    const authorId = document.getElementById("authorSelect").value;
-
-    if (!keyword) {
-        alert("ಶೋಧನೆಗಾಗಿ ಪದವನ್ನು ನಮೂದಿಸಿ.");
-        return;
-    }
-
-    initDataTable(keyword, samputa, authorId);
-}
-
-
-
-function setupCopyButtons() {
-    const tatvapadaEl = document.getElementById("detail_tatvapada");
-    const bhavanuvadaEl = document.getElementById("detail_bhavanuvada");
-    const copyTatvapadaBtn = document.getElementById("copyTatvapadaBtn");
-    const copyBhavanuvadaBtn = document.getElementById("copyBhavanuvadaBtn");
-
-    function cleanAndCopy(el, btn) {
-        const textToCopy = el.innerText
-            .split("\n")
-            .map(line => line.trim())
-            .filter(line => line.length > 0)
-            .join("\n");
-
-        if (!textToCopy) {
-            alert("ಯಾವುದೇ ಪಠ್ಯ ಲಭ್ಯವಿಲ್ಲ.");
-            return;
-        }
-
-        navigator.clipboard.writeText(textToCopy).then(() => {
+        navigator.clipboard.writeText(text).then(() => {
             btn.textContent = "✅ Copied!";
-            setTimeout(() => btn.textContent = "📋 Copy", 1500);
-        }).catch(err => console.error("Copy failed:", err));
-    }
-
-    if (copyTatvapadaBtn) {
-        copyTatvapadaBtn.onclick = () => cleanAndCopy(tatvapadaEl, copyTatvapadaBtn);
-    }
-
-    if (copyBhavanuvadaBtn) {
-        copyBhavanuvadaBtn.onclick = () => cleanAndCopy(bhavanuvadaEl, copyBhavanuvadaBtn);
-    }
+            setTimeout(() => (btn.textContent = "📋 Copy"), 1500);
+        });
+    };
 }
 
+// Handle search
+function handleSearch() {
+    const keyword = document.getElementById("searchKeyword").value.trim();
+    const samputa = document.getElementById("samputaSelect").value;
+    const author = document.getElementById("authorSelect").value;
 
+    if (!keyword) return alert("ಪದವನ್ನು ನಮೂದಿಸಿ");
+    initDataTable(keyword, samputa, author);
+}
 
-// Run after DOM ready
+// Init everything
 document.addEventListener("DOMContentLoaded", () => {
     loadSamputaAuthors();
-    document.getElementById("samputaSelect").addEventListener("change", e => populateAuthors(e.target.value));
-    document.getElementById("btnSearch").onclick = handleSearchClick;
+    document.getElementById("samputaSelect").onchange = e => populateAuthors(e.target.value);
+    document.getElementById("btnSearch").onclick = handleSearch;
+    document.getElementById("searchKeyword").addEventListener("keypress", e => {
+        if (e.key === "Enter") handleSearch();
+    });
 
-    setupCopyButtons(); // ✅ enable copy buttons
+    setupCopy("copyTatvapadaBtn", "detail_tatvapada");
+    setupCopy("copyBhavanuvadaBtn", "detail_bhavanuvada");
+
+    // Fix backdrop stuck issue
+    document.addEventListener("hidden.bs.modal", () => {
+        document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+        document.body.classList.remove("modal-open");
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("padding-right");
+    });
 });
