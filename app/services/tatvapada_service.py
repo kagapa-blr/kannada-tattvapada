@@ -222,6 +222,10 @@ class TatvapadaService:
             offset: int = 0,
             limit: int = 10,
     ) -> Tuple[List[Tatvapada], int]:
+        """
+        Search Tatvapada entries by keyword (whole-word match), samputa, and author_id.
+        Supports Kannada Unicode words with ZWNJ handling.
+        """
         try:
             keyword = (keyword or "").strip()
             samputa = (samputa or "").strip() or None
@@ -230,29 +234,40 @@ class TatvapadaService:
             if not keyword:
                 return [], 0
 
-            # Use word boundary regex for Unicode (includes Kannada letters)
-            # \b in MySQL is limited, so we define Kannada letters explicitly
-            # Kannada Unicode range: \u0C80-\u0CFF
-            word_regex = fr'(^|[^0-9A-Za-z\u0C80-\u0CFF]){keyword}([^0-9A-Za-z\u0C80-\u0CFF]|$)'
+            # Escape regex special chars in keyword
+            escaped_keyword = keyword.replace(r"([.*+?^${}()|\[\]\\])", r"\\\1")
 
+            # Whole-word regex with optional ZWNJ (zero-width non-joiner) around Kannada words
+            # Matches: start-of-string, whitespace, punctuation, or ZWNJ boundaries
+            word_bound_regex = (
+                fr"(^|[[:space:][:punct:]]|‌)"  # start or space/punct or ZWNJ (U+200C)
+                fr"{escaped_keyword}"
+                fr"([[:space:][:punct:]]|$|‌)"  # end or space/punct or ZWNJ
+            )
+
+            # Base query with join to author
             base_q = db_instance.session.query(Tatvapada).join(
                 TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id
             )
 
+            # Apply regex filter on tatvapada text or author name
             base_q = base_q.filter(
                 or_(
-                    Tatvapada.tatvapada.op('REGEXP')(word_regex),
-                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.op('REGEXP')(word_regex),
+                    Tatvapada.tatvapada.op("REGEXP")(word_bound_regex),
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.op("REGEXP")(word_bound_regex),
                 )
             )
 
+            # Optional filters
             if samputa:
                 base_q = base_q.filter(func.trim(Tatvapada.samputa_sankhye) == samputa)
             if author_id:
                 base_q = base_q.filter(Tatvapada.tatvapada_author_id == author_id)
 
+            # Total count
             total = db_instance.session.query(func.count()).select_from(base_q.subquery()).scalar()
 
+            # Pagination
             results = (
                 base_q.order_by(Tatvapada.samputa_sankhye, Tatvapada.tatvapada_sankhye)
                 .offset(offset)
