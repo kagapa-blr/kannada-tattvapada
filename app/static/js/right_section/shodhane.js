@@ -4,18 +4,23 @@ import apiEndpoints from "../apiEndpoints.js";
 let dataTable = null;
 let samputaData = [];
 
-// Escape HTML safely
+// Escape HTML
 const escapeHtml = txt =>
-    txt
-        ? txt.replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]))
-        : "";
+    txt ? txt.replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])) : "";
 
-// Highlight keyword inside text
+// Highlight whole word safely (handles Kannada/Unicode)
 const highlight = (txt, keyword) => {
     if (!txt || !keyword) return escapeHtml(txt);
-    const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+
+    const escapedKeyword = keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Zero Width Non-Joiner safe regex
+    // Match whole word: start of string or whitespace or punctuation, then keyword, then end of string/whitespace/punctuation
+    const regex = new RegExp(`(?:(?<=^|\\s|[.,!?;:]))${escapedKeyword}(?=(\\s|$|[.,!?;:]))`, "gu");
+
     return escapeHtml(txt).replace(regex, m => `<span class="highlight">${m}</span>`);
 };
+
 
 // Load samputa & authors
 async function loadSamputaAuthors() {
