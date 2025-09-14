@@ -48,25 +48,32 @@
         <div class="row g-3 mb-3">
             <div class="col-md-3">
                 <label for="samputaSelect" class="form-label fw-bold">ಸಂಪುಟ</label>
-                <select id="samputaSelect" class="form-select form-select-sm">
+                <select id="samputaSelect" class="form-select form-select-sm"
+                    style="height: calc(1.5em + 0.75rem + 2px);">
                     <option value="">ಎಲ್ಲಾ ಸಂಪುಟಗಳು</option>
                 </select>
             </div>
             <div class="col-md-4">
                 <label for="authorSelect" class="form-label fw-bold">ತತ್ವಪದಕಾರ</label>
-                <select id="authorSelect" class="form-select form-select-sm">
+                <select id="authorSelect" class="form-select form-select-sm"
+                    style="height: calc(1.5em + 0.75rem + 2px);">
                     <option value="">ಎಲ್ಲಾ ತತ್ವಪದಕಾರರು</option>
                 </select>
             </div>
             <div class="col-md-5">
-                <label for="searchKeyword" class="form-label fw-bold">ಶೋಧನೆ</label>
-                <div class="input-group input-group-sm">
-                    <input type="text" id="searchKeyword" class="form-control" placeholder="ಪದ ಹುಡುಕಿ...">
-                    <button id="btnSearch" class="btn btn-primary">🔍 ಶೋಧಿಸಿ</button>
+                <label for="searchKeyword" class="form-label fw-bold">🔍 ಶೋಧನೆ</label>
+                <div class="d-flex">
+                    <input type="text" id="searchKeyword" class="form-control form-control-sm"
+                        placeholder="ಪದ ನಮೂದಿಸಿ..." aria-label="Search"
+                        style="height: calc(1.5em + 0.75rem + 2px); flex: 1 1 auto; min-width: 0;">
+                    <button id="btnSearch" class="btn btn-sm btn-primary ms-2"
+                        style="height: calc(1.5em + 0.75rem + 2px); flex: 0 0 auto; min-width: 100px;">
+                        ಶೋಧಿಸಿ
+                    </button>
                 </div>
             </div>
-
         </div>
+
 
         <!-- Result count -->
         <div id="resultCount" class="mb-2 text-primary small">
