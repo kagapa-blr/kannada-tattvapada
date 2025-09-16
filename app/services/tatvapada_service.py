@@ -246,16 +246,11 @@ class TatvapadaService:
             )
 
             # Base query with join to author
-            base_q = db_instance.session.query(Tatvapada).join(
-                TatvapadaAuthorInfo, Tatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id
-            )
+            base_q = db_instance.session.query(Tatvapada)
 
             # Apply regex filter on tatvapada text or author name
             base_q = base_q.filter(
-                or_(
-                    Tatvapada.tatvapada.op("REGEXP")(word_bound_regex),
-                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.op("REGEXP")(word_bound_regex),
-                )
+                Tatvapada.tatvapada.op("REGEXP")(word_bound_regex)
             )
 
             # Optional filters

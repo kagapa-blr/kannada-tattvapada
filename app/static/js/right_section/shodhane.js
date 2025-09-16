@@ -88,7 +88,8 @@ function initDataTable(keyword, samputa, authorId) {
         },
         columns: [
             { data: "samputa_sankhye" },
-            { data: "tatvapadakarara_hesaru", render: d => highlight(d, keyword) },
+            //  { data: "tatvapadakarara_hesaru", render: d => highlight(d, keyword) },
+            { data: "tatvapadakarara_hesaru" }, // no highlight
             { data: "tatvapada_sankhye" },
             { data: "tatvapadakosha_sheershike" },
             { data: "tatvapada_sheershike" },
@@ -113,7 +114,8 @@ function initDataTable(keyword, samputa, authorId) {
 // Show details in modal
 function showDetails(row, keyword) {
     document.getElementById("detail_samputa").textContent = row.samputa_sankhye || "";
-    document.getElementById("detail_author").innerHTML = highlight(row.tatvapadakarara_hesaru, keyword);
+    //document.getElementById("detail_author").innerHTML = highlight(row.tatvapadakarara_hesaru, keyword);
+    document.getElementById("detail_author").textContent = row.tatvapadakarara_hesaru || "";
     document.getElementById("detail_number").textContent = row.tatvapada_sankhye || "";
     document.getElementById("detail_kosha").textContent = row.tatvapadakosha_sheershike || "";
     document.getElementById("detail_title").textContent = row.tatvapada_sheershike || "";
