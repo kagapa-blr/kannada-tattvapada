@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, UniqueConstraint
+import hashlib
+from sqlalchemy import Column, String, Text, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.config.database import db_instance
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
@@ -64,13 +65,9 @@ class ParibhashikaPadavivarana(db_instance.Model):
     )
 
 class Arthakosha(db_instance.Model):
-    """
-    ಅರ್ಥಕೋಶ (Arthakosha) table for storing Kannada glossary words and meanings.
-    Linked to TatvapadaAuthorInfo for author metadata.
-    """
     __tablename__ = "arthakosha"
     __table_args__ = (
-        UniqueConstraint('author_id', 'word', 'meaning', name='uq_arthakosha_author_word_meaning'),
+        UniqueConstraint('author_id', 'word', 'meaning_hash', name='uq_arthakosha_author_word_meaning'),
         {
             'mysql_engine': 'InnoDB',
             'mysql_charset': 'utf8mb4',
@@ -82,7 +79,12 @@ class Arthakosha(db_instance.Model):
     samputa = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
     author = relationship(TatvapadaAuthorInfo, backref="arthakoshas")
-    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)  # title cannot be null now
+    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     word = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
     meaning = Column(Text(collation='utf8mb4_unicode_ci'), nullable=False)
+    meaning_hash = Column(String(64), nullable=False)  # SHA256 hash
     notes = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
+
+    def set_meaning(self, meaning_text):
+        self.meaning = meaning_text
+        self.meaning_hash = hashlib.sha256(meaning_text.encode('utf-8')).hexdigest()

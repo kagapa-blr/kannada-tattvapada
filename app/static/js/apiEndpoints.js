@@ -85,7 +85,37 @@ const apiEndpoints = {
         getById: (id) => `${BASE_URL}/api/v1/authors/${id}`, // GET single
         update: (id) => `${BASE_URL}/api/v1/authors/${id}`,  // PUT
         delete: (id) => `${BASE_URL}/api/v1/authors/${id}`   // DELETE
-    }
+    },
+
+
+    shopping: {
+        // ---------------------------------
+        // ShoppingUser APIs
+        // ---------------------------------
+        createUser: `${BASE_URL}/shopping/api/v1/users`,               // POST
+        getUserByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}`,  // GET
+        updateUserByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}`,  // PUT
+        deleteUserByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}`,  // DELETE
+        listUsers: `${BASE_URL}/shopping/api/v1/users`,               // GET, ?limit=100&offset=0
+
+        // ---------------------------------
+        // ShoppingUserAddress APIs
+        // ---------------------------------
+        listAddressesByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/addresses`, // GET
+        createAddress: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/addresses`, // POST
+        updateAddress: (id) => `${BASE_URL}/shopping/api/v1/addresses/${id}`,          // PUT
+        deleteAddress: (id) => `${BASE_URL}/shopping/api/v1/addresses/${id}`,          // DELETE
+
+        // ---------------------------------
+        // ShoppingOrder APIs
+        // ---------------------------------
+        listOrdersByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/orders`,    // GET, ?limit=100&offset=0
+        createOrder: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/orders`,    // POST
+        updateOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // PUT
+        deleteOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // DELETE
+    },
+
+
 
 };
 
