@@ -13,9 +13,20 @@ WEB_UI_PREFIX = "/"
 logger = get_logger(name="shopping_route")
 
 # User Profile Page
-@shopping_user_bp.route(WEB_UI_PREFIX, methods=["GET"])
-def shopping_page():
+@shopping_user_bp.route(f"{WEB_UI_PREFIX}/profile", methods=["GET"])
+def shopping_user_profile():
     return render_template("shopping/user-profile.html")
+# User shopping  Page
+@shopping_user_bp.route(f"{WEB_UI_PREFIX}/", methods=["GET"])
+def shopping_page():
+    return render_template("shopping/shopping-index.html")
+
+# User Cart Page
+@shopping_user_bp.route(f"{WEB_UI_PREFIX}/cart", methods=["GET"])
+def shopping_cart_page():
+    return render_template("shopping/shopping-cart.html")
+
+
 
 # --- ShoppingUser REST API ---
 @shopping_user_bp.route(f"{API_PREFIX}/users/<string:email>", methods=["GET"])
