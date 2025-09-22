@@ -1,5 +1,5 @@
 import hashlib
-from sqlalchemy import Column, String, Text, Integer, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Text, Integer, ForeignKey, UniqueConstraint, Numeric
 from sqlalchemy.orm import relationship
 from app.config.database import db_instance
 from app.models.tatvapada_author_info import TatvapadaAuthorInfo
@@ -88,3 +88,37 @@ class Arthakosha(db_instance.Model):
     def set_meaning(self, meaning_text):
         self.meaning = meaning_text
         self.meaning_hash = hashlib.sha256(meaning_text.encode('utf-8')).hexdigest()
+
+
+class ShoppingTatvapada(db_instance.Model):
+    __tablename__ = "shopping_tatvapada"
+    __table_args__ = (
+        UniqueConstraint("tatvapada_author_id", "samputa_sankhye", name="uq_shopping_author_samputa"),
+        {
+            'mysql_engine': 'InnoDB',
+            'mysql_charset': 'utf8mb4',
+            'mysql_collate': 'utf8mb4_unicode_ci'
+        }
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Reference to Author
+    tatvapada_author_id = Column(Integer, ForeignKey("tatvapada_author_info.id"), nullable=False)
+    author = relationship(TatvapadaAuthorInfo, backref="shopping_books")
+
+    # Selling details
+    samputa_sankhye = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
+    price = Column(Numeric(10, 2), nullable=False)
+
+    # Optional metadata for display
+    tatvapada_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+    tatvapadakosha_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+
+    def __init__(self, tatvapada_author_id: int, samputa_sankhye: str, price: float,
+                 tatvapada_sheershike: str = None, tatvapadakosha_sheershike: str = None):
+        self.tatvapada_author_id = tatvapada_author_id
+        self.samputa_sankhye = samputa_sankhye
+        self.price = price
+        self.tatvapada_sheershike = tatvapada_sheershike
+        self.tatvapadakosha_sheershike = tatvapadakosha_sheershike

@@ -1,6 +1,8 @@
 from sqlalchemy import func
 
 from app.config.database import db_instance
+from app.models.tatvapada import Tatvapada, ShoppingTatvapada
+from app.models.tatvapada_author_info import TatvapadaAuthorInfo
 from app.models.user_management import ShoppingUser, ShoppingUserAddress, ShoppingOrder, User
 import pytz
 from datetime import datetime
@@ -19,6 +21,7 @@ class MessageTemplate:
     @staticmethod
     def not_found(entity):
         return {"success": False, "message": f"{entity} not found.", "data": None}
+
 
 # -------------------------
 # ShoppingUser Service
@@ -185,11 +188,11 @@ class ShoppingUserAddressService:
     @staticmethod
     def _unset_default_for_user(shopping_user_id: int):
         """Set all addresses for this user to is_default=False"""
-        db_instance.session.query(ShoppingUserAddress)\
+        db_instance.session.query(ShoppingUserAddress) \
             .filter(
-                ShoppingUserAddress.shopping_user_id == shopping_user_id,
-                ShoppingUserAddress.is_default == True
-            )\
+            ShoppingUserAddress.shopping_user_id == shopping_user_id,
+            ShoppingUserAddress.is_default == True
+        ) \
             .update({"is_default": False}, synchronize_session="fetch")
         db_instance.session.commit()
 
@@ -216,7 +219,8 @@ class ShoppingUserAddressService:
             db_instance.session.add(address)
             db_instance.session.commit()
             db_instance.session.refresh(address)
-            return {"success": True, "message": "Address created.", "data": ShoppingUserAddressService.serialize_address(address)}
+            return {"success": True, "message": "Address created.",
+                    "data": ShoppingUserAddressService.serialize_address(address)}
         except SQLAlchemyError as e:
             db_instance.session.rollback()
             return MessageTemplate.database_error(str(e))
@@ -238,7 +242,8 @@ class ShoppingUserAddressService:
 
             db_instance.session.commit()
             db_instance.session.refresh(address)
-            return {"success": True, "message": "Address updated.", "data": ShoppingUserAddressService.serialize_address(address)}
+            return {"success": True, "message": "Address updated.",
+                    "data": ShoppingUserAddressService.serialize_address(address)}
         except SQLAlchemyError as e:
             db_instance.session.rollback()
             return MessageTemplate.database_error(str(e))
@@ -268,7 +273,8 @@ class ShoppingUserAddressService:
                 return {"success": True, "message": "", "data": []}
 
             addresses = ShoppingUserAddress.query.filter_by(shopping_user_id=shopping_user.id).all()
-            return {"success": True, "message": "", "data": [ShoppingUserAddressService.serialize_address(a) for a in addresses]}
+            return {"success": True, "message": "",
+                    "data": [ShoppingUserAddressService.serialize_address(a) for a in addresses]}
         except SQLAlchemyError as e:
             return MessageTemplate.database_error(str(e))
 
@@ -368,3 +374,111 @@ class ShoppingOrderService:
             return {"success": True, "message": "", "data": [ShoppingOrderService.serialize_order(o) for o in orders]}
         except SQLAlchemyError as e:
             return MessageTemplate.database_error(str(e))
+
+
+
+
+class ShoppingTatvapadaService:
+
+    @staticmethod
+    def add_or_update_book(author_id: int, samputa_sankhye: str, price: float,
+                           tatvapada_sheershike: str = None, tatvapadakosha_sheershike: str = None):
+        """
+        Add a new book to shopping catalog or update price if it already exists.
+        """
+        session = db_instance.session
+
+        # Check if book already exists for this author and samputa
+        existing = session.query(ShoppingTatvapada).filter_by(
+            tatvapada_author_id=author_id,
+            samputa_sankhye=samputa_sankhye
+        ).first()
+
+        if existing:
+            existing.price = price
+            session.commit()
+            return {"message": "Price updated successfully", "id": existing.id}
+
+        # Add new entry
+        new_item = ShoppingTatvapada(
+            tatvapada_author_id=author_id,
+            samputa_sankhye=samputa_sankhye,
+            price=price,
+            tatvapada_sheershike=tatvapada_sheershike,
+            tatvapadakosha_sheershike=tatvapadakosha_sheershike
+        )
+        session.add(new_item)
+        session.commit()
+        return {"message": "Item added successfully", "id": new_item.id}
+
+    @staticmethod
+    def get_catalog(offset: int = 0, limit: int = 10):
+        """
+        Fetch shopping catalog with offset/limit pagination.
+        """
+        session = db_instance.session
+        query = session.query(
+            ShoppingTatvapada.id,
+            ShoppingTatvapada.samputa_sankhye,
+            ShoppingTatvapada.price,
+            ShoppingTatvapada.tatvapada_sheershike,
+            ShoppingTatvapada.tatvapadakosha_sheershike,
+            ShoppingTatvapada.tatvapada_author_id
+        )
+
+        total = query.count()
+        results = query.offset(offset).limit(limit).all()
+
+        items = [
+            {
+                "id": r.id,
+                "samputa_sankhye": r.samputa_sankhye,
+                "price": float(r.price),
+                "tatvapada_sheershike": r.tatvapada_sheershike,
+                "tatvapadakosha_sheershike": r.tatvapadakosha_sheershike,
+                "tatvapada_author_id": r.tatvapada_author_id
+            }
+            for r in results
+        ]
+
+        return {
+            "items": items,
+            "total": total,
+            "offset": offset,
+            "limit": limit
+        }
+    @staticmethod
+    def populate_from_tatvapada(price: float = 100.0):
+        session = db_instance.session
+
+        # Unique books by author + samputa, pick min values for titles
+        unique_books = (
+            session.query(
+                Tatvapada.tatvapada_author_id,
+                Tatvapada.samputa_sankhye,
+                func.min(Tatvapada.tatvapada_sheershike).label("tatvapada_sheershike"),
+                func.min(Tatvapada.tatvapadakosha_sheershike).label("tatvapadakosha_sheershike")
+            )
+            .group_by(Tatvapada.tatvapada_author_id, Tatvapada.samputa_sankhye)
+            .all()
+        )
+
+        added = 0
+        for book in unique_books:
+            exists = session.query(ShoppingTatvapada).filter_by(
+                tatvapada_author_id=book.tatvapada_author_id,
+                samputa_sankhye=book.samputa_sankhye
+            ).first()
+            if not exists:
+                new_item = ShoppingTatvapada(
+                    tatvapada_author_id=book.tatvapada_author_id,
+                    samputa_sankhye=book.samputa_sankhye,
+                    price=price,
+                    tatvapada_sheershike=book.tatvapada_sheershike,
+                    tatvapadakosha_sheershike=book.tatvapadakosha_sheershike
+                )
+                session.add(new_item)
+                added += 1
+
+        session.commit()
+        return {"message": f"{added} books added to shopping catalog"}

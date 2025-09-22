@@ -2,22 +2,29 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Cart - Kannada Tatvapada Shop</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet" />
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="products.html"><i class="bi bi-arrow-left-circle me-2"></i>Back to
+                Shop</a>
+        </div>
+    </nav>
 
-    <div class="container py-5">
-        <h3>Shopping Cart</h3>
+    <main class="container py-5">
+        <h3 class="mb-4">Shopping Cart</h3>
 
         <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <table class="table table-striped table-hover" id="cartTable">
+            <div class="card-body p-0">
+                <table id="cartTable" class="table table-striped table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -31,23 +38,54 @@
                     </thead>
                     <tbody id="cartTableBody"></tbody>
                 </table>
+                <div id="cartEmptyMessage" class="text-center p-4 text-muted fst-italic d-none">
+                    Your cart is empty. Please add some products from the shop.
+                </div>
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h5>Total Payment: ₹<span id="cartTotal">0</span></h5>
 
                 <h5 class="mt-4">Delivery Address</h5>
                 <textarea id="userAddress" class="form-control mb-3" placeholder="Enter your address here"></textarea>
 
-                <button id="proceedPaymentBtn" class="btn btn-success btn-lg">Proceed to Payment</button>
+                <button id="proceedPaymentBtn" class="btn btn-success btn-lg" disabled>Proceed to Payment</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="confirmOrderLabel"><i class="bi bi-check2-circle me-2"></i>Confirm Order
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to place this order?</p>
+                    <p><strong>Total Payment:</strong> ₹<span id="confirmTotalAmount">0</span></p>
+                    <p><strong>Delivery Address:</strong></p>
+                    <p id="confirmAddressText" class="border p-2 rounded"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="confirmOrderBtn" class="btn btn-success">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- JS Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Shopping JS Module -->
     <script type="module" src="{{ url_for('static', filename='js/shopping/shopping.js') }}"></script>
+
 </body>
 
 </html>
