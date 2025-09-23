@@ -149,6 +149,7 @@ def product_catalog():
         print(f"Error fetching catalog: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
 
+
 # POST: Add or update a book
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog", methods=["POST"])
 def add_or_update_book():
@@ -160,7 +161,6 @@ def add_or_update_book():
         author_id = int(data["author_id"])
         samputa_sankhye = str(data["samputa_sankhye"])
         price = float(data["price"])
-        tatvapada_sheershike = data.get("tatvapada_sheershike")
         tatvapadakosha_sheershike = data.get("tatvapadakosha_sheershike")
     except (KeyError, ValueError, TypeError) as e:
         return jsonify({"error": f"Invalid input: {e}"}), 400
@@ -170,13 +170,13 @@ def add_or_update_book():
             author_id=author_id,
             samputa_sankhye=samputa_sankhye,
             price=price,
-            tatvapada_sheershike=tatvapada_sheershike,
             tatvapadakosha_sheershike=tatvapadakosha_sheershike
         )
         return jsonify(result)
     except Exception as e:
         print(f"Error adding/updating book: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
 
 # GET + sync: Fetch shopping catalog, auto-populate from Tatvapada
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/sync", methods=["GET"])

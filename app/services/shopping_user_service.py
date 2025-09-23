@@ -382,7 +382,7 @@ class ShoppingTatvapadaService:
 
     @staticmethod
     def add_or_update_book(author_id: int, samputa_sankhye: str, price: float,
-                           tatvapada_sheershike: str = None, tatvapadakosha_sheershike: str = None):
+                           tatvapadakosha_sheershike: str = None):
         """
         Add a new book to shopping catalog or update price if it already exists.
         """
@@ -404,7 +404,6 @@ class ShoppingTatvapadaService:
             tatvapada_author_id=author_id,
             samputa_sankhye=samputa_sankhye,
             price=price,
-            tatvapada_sheershike=tatvapada_sheershike,
             tatvapadakosha_sheershike=tatvapadakosha_sheershike
         )
         session.add(new_item)
@@ -415,15 +414,20 @@ class ShoppingTatvapadaService:
     def get_catalog(offset: int = 0, limit: int = 10):
         """
         Fetch shopping catalog with offset/limit pagination.
+        Includes author name from TatvapadaAuthorInfo.
         """
         session = db_instance.session
-        query = session.query(
-            ShoppingTatvapada.id,
-            ShoppingTatvapada.samputa_sankhye,
-            ShoppingTatvapada.price,
-            ShoppingTatvapada.tatvapada_sheershike,
-            ShoppingTatvapada.tatvapadakosha_sheershike,
-            ShoppingTatvapada.tatvapada_author_id
+
+        query = (
+            session.query(
+                ShoppingTatvapada.id,
+                ShoppingTatvapada.samputa_sankhye,
+                ShoppingTatvapada.price,
+                ShoppingTatvapada.tatvapadakosha_sheershike,
+                ShoppingTatvapada.tatvapada_author_id,
+                TatvapadaAuthorInfo.tatvapadakarara_hesaru.label("author_name")
+            )
+            .join(TatvapadaAuthorInfo, ShoppingTatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id)
         )
 
         total = query.count()
@@ -434,9 +438,9 @@ class ShoppingTatvapadaService:
                 "id": r.id,
                 "samputa_sankhye": r.samputa_sankhye,
                 "price": float(r.price),
-                "tatvapada_sheershike": r.tatvapada_sheershike,
                 "tatvapadakosha_sheershike": r.tatvapadakosha_sheershike,
-                "tatvapada_author_id": r.tatvapada_author_id
+                "tatvapada_author_id": r.tatvapada_author_id,
+                "tatvapadakarara_hesaru": r.author_name
             }
             for r in results
         ]
@@ -447,16 +451,19 @@ class ShoppingTatvapadaService:
             "offset": offset,
             "limit": limit
         }
+
     @staticmethod
     def populate_from_tatvapada(price: float = 100.0):
+        """
+        Populate shopping catalog from Tatvapada table (unique by author + samputa).
+        """
         session = db_instance.session
 
-        # Unique books by author + samputa, pick min values for titles
+        # Unique books by author + samputa, pick min tatvapadakosha_sheershike
         unique_books = (
             session.query(
                 Tatvapada.tatvapada_author_id,
                 Tatvapada.samputa_sankhye,
-                func.min(Tatvapada.tatvapada_sheershike).label("tatvapada_sheershike"),
                 func.min(Tatvapada.tatvapadakosha_sheershike).label("tatvapadakosha_sheershike")
             )
             .group_by(Tatvapada.tatvapada_author_id, Tatvapada.samputa_sankhye)
@@ -474,7 +481,6 @@ class ShoppingTatvapadaService:
                     tatvapada_author_id=book.tatvapada_author_id,
                     samputa_sankhye=book.samputa_sankhye,
                     price=price,
-                    tatvapada_sheershike=book.tatvapada_sheershike,
                     tatvapadakosha_sheershike=book.tatvapadakosha_sheershike
                 )
                 session.add(new_item)

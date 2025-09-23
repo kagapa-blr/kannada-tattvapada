@@ -25,6 +25,12 @@
         table td:last-child {
             width: 140px;
         }
+
+        .btn-action {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -33,8 +39,7 @@
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="#"><i class="bi bi-book-half me-2"></i>Kannada Tatvapada</a>
             <div class="d-flex align-items-center">
-                <button id="btnOpenCartModal" type="button" class="btn btn-light position-relative"
-                    aria-label="Open Cart">
+                <button id="btnOpenCartModal" type="button" class="btn btn-light position-relative">
                     <i class="bi bi-cart3 me-1"></i> Cart
                     <span id="cartCount" class="badge bg-danger rounded-pill">0</span>
                 </button>
@@ -68,8 +73,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="cartModalLabel"><i class="bi bi-cart3 me-2"></i>Your Cart</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table table-sm table-bordered align-middle mb-0" id="cartModalTable">
@@ -93,8 +97,46 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" id="btnGoToCartPage" class="btn btn-success">Go to Cart Page</button>
+                    <button type="button" id="btnGoToCartPage" class="btn btn-success">
+                        <i class="bi bi-arrow-right-circle me-1"></i>Go to Cart Page
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Shopping</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Book Details Modal -->
+    <div class="modal fade" id="bookDetailsModal" tabindex="-1" aria-labelledby="bookDetailsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="bookDetailsLabel"><i class="bi bi-book me-2"></i>Book Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Title</dt>
+                        <dd class="col-sm-9" id="detailTitle"></dd>
+
+                        <dt class="col-sm-3">Author</dt>
+                        <dd class="col-sm-9" id="detailAuthor"></dd>
+
+                        <dt class="col-sm-3">Samputa Sankhye</dt>
+                        <dd class="col-sm-9" id="detailSamputa"></dd>
+
+                        <dt class="col-sm-3">Price</dt>
+                        <dd class="col-sm-9">₹<span id="detailPrice"></span></dd>
+
+                        <dt class="col-sm-3">Tatvapadakosha Sheershike</dt>
+                        <dd class="col-sm-9" id="detailKoshasheershike"></dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnAddToCartFromDetails" class="btn btn-primary">
+                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -106,9 +148,8 @@
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Shopping JS Module -->
+    <!-- Shopping JS -->
     <script type="module" src="{{ url_for('static', filename='js/shopping/shopping.js') }}"></script>
-
 </body>
 
 </html>

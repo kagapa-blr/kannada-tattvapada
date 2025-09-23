@@ -89,7 +89,6 @@ class Arthakosha(db_instance.Model):
         self.meaning = meaning_text
         self.meaning_hash = hashlib.sha256(meaning_text.encode('utf-8')).hexdigest()
 
-
 class ShoppingTatvapada(db_instance.Model):
     __tablename__ = "shopping_tatvapada"
     __table_args__ = (
@@ -112,13 +111,11 @@ class ShoppingTatvapada(db_instance.Model):
     price = Column(Numeric(10, 2), nullable=False)
 
     # Optional metadata for display
-    tatvapada_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
     tatvapadakosha_sheershike = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
 
     def __init__(self, tatvapada_author_id: int, samputa_sankhye: str, price: float,
-                 tatvapada_sheershike: str = None, tatvapadakosha_sheershike: str = None):
+                 tatvapadakosha_sheershike: str = None):
         self.tatvapada_author_id = tatvapada_author_id
         self.samputa_sankhye = samputa_sankhye
         self.price = price
-        self.tatvapada_sheershike = tatvapada_sheershike
         self.tatvapadakosha_sheershike = tatvapadakosha_sheershike
