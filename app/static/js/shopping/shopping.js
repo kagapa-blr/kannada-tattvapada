@@ -1,17 +1,49 @@
 /**
- * shopping.js - Full Shopping Logic
+ * shopping.js - Organized Shopping & Cart Logic
  */
+
+// ---------------------- Global Cart ----------------------
 let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
 
-function saveCart() { localStorage.setItem("cartItems", JSON.stringify(cart)); }
-function isInCart(id) { return cart.some(item => item.id === id); }
-function getCartItem(id) { return cart.find(item => item.id === id); }
-function addToCart(product) { if (!isInCart(product.id)) { cart.push({ ...product, quantity: 1 }); saveCart(); return true; } return false; }
-function removeFromCart(id) { cart = cart.filter(i => i.id !== id); saveCart(); }
-function updateCartQuantity(id, qty) { const item = getCartItem(id); if (item) { item.quantity = qty > 0 ? qty : 1; saveCart(); } }
-function getCartTotal() { return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0); }
+function saveCart() {
+  localStorage.setItem("cartItems", JSON.stringify(cart));
+}
 
-// ---------------- Product Listing Page ----------------
+function isInCart(id) {
+  return cart.some(item => item.id === id);
+}
+
+function getCartItem(id) {
+  return cart.find(item => item.id === id);
+}
+
+function addToCart(product) {
+  if (!isInCart(product.id)) {
+    cart.push({ ...product, quantity: 1 });
+    saveCart();
+    return true;
+  }
+  return false;
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+}
+
+function updateCartQuantity(id, qty) {
+  const item = getCartItem(id);
+  if (item) {
+    item.quantity = qty > 0 ? qty : 1;
+    saveCart();
+  }
+}
+
+function getCartTotal() {
+  return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+}
+
+// ---------------------- Product Listing Page ----------------------
 function initProductListingPage() {
   const cartCount = $("#cartCount");
   const btnOpenCartModal = $("#btnOpenCartModal");
@@ -27,15 +59,16 @@ function initProductListingPage() {
     btnAddToCartFromDetails = $("#btnAddToCartFromDetails");
   let currentDetailItem = null;
 
+  // Initialize Product DataTable
   const table = $("#productTable").DataTable({
     serverSide: true,
     processing: true,
     ajax: async (data, callback) => {
-      const offset = data.start, limit = data.length;
       try {
-        const res = await fetch(`/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}`);
+        const res = await fetch(`/shopping/api/v1/orders/catalog?offset=${data.start}&limit=${data.length}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
+
         const products = json.items.map(item => ({
           id: item.id,
           title: item.tatvapadakosha_sheershike || `Samputa ${item.samputa_sankhye}`,
@@ -44,8 +77,12 @@ function initProductListingPage() {
           price: parseFloat(item.price),
           kosha: item.tatvapadakosha_sheershike || ""
         }));
+
         callback({ recordsTotal: json.total, recordsFiltered: json.total, data: products });
-      } catch (err) { console.error(err); callback({ recordsTotal: 0, recordsFiltered: 0, data: [] }); }
+      } catch (err) {
+        console.error(err);
+        callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+      }
     },
     columns: [
       { data: null, render: (data, type, row, meta) => meta.row + 1 },
@@ -54,16 +91,15 @@ function initProductListingPage() {
       { data: "price", render: data => `₹${data.toFixed(2)}` },
       {
         data: null, orderable: false,
-        render: data => {
-          return `<div class="btn-action">
+        render: data => `
+                    <div class="btn-action">
                         <button class="btn btn-sm ${isInCart(data.id) ? "btn-success" : "btn-primary"} btn-toggle" data-id="${data.id}">
                             <i class="bi ${isInCart(data.id) ? "bi-cart-check" : "bi-cart-plus"}"></i>
                         </button>
                         <button class="btn btn-sm btn-info btn-details" data-id="${data.id}">
                             <i class="bi bi-info-circle"></i>
                         </button>
-                    </div>`;
-        }
+                    </div>`
       }
     ],
     pageLength: 10,
@@ -71,22 +107,40 @@ function initProductListingPage() {
     language: { emptyTable: "No products available" }
   });
 
-  function updateCartCount() { cartCount.text(cart.length); }
+  // ---------------- Update Cart Count ----------------
+  function updateCartCount() {
+    cartCount.text(cart.length);
+  }
 
+  // ---------------- Toggle Cart Item ----------------
   function toggleCartItem(id, btn) {
-    const rowData = table.rows().data().toArray().find(p => p.id === id); if (!rowData) return;
-    if (isInCart(id)) { removeFromCart(id); btn.removeClass("btn-success").addClass("btn-primary").html(`<i class="bi bi-cart-plus"></i>`); }
-    else { addToCart(rowData); btn.removeClass("btn-primary").addClass("btn-success").html(`<i class="bi bi-cart-check"></i>`); }
+    const rowData = table.rows().data().toArray().find(p => p.id === id);
+    if (!rowData) return;
+
+    if (isInCart(id)) {
+      removeFromCart(id);
+      btn.removeClass("btn-success").addClass("btn-primary").html(`<i class="bi bi-cart-plus"></i>`);
+    } else {
+      addToCart(rowData);
+      btn.removeClass("btn-primary").addClass("btn-success").html(`<i class="bi bi-cart-check"></i>`);
+    }
     updateCartCount();
   }
 
+  // ---------------- Render Cart Modal ----------------
   function renderCartModal() {
     cartModalBody.empty();
-    if (cart.length === 0) { cartModalEmpty.removeClass("d-none"); cartModalTotal.text("0.00"); return; }
+    if (cart.length === 0) {
+      cartModalEmpty.removeClass("d-none");
+      cartModalTotal.text("0.00");
+      return;
+    }
     cartModalEmpty.addClass("d-none");
+
     let total = 0;
     cart.forEach((item, i) => {
-      const subtotal = item.price * (item.quantity || 1); total += subtotal;
+      const subtotal = item.price * (item.quantity || 1);
+      total += subtotal;
       cartModalBody.append(`
                 <tr>
                     <td>${i + 1}</td>
@@ -101,7 +155,13 @@ function initProductListingPage() {
     cartModalTotal.text(total.toFixed(2));
   }
 
-  $(document).on("click", ".btn-toggle", e => { const id = parseInt($(e.currentTarget).data("id")); toggleCartItem(id, $(e.currentTarget)); table.ajax.reload(null, false); });
+  // ---------------- Event Handlers ----------------
+  $(document).on("click", ".btn-toggle", e => {
+    const id = parseInt($(e.currentTarget).data("id"));
+    toggleCartItem(id, $(e.currentTarget));
+    table.ajax.reload(null, false);
+  });
+
   $(document).on("click", ".btn-details", e => {
     const id = parseInt($(e.currentTarget).data("id"));
     const data = table.rows().data().toArray().find(d => d.id === id);
@@ -114,45 +174,80 @@ function initProductListingPage() {
     detailPrice.text(data.price.toFixed(2));
     detailKoshasheershike.text(data.kosha);
 
-    // ✅ Update modal button based on cart
     if (isInCart(id)) {
-      btnAddToCartFromDetails
-        .removeClass("btn-primary")
-        .addClass("btn-success")
-        .html('<i class="bi bi-cart-check me-1"></i>In Cart');
+      btnAddToCartFromDetails.removeClass("btn-primary").addClass("btn-success").html('<i class="bi bi-cart-check me-1"></i>In Cart');
     } else {
-      btnAddToCartFromDetails
-        .removeClass("btn-success")
-        .addClass("btn-primary")
-        .html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
+      btnAddToCartFromDetails.removeClass("btn-success").addClass("btn-primary").html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
     }
 
     bookDetailsModal.show();
   });
 
-  btnAddToCartFromDetails.on("click", () => { if (currentDetailItem) { addToCart(currentDetailItem); updateCartCount(); bookDetailsModal.hide(); table.ajax.reload(null, false); } });
-  btnOpenCartModal.on("click", () => { renderCartModal(); cartModal.show(); });
-  cartModalBody.on("click", ".btn-remove", e => { const id = parseInt($(e.currentTarget).data("id")); removeFromCart(id); renderCartModal(); table.ajax.reload(null, false); updateCartCount(); });
-  cartModalBody.on("input", ".cart-qty-input", e => { const id = parseInt(e.target.dataset.id); let val = parseInt(e.target.value); if (isNaN(val) || val < 1) val = 1; updateCartQuantity(id, val); renderCartModal(); });
+  btnAddToCartFromDetails.on("click", () => {
+    if (currentDetailItem) {
+      addToCart(currentDetailItem);
+      updateCartCount();
+      bookDetailsModal.hide();
+      table.ajax.reload(null, false);
+    }
+  });
+
+  btnOpenCartModal.on("click", () => {
+    renderCartModal();
+    cartModal.show();
+  });
+
+  cartModalBody.on("click", ".btn-remove", e => {
+    const id = parseInt($(e.currentTarget).data("id"));
+    removeFromCart(id);
+    renderCartModal();
+    table.ajax.reload(null, false);
+    updateCartCount();
+  });
+
+  cartModalBody.on("input", ".cart-qty-input", e => {
+    const id = parseInt(e.target.dataset.id);
+    let val = parseInt(e.target.value);
+    if (isNaN(val) || val < 1) val = 1;
+    updateCartQuantity(id, val);
+    renderCartModal();
+  });
 
   $("#btnGoToCartPage").on("click", () => { window.location.href = "/shopping/cart"; });
 
   updateCartCount();
 }
 
-// ---------------- Cart Page ----------------
+// ---------------------- Cart Page ----------------------
 function initCartPage() {
-  const cartTableBody = $("#cartTableBody"), cartTotalSpan = $("#cartTotal"), userAddress = $("#userAddress"), proceedPaymentBtn = $("#proceedPaymentBtn"), cartEmptyMessage = $("#cartEmptyMessage");
-  const confirmModal = new bootstrap.Modal(document.getElementById("confirmOrderModal")), confirmTotalSpan = $("#confirmTotalAmount"), confirmAddressText = $("#confirmAddressText"), confirmOrderBtn = $("#confirmOrderBtn");
+  const cartTableBody = $("#cartTableBody"),
+    cartTotalSpan = $("#cartTotal"),
+    proceedPaymentBtn = $("#proceedPaymentBtn"),
+    cartEmptyMessage = $("#cartEmptyMessage"),
+    confirmModal = new bootstrap.Modal(document.getElementById("confirmOrderModal")),
+    confirmTotalSpan = $("#confirmTotalAmount"),
+    confirmAddressText = $("#confirmAddressText"),
+    confirmOrderBtn = $("#confirmOrderBtn");
 
+  // ---------------- Render Cart Table ----------------
   function renderCart() {
     cartTableBody.empty();
-    if (cart.length === 0) { cartEmptyMessage.removeClass("d-none"); proceedPaymentBtn.prop("disabled", true); cartTotalSpan.text("0.00"); return; }
-    cartEmptyMessage.addClass("d-none"); proceedPaymentBtn.prop("disabled", userAddress.val().trim() === "" || cart.length === 0);
+
+    if (cart.length === 0) {
+      cartEmptyMessage.removeClass("d-none");
+      proceedPaymentBtn.prop("disabled", true);
+      cartTotalSpan.text("0.00");
+      return;
+    }
+
+    cartEmptyMessage.addClass("d-none");
+    proceedPaymentBtn.prop("disabled", cart.length === 0);
 
     let total = 0;
     cart.forEach((item, i) => {
-      const qty = item.quantity || 1; const subtotal = item.price * qty; total += subtotal;
+      const qty = item.quantity || 1;
+      const subtotal = item.price * qty;
+      total += subtotal;
       cartTableBody.append(`
                 <tr>
                     <td>${i + 1}</td>
@@ -168,29 +263,85 @@ function initCartPage() {
     cartTotalSpan.text(total.toFixed(2));
   }
 
-  cartTableBody.on("input", ".quantity-input", e => { const id = parseInt(e.target.dataset.id); let val = parseInt(e.target.value); if (isNaN(val) || val < 1) val = 1; updateCartQuantity(id, val); renderCart(); });
-  cartTableBody.on("click", ".btn-remove", e => { const id = parseInt($(e.currentTarget).data("id")); removeFromCart(id); renderCart(); });
-  userAddress.on("input", () => { proceedPaymentBtn.prop("disabled", userAddress.val().trim() === "" || cart.length === 0); });
+  // ---------------- Event Handlers ----------------
+  cartTableBody.on("input", ".quantity-input", e => {
+    const id = parseInt(e.target.dataset.id);
+    let val = parseInt(e.target.value);
+    if (isNaN(val) || val < 1) val = 1;
+    updateCartQuantity(id, val);
+    renderCart();
+  });
+
+  cartTableBody.on("click", ".btn-remove", e => {
+    const id = parseInt($(e.currentTarget).data("id"));
+    removeFromCart(id);
+    renderCart();
+  });
 
   proceedPaymentBtn.on("click", () => {
-    if (userAddress.val().trim() === "") { alert("Please enter delivery address"); return; }
-    confirmTotalSpan.text(getCartTotal().toFixed(2)); confirmAddressText.text(userAddress.val().trim()); confirmModal.show();
+    confirmTotalSpan.text(getCartTotal().toFixed(2));
+
+    // Get address from display card
+    const addressText = [
+      $("#addrRecipient").text(),
+      $("#addrLine").text(),
+      $("#addrCityTaluk").text(),
+      $("#addrStateCountry").text(),
+      $("#addrPostal").text(),
+      $("#addrPhone").text()
+    ].join(", ");
+
+    confirmAddressText.text(addressText);
+    confirmModal.show();
   });
 
   confirmOrderBtn.on("click", () => {
-    const order = { items: cart, total: getCartTotal(), address: userAddress.val().trim(), date: new Date().toISOString() };
+    const order = {
+      items: cart,
+      total: getCartTotal(),
+      date: new Date().toISOString()
+    };
     localStorage.setItem("currentOrder", JSON.stringify(order));
-    cart.length = 0; saveCart();
+    cart.length = 0;
+    saveCart();
     confirmModal.hide();
     alert("Order confirmed! Redirecting to payment page...");
     window.location.href = "/shopping/payment";
   });
 
+  // ---------------- Fetch Default Address ----------------
+  async function fetchDefaultAddress() {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/shopping/api/v1/users/kagapa@gmail.com/addresses');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      if (json.success && json.data.length > 0) {
+        const defaultAddr = json.data.find(a => a.is_default) || json.data[0];
+        if (defaultAddr) {
+          $("#addrRecipient").text(defaultAddr.recipient_name || "-");
+          $("#addrLine").text(defaultAddr.address_line || "-");
+          $("#addrType").text(defaultAddr.address_type || "-");
+          $("#addrCityTaluk").text(`${defaultAddr.city || "-"} / ${defaultAddr.taluk_division || "-"}`);
+          $("#addrStateCountry").text(`${defaultAddr.state || "-"} / ${defaultAddr.country || "-"}`);
+          $("#addrPostal").text(defaultAddr.postal_code || "-");
+          $("#addrPhone").text(defaultAddr.phone_number || "-");
+          $("#addrInstructions").text(defaultAddr.delivery_instructions || "-");
+
+          proceedPaymentBtn.prop("disabled", cart.length === 0);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch addresses:", err);
+    }
+  }
+
+  fetchDefaultAddress();
   renderCart();
 }
 
-// ---------------- Auto Init ----------------
+// ---------------------- Auto Init ----------------------
 $(document).ready(() => {
-  if ($("#productTableBody").length) initProductListingPage();
+  if ($("#productTable").length) initProductListingPage();
   else if ($("#cartTableBody").length) initCartPage();
 });
