@@ -129,83 +129,74 @@ def delete_order(order_id):
     return jsonify(result)
 
 
-# --- Tatvapada REST API ---
+# --------------------------------------------------
+# GET: Fetch shopping catalog (paginated)
+# --------------------------------------------------
 
-# GET: Fetch shopping catalog
+
+# GET: Paginated catalog with optional search
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog", methods=["GET"])
 def product_catalog():
     try:
         offset = int(request.args.get("offset", 0))
         limit = int(request.args.get("limit", 10))
-        if offset < 0 or limit <= 0:
-            raise ValueError("offset must be >=0 and limit must be >0")
+        search = request.args.get("search", None)  # Optional search parameter
     except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"success": False, "message": str(e)}), 400
 
-    try:
-        result = ShoppingTatvapadaService.get_catalog(offset=offset, limit=limit)
-        return jsonify(result)
-    except Exception as e:
-        print(f"Error fetching catalog: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+    result = ShoppingTatvapadaService.get_catalog(offset=offset, limit=limit, search=search)
+    return jsonify({"success": True, "message": "", "data": result})
 
 
-# POST: Add or update a book
+# POST: Add book
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog", methods=["POST"])
-def add_or_update_book():
+def add_book():
     data = request.get_json()
     if not data:
-        return jsonify({"error": "JSON body required"}), 400
+        return jsonify({"success": False, "message": "JSON body required"}), 400
 
     try:
         author_id = int(data["author_id"])
         samputa_sankhye = str(data["samputa_sankhye"])
         price = float(data["price"])
-        tatvapadakosha_sheershike = data.get("tatvapadakosha_sheershike")
-    except (KeyError, ValueError, TypeError) as e:
-        return jsonify({"error": f"Invalid input: {e}"}), 400
+        title = data.get("tatvapadakosha_sheershike")
+    except (KeyError, ValueError):
+        return jsonify({"success": False, "message": "Invalid input"}), 400
 
-    try:
-        result = ShoppingTatvapadaService.add_or_update_book(
-            author_id=author_id,
-            samputa_sankhye=samputa_sankhye,
-            price=price,
-            tatvapadakosha_sheershike=tatvapadakosha_sheershike
-        )
-        return jsonify(result)
-    except Exception as e:
-        print(f"Error adding/updating book: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+    result = ShoppingTatvapadaService.add_book(
+        author_id=author_id, samputa_sankhye=samputa_sankhye,
+        price=price, tatvapadakosha_sheershike=title
+    )
+    return jsonify(result), 200
 
+# PUT: Update book
+@shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/<int:book_id>", methods=["PUT"])
+def update_book(book_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "JSON body required"}), 400
 
-# GET + sync: Fetch shopping catalog, auto-populate from Tatvapada
+    result = ShoppingTatvapadaService.update_book(
+        book_id,
+        author_id=data.get("author_id"),
+        samputa_sankhye=data.get("samputa_sankhye"),
+        price=data.get("price"),
+        tatvapadakosha_sheershike=data.get("tatvapadakosha_sheershike")
+    )
+    status = 200 if result.get("updated") else 404
+    return jsonify(result), status
+
+# DELETE: Delete book
+@shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/<int:book_id>", methods=["DELETE"])
+def delete_book(book_id):
+    result = ShoppingTatvapadaService.delete_book(book_id)
+    status = 200 if result.get("deleted") else 404
+    return jsonify(result), status
+
+# GET: Sync from Tatvapada
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/sync", methods=["GET"])
-def sync_and_get_catalog():
-    """
-    Sync shopping catalog from Tatvapada table (add new books with default price)
-    and return paginated catalog.
-
-    Query params:
-        offset (int, default=0)
-        limit (int, default=10)
-        default_price (float, optional, default=100)
-    """
-    try:
-        offset = int(request.args.get("offset", 0))
-        limit = int(request.args.get("limit", 10))
-        default_price = float(request.args.get("default_price", 100))
-        if offset < 0 or limit <= 0 or default_price <= 0:
-            raise ValueError("offset >=0, limit >0, default_price >0 required")
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-
-    try:
-        # 1. Populate shopping_tatvapada from Tatvapada (only new entries)
-        ShoppingTatvapadaService.populate_from_tatvapada(price=default_price)
-
-        # 2. Fetch catalog
-        catalog = ShoppingTatvapadaService.get_catalog(offset=offset, limit=limit)
-        return jsonify(catalog)
-    except Exception as e:
-        print(f"Error syncing/fetching catalog: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
+def sync_catalog():
+    default_price = float(request.args.get("default_price", 100))
+    result = ShoppingTatvapadaService.sync_from_tatvapada(default_price)
+    catalog = ShoppingTatvapadaService.get_catalog()
+    return jsonify({"success": True, "message": "Catalog synced", "data": catalog})

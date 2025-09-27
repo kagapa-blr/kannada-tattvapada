@@ -22,6 +22,12 @@
   <!-- Main Dashboard JS (imports all tab scripts) -->
   <script type="module" src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}">
+  <!-- jQuery + DataTables + Bootstrap JS -->
+  <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -39,6 +45,7 @@
       <a data-tab="admin-paribhashika">📝 <span>Manage paribhashika</span></a>
       <a data-tab="admin-arthakosha">📚 <span>Manage Arthakosha</span></a>
       <a data-tab="admin-tatvapadakara-vivarane">👤 <span>Manage Tatvapadakara Vivarane</span></a>
+      <a data-tab="admin-shopping_product_manage"><span>Manage shopping</span></a>
 
 
 
@@ -94,6 +101,11 @@
       <div id="admin-tatvapadakara-vivarane" class="admin-tab-content">
         {% include "admin_tabs/manage_tatvapadakara_vivarane.html" %}
       </div>
+      <div id="admin-shopping_product_manage" class="admin-tab-content">
+        {% include "admin_tabs/shopping_product_manage.html" %}
+      </div>
+
+
 
     </div>
     <footer class="admin-footer"

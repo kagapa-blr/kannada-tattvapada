@@ -377,29 +377,13 @@ class ShoppingOrderService:
 
 
 
-
 class ShoppingTatvapadaService:
 
     @staticmethod
-    def add_or_update_book(author_id: int, samputa_sankhye: str, price: float,
-                           tatvapadakosha_sheershike: str = None):
-        """
-        Add a new book to shopping catalog or update price if it already exists.
-        """
+    def add_book(author_id: int, samputa_sankhye: str, price: float,
+                 tatvapadakosha_sheershike: str = None):
+        """Add a new book."""
         session = db_instance.session
-
-        # Check if book already exists for this author and samputa
-        existing = session.query(ShoppingTatvapada).filter_by(
-            tatvapada_author_id=author_id,
-            samputa_sankhye=samputa_sankhye
-        ).first()
-
-        if existing:
-            existing.price = price
-            session.commit()
-            return {"message": "Price updated successfully", "id": existing.id}
-
-        # Add new entry
         new_item = ShoppingTatvapada(
             tatvapada_author_id=author_id,
             samputa_sankhye=samputa_sankhye,
@@ -408,16 +392,45 @@ class ShoppingTatvapadaService:
         )
         session.add(new_item)
         session.commit()
-        return {"message": "Item added successfully", "id": new_item.id}
+        return {"success": True, "message": "Book added successfully", "id": new_item.id}
 
     @staticmethod
-    def get_catalog(offset: int = 0, limit: int = 10):
-        """
-        Fetch shopping catalog with offset/limit pagination.
-        Includes author name from TatvapadaAuthorInfo.
-        """
+    def update_book(book_id: int, author_id: int = None, samputa_sankhye: str = None,
+                    price: float = None, tatvapadakosha_sheershike: str = None):
+        """Update book using ShoppingTatvapada ID."""
         session = db_instance.session
+        book = session.query(ShoppingTatvapada).filter_by(id=book_id).first()
+        if not book:
+            return {"success": False, "message": "Book not found", "updated": False}
 
+        if author_id is not None:
+            book.tatvapada_author_id = author_id
+        if samputa_sankhye is not None:
+            book.samputa_sankhye = samputa_sankhye
+        if price is not None:
+            book.price = price
+        if tatvapadakosha_sheershike is not None:
+            book.tatvapadakosha_sheershike = tatvapadakosha_sheershike
+
+        session.commit()
+        return {"success": True, "message": "Book updated successfully", "updated": True}
+
+    @staticmethod
+    def delete_book(book_id: int):
+        """Delete book by ShoppingTatvapada ID."""
+        session = db_instance.session
+        book = session.query(ShoppingTatvapada).filter_by(id=book_id).first()
+        if not book:
+            return {"success": False, "message": "Book not found", "deleted": False}
+        session.delete(book)
+        session.commit()
+        return {"success": True, "message": "Book deleted successfully", "deleted": True}
+
+    from sqlalchemy import or_
+
+    @staticmethod
+    def get_catalog(offset: int = 0, limit: int = 10, search: str = None):
+        session = db_instance.session
         query = (
             session.query(
                 ShoppingTatvapada.id,
@@ -430,6 +443,14 @@ class ShoppingTatvapadaService:
             .join(TatvapadaAuthorInfo, ShoppingTatvapada.tatvapada_author_id == TatvapadaAuthorInfo.id)
         )
 
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.filter(
+                (ShoppingTatvapada.samputa_sankhye.ilike(search_pattern)) |
+                (ShoppingTatvapada.tatvapadakosha_sheershike.ilike(search_pattern)) |
+                (TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(search_pattern))
+            )
+
         total = query.count()
         results = query.offset(offset).limit(limit).all()
 
@@ -440,26 +461,34 @@ class ShoppingTatvapadaService:
                 "price": float(r.price),
                 "tatvapadakosha_sheershike": r.tatvapadakosha_sheershike,
                 "tatvapada_author_id": r.tatvapada_author_id,
-                "tatvapadakarara_hesaru": r.author_name
+                "author_name": r.author_name
             }
             for r in results
         ]
+        return {"items": items, "total": total, "offset": offset, "limit": limit}
 
+    @staticmethod
+    def get_book_by_id(book_id: int):
+        """Fetch a single book by ID."""
+        session = db_instance.session
+        book = session.query(ShoppingTatvapada).filter_by(id=book_id).first()
+        if not book:
+            return None
+        author_name = session.query(TatvapadaAuthorInfo.tatvapadakarara_hesaru)\
+                             .filter_by(id=book.tatvapada_author_id).scalar()
         return {
-            "items": items,
-            "total": total,
-            "offset": offset,
-            "limit": limit
+            "id": book.id,
+            "samputa_sankhye": book.samputa_sankhye,
+            "price": float(book.price),
+            "tatvapadakosha_sheershike": book.tatvapadakosha_sheershike,
+            "tatvapada_author_id": book.tatvapada_author_id,
+            "author_name": author_name
         }
 
     @staticmethod
-    def populate_from_tatvapada(price: float = 100.0):
-        """
-        Populate shopping catalog from Tatvapada table (unique by author + samputa).
-        """
+    def sync_from_tatvapada(default_price: float = 100.0):
+        """Add new unique books from Tatvapada table."""
         session = db_instance.session
-
-        # Unique books by author + samputa, pick min tatvapadakosha_sheershike
         unique_books = (
             session.query(
                 Tatvapada.tatvapada_author_id,
@@ -480,11 +509,11 @@ class ShoppingTatvapadaService:
                 new_item = ShoppingTatvapada(
                     tatvapada_author_id=book.tatvapada_author_id,
                     samputa_sankhye=book.samputa_sankhye,
-                    price=price,
+                    price=default_price,
                     tatvapadakosha_sheershike=book.tatvapadakosha_sheershike
                 )
                 session.add(new_item)
                 added += 1
 
         session.commit()
-        return {"message": f"{added} books added to shopping catalog"}
+        return {"success": True, "message": f"{added} books added to shopping catalog", "added_count": added}

@@ -1,0 +1,104 @@
+<div class="container mt-2"
+    style="font-family: 'Noto Sans Kannada', sans-serif; font-size: 15px; line-height: 1.1; color: #2c2c2c;">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-collection me-2"></i> Product Catalog
+        </h4>
+        <div>
+            <button id="shopping_syncCatalogBtn" class="btn btn-outline-secondary btn-sm me-1" title="Sync Catalog">
+                <i class="bi bi-arrow-repeat me-1"></i> Sync
+            </button>
+            <button id="shopping_addProductBtn" class="btn btn-primary btn-sm" title="Add New Product">
+                <i class="bi bi-plus-circle me-1"></i> Add
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card shadow-sm">
+        <div id="shopping-error-container" class="mt-2 px-3"></div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="shopping_catalogTable" class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-dark text-uppercase small">
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th>Samputa</th>
+                            <th>Author</th>
+                            <th>Book Title</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add/Edit Product -->
+<div class="modal fade" id="shopping_productModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title d-flex align-items-center" id="shopping_productModalLabel">
+                    <i class="bi bi-journal-plus me-2"></i> Add Product
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="shopping_productForm">
+                    <input type="hidden" id="shopping_productId" />
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Author</label>
+                            <input type="text" id="shopping_productAuthor" class="form-control"
+                                placeholder="Enter author name" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Samputa</label>
+                            <input type="text" id="shopping_productSamputa" class="form-control"
+                                placeholder="Enter samputa number" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Book Title</label>
+                            <input type="text" id="shopping_productTitle" class="form-control"
+                                placeholder="Enter book title" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-currency-rupee"></i></span>
+                                <input type="number" step="0.01" id="shopping_productPrice" class="form-control"
+                                    placeholder="Enter price" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button type="button" id="shopping_saveProductBtn" class="btn btn-success btn-sm">
+                    <i class="bi bi-check-circle me-1"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template for Action Buttons -->
+<template id="shopping-action-buttons-template">
+    <div class="d-flex justify-content-center gap-1" data-id="{{ID}}">
+        <button class="btn btn-sm btn-outline-primary shopping_edit-btn" title="Edit Product">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger shopping_delete-btn" title="Delete Product">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+</template>
