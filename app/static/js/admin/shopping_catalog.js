@@ -2,15 +2,15 @@ import apiClient from "../apiClient.js";
 import { showLoader, hideLoader } from "../loader.js";
 
 const ShoppingAPI = {
-    list: (offset = 0, limit = 10, search = "") => `/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,
-
-    add: () => `/shopping/api/v1/orders/catalog`,
+    list: (offset = 0, limit = 10, search = "") =>
+        `/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,
     update: (id) => `/shopping/api/v1/orders/catalog/${id}`,
     delete: (id) => `/shopping/api/v1/orders/catalog/${id}`,
     sync: (default_price = 100) => `/shopping/api/v1/orders/catalog/sync?default_price=${default_price}`
 };
 
 let shoppingTable;
+let productsMap = {}; // store products keyed by ID
 
 // ---------- Error Handling ----------
 function showShoppingError(message) {
@@ -34,10 +34,23 @@ export function openShoppingModal(product = null) {
 
     if (product) {
         document.getElementById("shopping_productId").value = product.id;
-        document.getElementById("shopping_productAuthor").value = product.author_name ?? "";
-        document.getElementById("shopping_productSamputa").value = product.samputa_sankhye ?? "";
-        document.getElementById("shopping_productTitle").value = product.tatvapadakosha_sheershike ?? "";
-        document.getElementById("shopping_productPrice").value = product.price ?? "";
+        document.getElementById("shopping_productIdDisplay").value = product.id;
+        document.getElementById("shopping_productAuthorId").value = product.tatvapada_author_id;
+        document.getElementById("shopping_productAuthor").value = product.author_name;
+        document.getElementById("shopping_productSamputa").value = product.samputa_sankhye;
+        document.getElementById("shopping_productTitle").value = product.tatvapadakosha_sheershike;
+        document.getElementById("shopping_productPrice").value = product.price;
+
+        // Editable only Book Title & Price
+        document.getElementById("shopping_productTitle").removeAttribute("readonly");
+        document.getElementById("shopping_productPrice").removeAttribute("readonly");
+
+        // Read-only fields
+        document.getElementById("shopping_productIdDisplay").setAttribute("readonly", true);
+        document.getElementById("shopping_productAuthor").setAttribute("readonly", true);
+        document.getElementById("shopping_productSamputa").setAttribute("readonly", true);
+        document.getElementById("shopping_productAuthorId").setAttribute("readonly", true);
+
         modalLabel.innerHTML = `<i class="bi bi-pencil-square me-2"></i> Edit Product`;
     } else {
         modalLabel.innerHTML = `<i class="bi bi-journal-plus me-2"></i> Add Product`;
@@ -50,25 +63,23 @@ export function openShoppingModal(product = null) {
 export async function saveShoppingProduct() {
     const id = document.getElementById("shopping_productId").value;
     const payload = {
-        author_name: document.getElementById("shopping_productAuthor").value.trim(),
+        id: parseInt(id),
+        tatvapada_author_id: parseInt(document.getElementById("shopping_productAuthorId").value),
         samputa_sankhye: document.getElementById("shopping_productSamputa").value.trim(),
         tatvapadakosha_sheershike: document.getElementById("shopping_productTitle").value.trim(),
         price: parseFloat(document.getElementById("shopping_productPrice").value)
     };
 
-    if (!payload.author_name || !payload.samputa_sankhye || !payload.tatvapadakosha_sheershike || isNaN(payload.price)) {
-        showShoppingError("All fields are required and price must be a number.");
+    if (!payload.id || !payload.samputa_sankhye || !payload.tatvapadakosha_sheershike || isNaN(payload.price)) {
+        showShoppingError("ID, Samputa, Book Title and Price are required, and price must be a number.");
         return;
     }
-
 
     showLoader();
     clearShoppingError();
 
     try {
-        if (id) await apiClient.put(ShoppingAPI.update(id), payload);
-        else await apiClient.post(ShoppingAPI.add(), payload);
-
+        await apiClient.put(ShoppingAPI.update(payload.id), payload);
         bootstrap.Modal.getInstance(document.getElementById("shopping_productModal")).hide();
         shoppingTable.ajax.reload();
     } catch (err) {
@@ -115,6 +126,10 @@ export async function syncShoppingCatalog() {
 
 // ---------- Initialize DataTable ----------
 export function initShoppingCatalogTable() {
+    if ($.fn.DataTable.isDataTable("#shopping_catalogTable")) {
+        $("#shopping_catalogTable").DataTable().destroy();
+    }
+
     shoppingTable = $("#shopping_catalogTable").DataTable({
         serverSide: true,
         processing: true,
@@ -125,18 +140,29 @@ export function initShoppingCatalogTable() {
         ajax: async (data, callback) => {
             showLoader();
             try {
-                const searchValue = data.search.value || ""; // DataTables search input value
+                const searchValue = data.search.value || "";
                 const res = await apiClient.get(ShoppingAPI.list(data.start, data.length, searchValue.trim()));
                 const items = res.data.items || [];
-                const template = document.getElementById("shopping-action-buttons-template").innerHTML;
+
+                // store items in productsMap
+                productsMap = {};
+                items.forEach(item => {
+                    productsMap[item.id] = item;
+                });
 
                 const formattedData = items.map((item, index) => [
-                    data.start + index + 1,
+                    data.start + index + 1,                 // Row #
                     item.samputa_sankhye ?? "--",
                     item.author_name ?? "--",
                     item.tatvapadakosha_sheershike ?? "--",
                     `₹${parseFloat(item.price ?? 0).toFixed(2)}`,
-                    template.replace("{{ID}}", item.id)
+                    // Buttons with data-id directly on buttons
+                    `<button class="btn btn-sm btn-outline-primary shopping_edit-btn" data-id="${item.id}" title="Edit Product">
+                        <i class="bi bi-pencil-square"></i>
+                     </button>
+                     <button class="btn btn-sm btn-outline-danger shopping_delete-btn" data-id="${item.id}" title="Delete Product">
+                        <i class="bi bi-trash"></i>
+                     </button>`
                 ]);
 
                 callback({
@@ -152,26 +178,22 @@ export function initShoppingCatalogTable() {
             }
         },
 
-
-        columnDefs: [{ orderable: false, targets: 5 }]
+        columnDefs: [
+            { orderable: false, targets: 5 } // Disable ordering for actions
+        ]
     });
 
     // Edit/Delete handlers
-    $("#shopping_catalogTable tbody").on("click", ".shopping_edit-btn, .shopping_delete-btn", async function () {
-        const row = shoppingTable.row($(this).closest("tr")).data();
-        console.log("shopping table : ", row)
-        const id = $(this).closest("tr").find("[data-id]").data("id");
+    $("#shopping_catalogTable tbody").off("click").on("click", ".shopping_edit-btn, .shopping_delete-btn", async function () {
+        const id = parseInt($(this).attr("data-id"));
+        if (!id || !productsMap[id]) return;
+
+        const product = productsMap[id];
 
         if (this.classList.contains("shopping_edit-btn")) {
-            openShoppingModal({
-                id,
-                samputa_sankhye: row[1],
-                author_name: row[2],
-                tatvapadakosha_sheershike: row[3],
-                price: parseFloat(row[4].replace("₹", ""))
-            });
+            openShoppingModal(product);
         } else if (this.classList.contains("shopping_delete-btn")) {
-            await deleteShoppingProduct(id);
+            await deleteShoppingProduct(product.id);
         }
     });
 }

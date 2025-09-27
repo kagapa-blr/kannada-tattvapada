@@ -91,14 +91,11 @@ class Arthakosha(db_instance.Model):
 
 class ShoppingTatvapada(db_instance.Model):
     __tablename__ = "shopping_tatvapada"
-    __table_args__ = (
-        UniqueConstraint("tatvapada_author_id", "samputa_sankhye", name="uq_shopping_author_samputa"),
-        {
-            'mysql_engine': 'InnoDB',
-            'mysql_charset': 'utf8mb4',
-            'mysql_collate': 'utf8mb4_unicode_ci'
-        }
-    )
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8mb4',
+        'mysql_collate': 'utf8mb4_unicode_ci'
+    }
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 

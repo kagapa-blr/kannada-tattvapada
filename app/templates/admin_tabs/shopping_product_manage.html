@@ -52,28 +52,33 @@
             <div class="modal-body">
                 <form id="shopping_productForm">
                     <input type="hidden" id="shopping_productId" />
+
                     <div class="row g-2">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Author</label>
-                            <input type="text" id="shopping_productAuthor" class="form-control"
-                                placeholder="Enter author name" />
+                            <label class="form-label fw-semibold">ID</label>
+                            <input type="text" id="shopping_productIdDisplay" class="form-control" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Author ID</label>
+                            <input type="text" id="shopping_productAuthorId" class="form-control" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Author Name</label>
+                            <input type="text" id="shopping_productAuthor" class="form-control" readonly />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Samputa</label>
-                            <input type="text" id="shopping_productSamputa" class="form-control"
-                                placeholder="Enter samputa number" />
+                            <input type="text" id="shopping_productSamputa" class="form-control" readonly />
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Book Title</label>
-                            <input type="text" id="shopping_productTitle" class="form-control"
-                                placeholder="Enter book title" />
+                            <input type="text" id="shopping_productTitle" class="form-control" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-currency-rupee"></i></span>
-                                <input type="number" step="0.01" id="shopping_productPrice" class="form-control"
-                                    placeholder="Enter price" />
+                                <input type="number" step="0.01" id="shopping_productPrice" class="form-control" />
                             </div>
                         </div>
                     </div>
