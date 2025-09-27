@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, render_template
 from app.services.shopping_user_service import ShoppingUserService, ShoppingUserAddressService, ShoppingOrderService, \
     ShoppingTatvapadaService
+from app.utils.auth_decorator import admin_required
 from app.utils.logger_config import get_logger
 
 shopping_user_bp = Blueprint(
@@ -150,6 +151,7 @@ def product_catalog():
 
 # POST: Add book
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog", methods=["POST"])
+@admin_required
 def add_book():
     data = request.get_json()
     if not data:
@@ -171,6 +173,7 @@ def add_book():
 
 # PUT: Update book
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/<int:book_id>", methods=["PUT"])
+@admin_required
 def update_book(book_id):
     data = request.get_json()
     if not data:
@@ -188,6 +191,7 @@ def update_book(book_id):
 
 # DELETE: Delete book
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/<int:book_id>", methods=["DELETE"])
+@admin_required
 def delete_book(book_id):
     result = ShoppingTatvapadaService.delete_book(book_id)
     status = 200 if result.get("deleted") else 404
@@ -195,6 +199,7 @@ def delete_book(book_id):
 
 # GET: Sync from Tatvapada
 @shopping_user_bp.route(f"{API_PREFIX}/orders/catalog/sync", methods=["GET"])
+@admin_required
 def sync_catalog():
     default_price = float(request.args.get("default_price", 100))
     result = ShoppingTatvapadaService.sync_from_tatvapada(default_price)

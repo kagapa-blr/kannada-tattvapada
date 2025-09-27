@@ -30,27 +30,42 @@ def login_required(view_func):
 
     return wrapper
 
-
 def admin_required(route_function):
     """
-    Decorator to ensure the user is logged in and has admin privileges.
+    Decorator to ensure the user is authenticated and has admin privileges.
     Special case: user 'kagapa' is always allowed.
+    Returns structured JSON errors instead of redirects for frontend handling.
     """
 
     @wraps(route_function)
     def wrapper(*args, **kwargs):
         access_token = request.cookies.get("access_token")
         if not access_token:
-            logger.warning("Admin access denied: no token")
-            return redirect(url_for("auth.login"))
+            logger.warning("Admin access denied: no token provided")
+            return jsonify({
+                "error": "unauthorized",
+                "message": "Access token is missing. Please log in."
+            }), 401
 
         try:
+            # Decode and validate token
             token_payload = user_service.decode_jwt_token(access_token)
             user_id = token_payload.get("user_id")
+            if not user_id:
+                logger.warning("Admin access denied: invalid token payload")
+                return jsonify({
+                    "error": "invalid_token",
+                    "message": "Invalid or expired access token."
+                }), 401
+
+            # Fetch user
             current_user = user_service.get_user_by_id(user_id)
             if not current_user:
                 logger.info("Admin access denied: user not found")
-                return redirect(url_for("auth.login"))
+                return jsonify({
+                    "error": "user_not_found",
+                    "message": "User does not exist."
+                }), 401
 
             g.user = current_user
 
@@ -63,18 +78,24 @@ def admin_required(route_function):
             admin_users = {
                 admin["username"]
                 for admin in user_service.get_all_users_with_admin_status()
-                if admin["is_admin"]
+                if admin.get("is_admin")
             }
-            is_admin = g.user.username in admin_users
 
-            if not is_admin:
+            if g.user.username not in admin_users:
                 logger.warning(f"User '{g.user.username}' tried admin route without rights")
-                return jsonify({"error": "Admin privileges required"}), 403
+                return jsonify({
+                    "error": "forbidden",
+                    "message": "Admin privileges are required to access this resource."
+                }), 403
+
+            # ✅ All checks passed
+            return route_function(*args, **kwargs)
 
         except Exception as exc:
             logger.error(f"Admin check failed: {str(exc)}", exc_info=True)
-            return redirect(url_for("auth.login"))
-
-        return route_function(*args, **kwargs)
+            return jsonify({
+                "error": "server_error",
+                "message": "An internal error occurred while verifying admin access."
+            }), 500
 
     return wrapper

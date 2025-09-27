@@ -90,8 +90,8 @@ export async function confirmSaveProduct() {
         shoppingTable.ajax.reload();
         showToast("Product saved successfully!");
     } catch (err) {
-        console.error(err);
-        showShoppingError(err?.response?.data?.message || "Error saving product");
+        showShoppingError(err?.response?.data?.message || "Error saving product: {" + (String(err).split("{")[1] || String(err)));
+
     } finally {
         hideLoader();
         pendingSave = null;
@@ -119,8 +119,8 @@ export async function confirmDeleteProduct() {
         shoppingTable.ajax.reload();
         showToast("Product deleted successfully!");
     } catch (err) {
-        console.error(err);
-        showShoppingError(err?.response?.data?.message || "Error deleting product");
+        showShoppingError(err?.response?.data?.message || "Error syncing catalog: {" + (String(err).split("{")[1] || String(err)));
+
     } finally {
         hideLoader();
         deleteProductId = null;
@@ -137,8 +137,8 @@ export async function syncShoppingCatalog() {
         shoppingTable.ajax.reload();
         showToast("Catalog synced successfully!");
     } catch (err) {
-        console.error(err);
-        showShoppingError(err?.response?.data?.message || "Error syncing catalog");
+        showShoppingError(err?.response?.data?.message || "Error syncing catalog: {" + (String(err).split("{")[1] || String(err)));
+
     } finally {
         hideLoader();
     }
