@@ -118,7 +118,7 @@ if __name__ == "__main__":
         print(f"default user creation : {result}")
         if tables:
             tables_list = "\n".join([f"  {i + 1}. {table}" for i, table in enumerate(tables)])
-            print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")
+           # print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")
             logger.info(f"Tables in the database:\n{tables_list}\n")
         else:
             print("\n\nNo tables found in the database.\n\n")

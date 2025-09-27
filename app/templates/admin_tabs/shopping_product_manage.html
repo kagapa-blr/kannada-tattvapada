@@ -5,6 +5,12 @@
     <div class="alert alert-info rounded-3 shadow-sm mb-3">
         <strong>Note:</strong> Only an <strong>Administrator</strong> can perform add, edit, delete, or sync actions in
         this catalog.
+        <br>
+        <ul class="mt-2 mb-0" style="padding-left: 20px;">
+            <li>Only <strong>Book Title</strong> and <strong>Price</strong> are editable. All other fields are
+                automatically synced from the main Tatvapada table.</li>
+            <li>The <strong>Add New Product</strong> feature will be available soon.</li>
+        </ul>
     </div>
 
     <!-- Header -->
@@ -154,12 +160,14 @@
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="shopping_deleteConfirmModal" tabindex="-1">
+<div class="modal fade" id="shopping_deleteConfirmModal" tabindex="-1"
+    aria-labelledby="shopping_deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-sm">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="shopping_deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 Are you sure you want to <strong>delete this product</strong>?
