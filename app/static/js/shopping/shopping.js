@@ -1,8 +1,4 @@
-/**
- * shopping.js - Organized Shopping & Cart Logic
- */
-
-// ---------------------- Global Cart ----------------------
+// Cart stored in localStorage
 let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
 
 function saveCart() {
@@ -43,7 +39,6 @@ function getCartTotal() {
   return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
 }
 
-// ---------------------- Product Listing Page ----------------------
 function initProductListingPage() {
   const cartCount = $("#cartCount");
   const btnOpenCartModal = $("#btnOpenCartModal");
@@ -53,32 +48,33 @@ function initProductListingPage() {
   const cartModalEmpty = $("#cartModalEmpty");
 
   const bookDetailsModal = new bootstrap.Modal(document.getElementById("bookDetailsModal"));
-  const detailTitle = $("#detailTitle"), detailAuthor = $("#detailAuthor"),
-    detailSamputa = $("#detailSamputa"), detailPrice = $("#detailPrice"),
+  const detailTitle = $("#detailTitle"),
+    detailAuthor = $("#detailAuthor"),
+    detailSamputa = $("#detailSamputa"),
+    detailPrice = $("#detailPrice"),
     detailKoshasheershike = $("#detailKoshasheershike"),
     btnAddToCartFromDetails = $("#btnAddToCartFromDetails");
   let currentDetailItem = null;
 
-  // Initialize Product DataTable
   const table = $("#productTable").DataTable({
     serverSide: true,
     processing: true,
     ajax: async (data, callback) => {
       try {
-        const res = await fetch(`/shopping/api/v1/orders/catalog?offset=${data.start}&limit=${data.length}`);
+        const res = await fetch(`/shopping/api/v1/orders/catalog?offset=${data.start}&limit=${data.length}&search=${data.search.value || ''}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
 
-        const products = json.items.map(item => ({
+        const products = json.data.items.map(item => ({
           id: item.id,
           title: item.tatvapadakosha_sheershike || `Samputa ${item.samputa_sankhye}`,
-          author: item.tatvapadakarara_hesaru || `Author ID ${item.tatvapada_author_id}`,
+          author: item.author_name || `Author ID ${item.tatvapada_author_id}`,
           samputa: item.samputa_sankhye,
           price: parseFloat(item.price),
           kosha: item.tatvapadakosha_sheershike || ""
         }));
 
-        callback({ recordsTotal: json.total, recordsFiltered: json.total, data: products });
+        callback({ recordsTotal: json.data.total, recordsFiltered: json.data.total, data: products });
       } catch (err) {
         console.error(err);
         callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
@@ -90,29 +86,33 @@ function initProductListingPage() {
       { data: "author" },
       { data: "price", render: data => `₹${data.toFixed(2)}` },
       {
-        data: null, orderable: false,
+        data: null,
+        orderable: false,
         render: data => `
-                    <div class="btn-action">
-                        <button class="btn btn-sm ${isInCart(data.id) ? "btn-success" : "btn-primary"} btn-toggle" data-id="${data.id}">
-                            <i class="bi ${isInCart(data.id) ? "bi-cart-check" : "bi-cart-plus"}"></i>
-                        </button>
-                        <button class="btn btn-sm btn-info btn-details" data-id="${data.id}">
-                            <i class="bi bi-info-circle"></i>
-                        </button>
-                    </div>`
+          <div class="btn-action">
+            <button class="btn btn-sm ${isInCart(data.id) ? "btn-success" : "btn-primary"} btn-toggle" data-id="${data.id}">
+              <i class="bi ${isInCart(data.id) ? "bi-cart-check" : "bi-cart-plus"}"></i>
+            </button>
+            <button class="btn btn-sm btn-info btn-details" data-id="${data.id}">
+              <i class="bi bi-info-circle"></i>
+            </button>
+          </div>`
       }
     ],
     pageLength: 10,
     lengthMenu: [10, 20, 50, 100],
-    language: { emptyTable: "No products available" }
+    language: {
+      emptyTable: "No products available",
+      search: "Search author or title:",
+    }
   });
 
-  // ---------------- Update Cart Count ----------------
   function updateCartCount() {
     cartCount.text(cart.length);
+    if (cart.length > 0) cartCount.show();
+    else cartCount.hide();
   }
 
-  // ---------------- Toggle Cart Item ----------------
   function toggleCartItem(id, btn) {
     const rowData = table.rows().data().toArray().find(p => p.id === id);
     if (!rowData) return;
@@ -127,7 +127,6 @@ function initProductListingPage() {
     updateCartCount();
   }
 
-  // ---------------- Render Cart Modal ----------------
   function renderCartModal() {
     cartModalBody.empty();
     if (cart.length === 0) {
@@ -142,20 +141,20 @@ function initProductListingPage() {
       const subtotal = item.price * (item.quantity || 1);
       total += subtotal;
       cartModalBody.append(`
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${item.title}</td>
-                    <td>₹${item.price.toFixed(2)}</td>
-                    <td><input type="number" min="1" class="form-control form-control-sm cart-qty-input" data-id="${item.id}" value="${item.quantity || 1}" /></td>
-                    <td>₹${subtotal.toFixed(2)}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-danger btn-remove" data-id="${item.id}"><i class="bi bi-trash"></i></button></td>
-                </tr>
-            `);
+        <tr>
+          <td>${i + 1}</td>
+          <td>${item.title}</td>
+          <td>₹${item.price.toFixed(2)}</td>
+          <td><input type="number" min="1" class="form-control form-control-sm cart-qty-input" data-id="${item.id}" value="${item.quantity || 1}" /></td>
+          <td>₹${subtotal.toFixed(2)}</td>
+          <td class="text-center"><button class="btn btn-sm btn-danger btn-remove" data-id="${item.id}"><i class="bi bi-trash"></i></button></td>
+        </tr>
+      `);
     });
     cartModalTotal.text(total.toFixed(2));
   }
 
-  // ---------------- Event Handlers ----------------
+  // Event handlers
   $(document).on("click", ".btn-toggle", e => {
     const id = parseInt($(e.currentTarget).data("id"));
     toggleCartItem(id, $(e.currentTarget));
@@ -213,12 +212,11 @@ function initProductListingPage() {
     renderCartModal();
   });
 
-  $("#btnGoToCartPage").on("click", () => { window.location.href = "/shopping/cart"; });
+  $("#btnGoToCartPage").on("click", () => window.location.href = "/shopping/cart");
 
   updateCartCount();
 }
 
-// ---------------------- Cart Page ----------------------
 function initCartPage() {
   const cartTableBody = $("#cartTableBody"),
     cartTotalSpan = $("#cartTotal"),
@@ -229,7 +227,6 @@ function initCartPage() {
     confirmAddressText = $("#confirmAddressText"),
     confirmOrderBtn = $("#confirmOrderBtn");
 
-  // ---------------- Render Cart Table ----------------
   function renderCart() {
     cartTableBody.empty();
 
@@ -249,21 +246,20 @@ function initCartPage() {
       const subtotal = item.price * qty;
       total += subtotal;
       cartTableBody.append(`
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${item.title}</td>
-                    <td>${item.author}</td>
-                    <td>₹${item.price.toFixed(2)}</td>
-                    <td><input type="number" min="1" class="form-control form-control-sm quantity-input" data-id="${item.id}" value="${qty}" /></td>
-                    <td>₹${subtotal.toFixed(2)}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-danger btn-remove" data-id="${item.id}"><i class="bi bi-trash"></i></button></td>
-                </tr>
-            `);
+        <tr>
+          <td>${i + 1}</td>
+          <td>${item.title}</td>
+          <td>${item.author}</td>
+          <td>₹${item.price.toFixed(2)}</td>
+          <td><input type="number" min="1" class="form-control form-control-sm quantity-input" data-id="${item.id}" value="${qty}" /></td>
+          <td>₹${subtotal.toFixed(2)}</td>
+          <td class="text-center"><button class="btn btn-sm btn-danger btn-remove" data-id="${item.id}"><i class="bi bi-trash"></i></button></td>
+        </tr>
+      `);
     });
     cartTotalSpan.text(total.toFixed(2));
   }
 
-  // ---------------- Event Handlers ----------------
   cartTableBody.on("input", ".quantity-input", e => {
     const id = parseInt(e.target.dataset.id);
     let val = parseInt(e.target.value);
@@ -281,7 +277,6 @@ function initCartPage() {
   proceedPaymentBtn.on("click", () => {
     confirmTotalSpan.text(getCartTotal().toFixed(2));
 
-    // Get address from display card
     const addressText = [
       $("#addrRecipient").text(),
       $("#addrLine").text(),
@@ -305,17 +300,15 @@ function initCartPage() {
     cart.length = 0;
     saveCart();
     confirmModal.hide();
-    alert("Order confirmed! Redirecting to payment page...");
+    alert("Order confirmed! Redirecting to payment...");
     window.location.href = "/shopping/payment";
   });
 
-  // ---------------- Fetch Default Address ----------------
   async function fetchDefaultAddress() {
     try {
       const res = await fetch('http://127.0.0.1:5000/shopping/api/v1/users/kagapa@gmail.com/addresses');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-
       if (json.success && json.data.length > 0) {
         const defaultAddr = json.data.find(a => a.is_default) || json.data[0];
         if (defaultAddr) {
@@ -327,7 +320,6 @@ function initCartPage() {
           $("#addrPostal").text(defaultAddr.postal_code || "-");
           $("#addrPhone").text(defaultAddr.phone_number || "-");
           $("#addrInstructions").text(defaultAddr.delivery_instructions || "-");
-
           proceedPaymentBtn.prop("disabled", cart.length === 0);
         }
       }
@@ -340,7 +332,6 @@ function initCartPage() {
   renderCart();
 }
 
-// ---------------------- Auto Init ----------------------
 $(document).ready(() => {
   if ($("#productTable").length) initProductListingPage();
   else if ($("#cartTableBody").length) initCartPage();
