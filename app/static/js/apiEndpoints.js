@@ -113,6 +113,12 @@ const apiEndpoints = {
         createOrder: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/orders`,    // POST
         updateOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // PUT
         deleteOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // DELETE
+
+        // Admin Manage shopping
+        shoppingList: (offset = 0, limit = 10, search = "") => `${BASE_URL}/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,
+        shoppingUpdate: (id) => `${BASE_URL}/shopping/api/v1/orders/catalog/${id}`,
+        shoppingDelete: (id) => `${BASE_URL}/shopping/api/v1/orders/catalog/${id}`,
+        shoppingSync: (default_price = 100) => `${BASE_URL}/shopping/api/v1/orders/catalog/sync?default_price=${default_price}`
     },
 
 

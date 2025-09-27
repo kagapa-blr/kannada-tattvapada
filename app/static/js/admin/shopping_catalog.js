@@ -1,13 +1,6 @@
 import apiClient from "../apiClient.js";
 import { showLoader, hideLoader } from "../loader.js";
-
-const ShoppingAPI = {
-    list: (offset = 0, limit = 10, search = "") =>
-        `/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,
-    update: (id) => `/shopping/api/v1/orders/catalog/${id}`,
-    delete: (id) => `/shopping/api/v1/orders/catalog/${id}`,
-    sync: (default_price = 100) => `/shopping/api/v1/orders/catalog/sync?default_price=${default_price}`
-};
+import apiEndpoints from "../apiEndpoints.js";
 
 let shoppingTable;
 let productsMap = {}; // store products keyed by ID
@@ -92,7 +85,7 @@ export async function confirmSaveProduct() {
     showLoader();
 
     try {
-        await apiClient.put(ShoppingAPI.update(pendingSave.id), pendingSave);
+        await apiClient.put(apiEndpoints.shopping.shoppingUpdate(pendingSave.id), pendingSave);
         bootstrap.Modal.getInstance(document.getElementById("shopping_productModal")).hide();
         shoppingTable.ajax.reload();
         showToast("Product saved successfully!");
@@ -122,7 +115,7 @@ export async function confirmDeleteProduct() {
     showLoader();
 
     try {
-        await apiClient.delete(ShoppingAPI.delete(deleteProductId));
+        await apiClient.delete(apiEndpoints.shopping.shoppingDelete(deleteProductId));
         shoppingTable.ajax.reload();
         showToast("Product deleted successfully!");
     } catch (err) {
@@ -140,7 +133,7 @@ export async function syncShoppingCatalog() {
     showLoader();
 
     try {
-        await apiClient.get(ShoppingAPI.sync());
+        await apiClient.get(apiEndpoints.shopping.shoppingSync());
         shoppingTable.ajax.reload();
         showToast("Catalog synced successfully!");
     } catch (err) {
@@ -168,7 +161,7 @@ export function initShoppingCatalogTable() {
             showLoader();
             try {
                 const searchValue = data.search.value || "";
-                const res = await apiClient.get(ShoppingAPI.list(data.start, data.length, searchValue.trim()));
+                const res = await apiClient.get(apiEndpoints.shopping.shoppingList(data.start, data.length, searchValue.trim()));
                 const items = res.data.items || [];
 
                 productsMap = {};
