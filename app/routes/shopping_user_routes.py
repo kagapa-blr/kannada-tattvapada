@@ -4,12 +4,7 @@ from app.services.shopping_user_service import ShoppingUserService, ShoppingUser
 from app.utils.auth_decorator import admin_required
 from app.utils.logger_config import get_logger
 
-shopping_user_bp = Blueprint(
-    "shopping_user",
-    __name__,
-    template_folder="templates/shopping",
-    url_prefix="/shopping"
-)
+shopping_user_bp = Blueprint("shopping_user",__name__,template_folder="templates/shopping",url_prefix="/shopping")
 API_PREFIX = "/api/v1"
 WEB_UI_PREFIX = "/"
 logger = get_logger(name="shopping_route")

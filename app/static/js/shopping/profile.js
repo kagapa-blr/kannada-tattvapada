@@ -11,7 +11,6 @@ const email = "kagapa@gmail.com"; // Replace with session/email logic
 // DOM ELEMENTS
 // ==============================
 const DOM = {
-  // Profile Elements
   avatar: document.getElementById("userAvatar"),
   nameDisplay: document.getElementById("userNameDisplay"),
   emailDisplay: document.getElementById("userEmailDisplay"),
@@ -33,11 +32,7 @@ const DOM = {
     dob: document.getElementById("profileDOB"),
     language: document.getElementById("profileLanguage"),
   },
-
-  // Orders
-  orderTable: document.getElementById("orderTable"),
-
-  // Addresses
+  orderTable: $("#orderTable"),
   addressList: document.getElementById("addressList"),
   addressForm: document.getElementById("addressForm"),
   addressInputs: {
@@ -80,7 +75,10 @@ const Utils = {
   randomGradient: () => {
     const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA500", "#6A5ACD", "#6a11cb", "#2575fc", "#20c997"];
     const a = colors[Math.floor(Math.random() * colors.length)];
-    const b = colors[Math.floor(Math.random() * colors.length)];
+    let b;
+    do {
+      b = colors[Math.floor(Math.random() * colors.length)];
+    } while (b === a);
     return `linear-gradient(135deg, ${a}, ${b})`;
   },
   escapeHtml: (str) =>
@@ -116,7 +114,6 @@ const Utils = {
 const Render = {
   user: () => {
     if (!userData) return;
-
     DOM.avatar.textContent = Utils.getInitials(userData.name);
     DOM.avatar.style.background = Utils.randomGradient();
     DOM.nameDisplay.textContent = userData.name || "-";
@@ -142,23 +139,47 @@ const Render = {
 
   orders: () => {
     const table = DOM.orderTable;
-    table.innerHTML = "";
+
+    if ($.fn.DataTable.isDataTable(table)) {
+      table.DataTable().clear().destroy();
+    }
+
     if (!orders.length) {
-      table.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No orders found.</td></tr>`;
+      table.find("tbody").html(`<tr><td colspan="5" class="text-center text-muted">No orders found.</td></tr>`);
       return;
     }
+
+    const tbody = table.find("tbody");
+    tbody.html("");
+
     orders.forEach((order, idx) => {
-      const statusClass = order.status === "Delivered" ? "success" :
-        order.status === "Shipped" ? "info" : "warning";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td>${order.order_number}</td>
-        <td>${order.created_at?.slice(0, 10) || ""}</td>
-        <td><span class="badge bg-${statusClass}">${order.status}</span></td>
-        <td>${order.total_amount}</td>
-      `;
-      table.appendChild(tr);
+      const statusClass = order.status === "Delivered"
+        ? "success"
+        : order.status === "Shipped"
+          ? "info"
+          : "warning";
+      tbody.append(`
+        <tr data-index="${idx}" style="cursor:pointer;">
+          <td>${idx + 1}</td>
+          <td>${Utils.escapeHtml(order.order_number)}</td>
+          <td>${order.created_at?.slice(0, 10) || ""}</td>
+          <td><span class="badge bg-${statusClass}">${Utils.escapeHtml(order.status)}</span></td>
+          <td class="text-end">${order.total_amount !== undefined ? order.total_amount : ""}</td>
+        </tr>
+      `);
+    });
+
+    table.DataTable({
+      paging: true,
+      searching: true,
+      ordering: true,
+      order: [[2, "desc"]],
+      columnDefs: [{ orderable: false, targets: 3 }]
+    });
+
+    tbody.find("tr").on("click", function () {
+      const idx = parseInt($(this).data("index"), 10);
+      showOrderModal(orders[idx]);
     });
   },
 
@@ -198,6 +219,45 @@ const Render = {
 };
 
 // ==============================
+// SHOW ORDER MODAL
+// ==============================
+const showOrderModal = (order) => {
+  const addr = order.address_info;
+  document.getElementById("modalShippingInfo").innerHTML = `
+    <strong>${Utils.escapeHtml(addr.recipient_name)}</strong> (${Utils.escapeHtml(addr.phone_number)})<br>
+    ${Utils.escapeHtml(addr.address_line)}, ${Utils.escapeHtml(addr.city)}, ${Utils.escapeHtml(addr.state)}, ${Utils.escapeHtml(addr.postal_code)}, ${Utils.escapeHtml(addr.country)}<br>
+    <small>${Utils.escapeHtml(addr.address_type)} | ${Utils.escapeHtml(addr.delivery_instructions || "")}</small>
+  `;
+
+  const tbody = document.querySelector("#modalItemsTable tbody");
+  tbody.innerHTML = "";
+  order.items.forEach((item, i) => {
+    const total = item.price * item.quantity;
+    tbody.innerHTML += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${Utils.escapeHtml(item.title)}</td>
+        <td>${Utils.escapeHtml(item.author)}</td>
+        <td>${Utils.escapeHtml(item.kosha)}</td>
+        <td>${Utils.escapeHtml(item.samputa)}</td>
+        <td>${item.quantity}</td>
+        <td>${item.price}</td>
+        <td>${total}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("modalOrderSummary").innerHTML = `
+    <strong>Total Amount:</strong> ₹${order.total_amount}<br>
+    <strong>Status:</strong> ${Utils.escapeHtml(order.status)}<br>
+    <strong>Payment Method:</strong> ${order.payment_method ? Utils.escapeHtml(order.payment_method) : "N/A"}<br>
+    <strong>Order Notes:</strong> ${order.notes ? Utils.escapeHtml(order.notes) : "-"}
+  `;
+
+  new bootstrap.Modal(document.getElementById("orderModal")).show();
+};
+
+// ==============================
 // API FUNCTIONS
 // ==============================
 const API = {
@@ -231,7 +291,6 @@ const API = {
     try {
       showLoader();
       let res;
-
       if (idx !== null && addresses[idx]) {
         const addrId = addresses[idx].id;
         res = await apiClient.put(apiEndpoints.shopping.updateAddress(addrId), address);
@@ -242,15 +301,10 @@ const API = {
         if (!res.success) throw new Error(res.message || "Failed to create address");
         addresses.push(res.data);
       }
-
-      // If this address is default, unset all others locally
       if (res.data.is_default) {
-        addresses = addresses.map((a) =>
-          a.id === res.data.id ? a : { ...a, is_default: false }
-        );
+        addresses = addresses.map((a) => a.id === res.data.id ? a : { ...a, is_default: false });
       }
-
-      Render.addresses(); // Re-render the list
+      Render.addresses();
     } catch (err) {
       alert("Failed to save address: " + err.message);
       console.error(err);
@@ -258,7 +312,6 @@ const API = {
       hideLoader();
     }
   },
-  
 
   deleteAddress: async (id) => {
     try {
@@ -298,7 +351,7 @@ const API = {
 const Handlers = {
   onPINBlur: async () => {
     const pincode = DOM.addressInputs.pincode.value.trim();
-    if (pincode.length === 6) {
+    if (/^\d{6}$/.test(pincode)) {
       const details = await Utils.fetchPostalDetailsByPIN(pincode);
       if (details) {
         DOM.addressInputs.city.value = details.city;
@@ -314,7 +367,6 @@ const Handlers = {
     const payload = {
       name: DOM.profileInputs.name.value.trim(),
       phone: DOM.profileInputs.phone.value.trim(),
-      // email: DOM.profileInputs.email.value.trim(),
       gender: DOM.profileInputs.gender.value,
       date_of_birth: DOM.profileInputs.dob.value || null,
       preferred_language: DOM.profileInputs.language.value.trim(),
@@ -393,13 +445,12 @@ const Handlers = {
 // INITIALIZATION
 // ==============================
 const profileInit = () => {
+  document.addEventListener("DOMContentLoaded", API.loadUserData);
   DOM.addressInputs.pincode.addEventListener("blur", Handlers.onPINBlur);
   DOM.profileForm.addEventListener("submit", Handlers.onProfileSubmit);
   DOM.addressForm.addEventListener("submit", Handlers.onAddressSubmit);
   DOM.addressList.addEventListener("click", Handlers.onAddressListClick);
   DOM.logoutBtn.addEventListener("click", Handlers.onLogout);
-
-  document.addEventListener("DOMContentLoaded", API.loadUserData);
 };
 
 profileInit();
