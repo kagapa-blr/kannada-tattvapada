@@ -31,12 +31,14 @@ def shopping_cart_page():
 
 
 # --- ShoppingUser REST API ---
-
 @shopping_user_bp.route(f"{API_PREFIX}/users/<string:email>", methods=["GET"])
 def get_user(email):
     result = ShoppingUserService.get_user_by_email(email=email)
     return jsonify(result)
-
+@shopping_user_bp.route(f"{API_PREFIX}/users/default/<string:email>", methods=["GET"])
+def get_default_address_and_user(email):
+    result = ShoppingUserService.get_default_address_with_user(email=email)
+    return jsonify(result)
 @shopping_user_bp.route(f"{API_PREFIX}/users/", methods=["POST"])
 def create_user():
     data = request.get_json() or {}

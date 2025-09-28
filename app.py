@@ -9,6 +9,7 @@ from app.routes.delete_tatvapada import delete_bp
 from app.routes.document_routes import documents_bp
 from app.routes.error_handling import errors_bp
 from app.routes.home import home_bp
+from app.routes.payment_routes import payment_bp
 from app.routes.right_section_api import right_section_impl_bp
 from app.routes.right_section_ui import right_section_bp
 from app.routes.shopping_user_routes import shopping_user_bp
@@ -76,6 +77,7 @@ app.register_blueprint(right_section_bp)
 app.register_blueprint(right_section_impl_bp)
 app.register_blueprint(tatvapadakarara_bp)
 app.register_blueprint(shopping_user_bp)
+app.register_blueprint(payment_bp)
 
 logger.info(
     "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"

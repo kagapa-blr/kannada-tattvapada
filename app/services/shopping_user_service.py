@@ -157,6 +157,68 @@ class ShoppingUserService:
             traceback.print_exc()
             return MessageTemplate.database_error(str(e))
 
+    @staticmethod
+    def get_default_address_with_user(email):
+        """
+        Get default shipping address along with essential user information
+        (name, email, phone) for checkout/payment purpose.
+        """
+        try:
+            email_normalized = email.strip().lower()
+            user = User.query.filter(func.lower(User.email) == email_normalized).first()
+            if not user:
+                return MessageTemplate.not_found("User")
+
+            shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+            if not shopping_user:
+                return MessageTemplate.not_found("ShoppingUser")
+
+            # ✅ Try to get default address first
+            default_address = ShoppingUserAddress.query.filter_by(
+                shopping_user_id=shopping_user.id, is_default=True
+            ).first()
+
+            # ✅ Fallback: get first address if default not marked
+            if not default_address:
+                default_address = ShoppingUserAddress.query.filter_by(
+                    shopping_user_id=shopping_user.id
+                ).first()
+
+            if not default_address:
+                return {"success": False, "message": "No address found for this user.", "data": None}
+
+            data = {
+                "user": {
+                    "id": shopping_user.id,
+                    "name": shopping_user.name,
+                    "email": shopping_user.email,
+                    "phone": shopping_user.phone,
+                },
+                "address": {
+                    "id": default_address.id,
+                    "recipient_name": default_address.recipient_name or shopping_user.name,
+                    "phone_number": default_address.phone_number or shopping_user.phone,
+                    "address_line": default_address.address_line,
+                    "city": default_address.city,
+                    "taluk_division": default_address.taluk_division,
+                    "state": default_address.state,
+                    "country": default_address.country,
+                    "postal_code": default_address.postal_code,
+                    "address_type": default_address.address_type,
+                    "latitude": default_address.latitude,
+                    "longitude": default_address.longitude,
+                    "delivery_instructions": default_address.delivery_instructions,
+                }
+            }
+
+            return {"success": True, "message": "Default address retrieved successfully.", "data": data}
+
+        except SQLAlchemyError as e:
+            db_instance.session.rollback()
+            traceback.print_exc()
+            return MessageTemplate.database_error(str(e))
+
+
 
 # -------------------------
 # ShoppingUserAddress Service
