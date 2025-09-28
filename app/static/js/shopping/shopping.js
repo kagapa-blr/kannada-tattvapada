@@ -324,6 +324,8 @@ function initCartPage() {
   });
 
   // -----------------------
+
+  // -----------------------
   // Confirm Order & Cashfree Checkout
   // -----------------------
   confirmOrderBtn.on("click", async () => {
@@ -331,14 +333,23 @@ function initCartPage() {
     if (totalAmount <= 0) return alert("Cart total invalid.");
 
     try {
+      // Prepare full order payload
+      const orderPayload = {
+        email: userData.email,
+        phone: userData.phone,
+        name: userData.name || "Guest User",
+        amount: totalAmount,
+        user: userData,       // full user info
+        address: addressData, // full address info
+        items: cart,          // all cart items
+        order_note: `Order for ${userData.name || userData.email} on ${new Date().toLocaleString()}`
+      };
+
+      // Call backend API to create Cashfree order
       const res = await fetch("/payment/api/v1/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: userData.email,
-          phone: userData.phone,
-          amount: totalAmount
-        })
+        body: JSON.stringify(orderPayload)
       });
 
       if (!res.ok) {
@@ -347,25 +358,36 @@ function initCartPage() {
       }
 
       const data = await res.json();
-      const paymentSessionId = data.payment_session_id;
-      if (!paymentSessionId) throw new Error("Payment Session ID missing");
+      const paymentSessionId = data.data?.payment_session_id;
+      const orderId = data.data?.order_id;
 
-      // Initialize Cashfree SDK
+      if (!paymentSessionId || !orderId) throw new Error("Payment Session ID or Order ID missing");
+
+      // Initialize Cashfree Checkout with redirect callbacks
       const cashfree = Cashfree({ mode: "sandbox" }); // or "production"
-      cashfree.checkout({ paymentSessionId, redirectTarget: "_self" });
+      cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: "_self",
+        onSuccess: function () {
+          window.location.href = `/payment/success?order_id=${orderId}`;
+        },
+        onFailure: function () {
+          window.location.href = `/payment/failure?order_id=${orderId}`;
+        }
+      });
 
-      // Save order locally
-      const order = {
+      // Save order locally for tracking
+      const localOrder = {
         items: cart,
         total: totalAmount,
         user: userData,
         address: addressData,
         date: new Date().toISOString(),
-        order_id: data.order_id
+        order_id: orderId
       };
-      localStorage.setItem("currentOrder", JSON.stringify(order));
+      localStorage.setItem("currentOrder", JSON.stringify(localOrder));
 
-      // Clear cart
+      // Clear cart after starting checkout
       cart.length = 0;
       saveCart();
       confirmModal.hide();
@@ -375,6 +397,7 @@ function initCartPage() {
       alert("Failed to initiate payment: " + err.message);
     }
   });
+
 
   // -----------------------
   // Fetch User Info & Address

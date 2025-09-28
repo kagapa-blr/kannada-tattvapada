@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, Tex
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from app.config.database import db_instance
+from sqlalchemy.dialects.mysql import JSON
 
 
 class User(db_instance.Model):
@@ -117,7 +118,6 @@ class ShoppingUserAddress(db_instance.Model):
     def __repr__(self):
         return f"<Address(id={self.id}, type='{self.address_type}', city='{self.city}', postal_code='{self.postal_code}')>"
 
-
 class ShoppingOrder(db_instance.Model):
     __tablename__ = "shopping_orders"
 
@@ -129,11 +129,14 @@ class ShoppingOrder(db_instance.Model):
     payment_method = Column(String(50), nullable=True)
     shipping_address_id = Column(Integer, ForeignKey("addresses.id"), nullable=True)
     notes = Column(Text, nullable=True)
+
+    # NEW columns to store extra info
+    user_info = Column(JSON, nullable=True)
+    address_info = Column(JSON, nullable=True)
+    items = Column(JSON, nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
 
     shopping_user = relationship("ShoppingUser", back_populates="orders")
     shipping_address = relationship("ShoppingUserAddress")
-
-    def __repr__(self):
-        return f"<ShoppingOrder(id={self.id}, order_number='{self.order_number}', status='{self.status}', total={self.total_amount})>"

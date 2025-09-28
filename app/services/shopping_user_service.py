@@ -1,4 +1,5 @@
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada, ShoppingTatvapada
@@ -11,21 +12,63 @@ import traceback
 
 # Define IST timezone
 IST = pytz.timezone("Asia/Kolkata")
-
-
 class MessageTemplate:
     @staticmethod
-    def database_error(error):
-        return {"success": False, "message": f"Database error: {error}", "data": None}
+    def database_error(error: str, code: int = 500) -> dict:
+        """
+        Return a standardized response for database errors.
+        :param error: Detailed error message.
+        :param code: Optional HTTP-like error code.
+        """
+        return {
+            "success": False,
+            "message": f"Database error: {error}",
+            "data": None,
+            "code": code
+        }
 
     @staticmethod
-    def not_found(entity):
-        return {"success": False, "message": f"{entity} not found.", "data": None}
+    def not_found(entity: str, code: int = 404) -> dict:
+        """
+        Return a standardized response for not found entities.
+        :param entity: Name of the entity not found.
+        :param code: Optional HTTP-like error code.
+        """
+        return {
+            "success": False,
+            "message": f"{entity} not found.",
+            "data": None,
+            "code": code
+        }
 
+    @staticmethod
+    def invalid_request(error: str, code: int = 400) -> dict:
+        """
+        Return a standardized response for invalid requests.
+        :param error: Error details.
+        """
+        return {
+            "success": False,
+            "message": f"Invalid request: {error}",
+            "data": None,
+            "code": code
+        }
 
-# -------------------------
-# ShoppingUser Service
-# -------------------------
+    @staticmethod
+    def success(message: str = "Success", data=None, code: int = 200) -> dict:
+        """
+        Return a standardized success response.
+        :param message: Optional success message.
+        :param data: Optional data payload.
+        :param code: Optional HTTP-like code.
+        """
+        return {
+            "success": True,
+            "message": message,
+            "data": data,
+            "code": code
+        }
+
 # -------------------------
 # ShoppingUser Service
 # -------------------------
@@ -342,22 +385,21 @@ class ShoppingUserAddressService:
 
 
 
+
 class ShoppingOrderService:
 
     @staticmethod
     def _get_shopping_user_by_email(email: str) -> ShoppingUser | None:
-        """Fetch the ShoppingUser object by email."""
-        user = User.query.filter(func.lower(User.email) == email.strip().lower()).first()
-        if not user:
+        """Fetch ShoppingUser by joining User table (hybrid-safe)."""
+        if not email:
             return None
-        shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
-        if shopping_user:
-            return shopping_user
-        # Fetch or create shopping user from service
-        result = ShoppingUserService.get_user_by_email(email=email)
-        if result.get("success") and result.get("data"):
-            return ShoppingUser.query.get(result["data"]["id"])
-        return None
+        return (
+            ShoppingUser.query
+            .join(ShoppingUser.user)
+            .filter(func.lower(User.email) == email.strip().lower())
+            .options(joinedload(ShoppingUser.user))
+            .first()
+        )
 
     @staticmethod
     def serialize_order(order: ShoppingOrder) -> dict:
@@ -370,12 +412,26 @@ class ShoppingOrderService:
             "payment_method": order.payment_method,
             "shipping_address_id": order.shipping_address_id,
             "notes": order.notes,
+            "user_info": order.user_info,
+            "address_info": order.address_info,
+            "items": order.items,
             "created_at": order.created_at.isoformat() if order.created_at else None,
             "updated_at": order.updated_at.isoformat() if order.updated_at else None,
         }
 
     @staticmethod
     def create_order(email: str, order_number: str, total_amount: float, **kwargs) -> dict:
+        """
+        Create a shopping order with full tracking info.
+        kwargs can include:
+          - status
+          - payment_method
+          - shipping_address_id
+          - notes
+          - user_info: dict
+          - address_info: dict
+          - items: list
+        """
         try:
             shopping_user = ShoppingOrderService._get_shopping_user_by_email(email)
             if not shopping_user:
@@ -385,15 +441,20 @@ class ShoppingOrderService:
                 shopping_user_id=shopping_user.id,
                 order_number=order_number,
                 total_amount=total_amount,
-                status=kwargs.get("status", "Pending"),
+                status=kwargs.get("status", "CREATED"),
                 payment_method=kwargs.get("payment_method"),
                 shipping_address_id=kwargs.get("shipping_address_id"),
-                notes=kwargs.get("notes")
+                notes=kwargs.get("notes"),
+                user_info=kwargs.get("user_info"),
+                address_info=kwargs.get("address_info"),
+                items=kwargs.get("items")
             )
+
             db_instance.session.add(order)
             db_instance.session.commit()
             db_instance.session.refresh(order)
             return {"success": True, "message": "Order created.", "data": ShoppingOrderService.serialize_order(order)}
+
         except SQLAlchemyError as e:
             db_instance.session.rollback()
             return MessageTemplate.database_error(str(e))
@@ -415,19 +476,6 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def delete_order(order_id: int) -> dict:
-        try:
-            order = ShoppingOrder.query.get(order_id)
-            if not order:
-                return MessageTemplate.not_found("Order")
-            db_instance.session.delete(order)
-            db_instance.session.commit()
-            return {"success": True, "message": "Order deleted.", "data": None}
-        except SQLAlchemyError as e:
-            db_instance.session.rollback()
-            return MessageTemplate.database_error(str(e))
-
-    @staticmethod
     def list_orders(email: str | None = None, limit: int = 100, offset: int = 0) -> dict:
         try:
             query = ShoppingOrder.query
@@ -440,6 +488,7 @@ class ShoppingOrderService:
             return {"success": True, "message": "", "data": [ShoppingOrderService.serialize_order(o) for o in orders]}
         except SQLAlchemyError as e:
             return MessageTemplate.database_error(str(e))
+
 
 
 class ShoppingTatvapadaService:
