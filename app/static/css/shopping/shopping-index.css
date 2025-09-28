@@ -1,0 +1,23 @@
+body {
+  background-color: #f8f9fa;
+  font-family: 'Noto Sans Kannada';
+  font-size: 15px;
+  line-height: 1.1;
+  color: #2c2c2c;
+}
+
+#productTable td {
+  white-space: normal;
+  max-width: 300px;
+  vertical-align: middle;
+}
+
+table td:last-child {
+  width: 140px;
+}
+
+.btn-action {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}

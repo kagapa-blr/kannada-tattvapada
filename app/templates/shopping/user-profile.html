@@ -6,66 +6,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>User Dashboard - E-commerce</title>
 
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS SECTION -->
   <!-- Bootstrap CSS (local) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+  <!-- DataTables CSS (local) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}" />
   <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/profile.css') }}" />
 
-  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+  <!-- JS LIBRARIES SECTION (local) -->
+  <!-- jQuery (local) -->
+  <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+  <!-- DataTables JS (local) -->
+  <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+  <!-- Bootstrap Bundle JS (local) -->
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-  <!-- JS Libraries -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-
-    .card {
-      border-radius: 12px;
-      transition: transform 0.14s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-    }
-
-    .card-header {
-      border-radius: 12px 12px 0 0 !important;
-    }
-
-    .list-group-item {
-      border: none;
-      padding: 12px 16px;
-    }
-
-    .list-group-item.active {
-      background-color: #0d6efd !important;
-      color: #fff;
-    }
-
-    #userAvatar {
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-      text-transform: uppercase;
-      width: 80px !important;
-      height: 80px !important;
-      font-size: 24px !important;
-      line-height: 80px !important;
-    }
-
-    .table-hover tbody tr:hover {
-      background-color: #fbfcfe;
-    }
-
-    .btn {
-      border-radius: 8px;
-    }
-  </style>
 </head>
 
 <body>
@@ -104,6 +68,7 @@
       <!-- Main content -->
       <div class="col-md-9">
         <div class="tab-content">
+
           <!-- Profile -->
           <div class="tab-pane fade show active" id="profile">
             <div class="card shadow-sm border-0">
@@ -114,16 +79,22 @@
                 <dl class="row mb-0">
                   <dt class="col-sm-3"><i class="bi bi-person-fill me-1"></i>Full Name</dt>
                   <dd class="col-sm-9" id="profileViewName"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-telephone-fill me-1"></i>Phone</dt>
                   <dd class="col-sm-9" id="profileViewPhone"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-envelope-fill me-1"></i>Email</dt>
                   <dd class="col-sm-9" id="profileViewEmail"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-gender-ambiguous me-1"></i>Gender</dt>
                   <dd class="col-sm-9" id="profileViewGender"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-calendar3 me-1"></i>Date of Birth</dt>
                   <dd class="col-sm-9" id="profileViewDOB"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-translate me-1"></i>Preferred Language</dt>
                   <dd class="col-sm-9" id="profileViewLanguage"></dd>
+
                   <dt class="col-sm-3"><i class="bi bi-clock-history me-1"></i>Last Login</dt>
                   <dd class="col-sm-9" id="profileViewLastLogin"></dd>
                 </dl>
@@ -135,6 +106,7 @@
               </div>
             </div>
           </div>
+
           <!-- Orders -->
           <div class="tab-pane fade" id="orders">
             <div class="card shadow-sm border-0">
@@ -172,6 +144,7 @@
               <div class="card-body" id="addressList"></div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -182,9 +155,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content shadow">
         <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">
-            <i class="bi bi-geo-alt-fill me-2"></i>Add / Edit Address
-          </h5>
+          <h5 class="modal-title"><i class="bi bi-geo-alt-fill me-2"></i>Add / Edit Address</h5>
           <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
@@ -193,54 +164,42 @@
             <input type="hidden" id="addressId" />
 
             <div class="row g-3">
-              <!-- Recipient Name -->
               <div class="col-md-6">
                 <label class="form-label">Recipient Name</label>
                 <input id="recipientName" class="form-control" required />
               </div>
 
-              <!-- Phone Number -->
               <div class="col-md-6">
                 <label class="form-label">Phone Number</label>
                 <input id="phoneNumber" class="form-control" maxlength="15" required />
               </div>
 
-              <!-- Address -->
               <div class="col-12">
                 <label class="form-label">Address Line</label>
                 <textarea id="addressText" class="form-control" rows="2" required></textarea>
               </div>
 
-              <!-- Postal Code -->
               <div class="col-md-4">
                 <label class="form-label">Postal Code</label>
                 <input id="addressPincode" class="form-control" required />
               </div>
-              <!-- City -->
               <div class="col-md-4">
                 <label class="form-label">City / District</label>
                 <input id="addressCity" class="form-control" required />
               </div>
-
-              <!-- Taluk -->
               <div class="col-md-4">
                 <label class="form-label">Taluk / Division</label>
                 <input id="addressTaluk" class="form-control" />
               </div>
 
-              <!-- State -->
               <div class="col-md-4">
                 <label class="form-label">State</label>
                 <input id="addressState" class="form-control" required />
               </div>
-
-              <!-- Country -->
               <div class="col-md-4">
                 <label class="form-label">Country</label>
                 <input id="addressCountry" class="form-control" value="India" required />
               </div>
-
-              <!-- Address Type -->
               <div class="col-md-4">
                 <label class="form-label">Address Type</label>
                 <select id="addressType" class="form-select">
@@ -250,13 +209,11 @@
                 </select>
               </div>
 
-              <!-- Delivery Instructions -->
               <div class="col-12">
                 <label class="form-label">Delivery Instructions</label>
                 <textarea id="deliveryInstructions" class="form-control" rows="2"></textarea>
               </div>
 
-              <!-- Lat / Long (Optional) -->
               <div class="col-md-6">
                 <label class="form-label">Latitude</label>
                 <input id="latitude" class="form-control" type="number" step="0.000001" />
@@ -266,13 +223,10 @@
                 <input id="longitude" class="form-control" type="number" step="0.000001" />
               </div>
 
-              <!-- Default Checkbox -->
               <div class="col-12">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="isDefault" />
-                  <label class="form-check-label" for="isDefault">
-                    Set as default address
-                  </label>
+                  <label class="form-check-label" for="isDefault">Set as default address</label>
                 </div>
               </div>
             </div>
@@ -387,7 +341,7 @@
     </div>
   </div>
 
-  <!-- App JS -->
+  <!-- APP JS -->
   <script type="module" src="{{ url_for('static', filename='js/shopping/profile.js') }}"></script>
 
   {% include 'customLoader.html' %}

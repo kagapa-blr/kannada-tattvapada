@@ -74,7 +74,7 @@ const Utils = {
   },
   randomGradient: () => {
     const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA500", "#6A5ACD", "#6a11cb", "#2575fc", "#20c997"];
-    const a = colors[Math.floor(Math.random() * colors.length)];
+    let a = colors[Math.floor(Math.random() * colors.length)];
     let b;
     do {
       b = colors[Math.floor(Math.random() * colors.length)];
@@ -153,17 +153,18 @@ const Render = {
     tbody.html("");
 
     orders.forEach((order, idx) => {
-      const statusClass = order.status === "Delivered"
+      const statusClass = order.status.toUpperCase() === "DELIVERED"
         ? "success"
-        : order.status === "Shipped"
+        : order.status.toUpperCase() === "SHIPPED"
           ? "info"
           : "warning";
+
       tbody.append(`
         <tr data-index="${idx}" style="cursor:pointer;">
           <td>${idx + 1}</td>
           <td>${Utils.escapeHtml(order.order_number)}</td>
           <td>${order.created_at?.slice(0, 10) || ""}</td>
-          <td><span class="badge bg-${statusClass}">${Utils.escapeHtml(order.status)}</span></td>
+          <td><span class="badge bg-${statusClass}">${Utils.escapeHtml(order.status.toUpperCase())}</span></td>
           <td class="text-end">${order.total_amount !== undefined ? order.total_amount : ""}</td>
         </tr>
       `);
@@ -249,7 +250,7 @@ const showOrderModal = (order) => {
 
   document.getElementById("modalOrderSummary").innerHTML = `
     <strong>Total Amount:</strong> ₹${order.total_amount}<br>
-    <strong>Status:</strong> ${Utils.escapeHtml(order.status)}<br>
+    <strong>Status:</strong> ${Utils.escapeHtml(order.status.toUpperCase())}<br>
     <strong>Payment Method:</strong> ${order.payment_method ? Utils.escapeHtml(order.payment_method) : "N/A"}<br>
     <strong>Order Notes:</strong> ${order.notes ? Utils.escapeHtml(order.notes) : "-"}
   `;

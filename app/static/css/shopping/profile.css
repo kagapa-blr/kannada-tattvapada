@@ -1,23 +1,43 @@
 body {
-  font-family: system-ui, sans-serif;
+  background-color: #f8f9fa;
 }
 
-.avatar {
-  width: 60px;
-  height: 60px;
-  background: #dee2e6;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: #6c757d;
+.card {
+  border-radius: 12px;
+  transition: transform 0.14s ease;
 }
 
-.nav-link {
-  cursor: pointer;
+.card:hover {
+  transform: translateY(-3px);
 }
-.nav-link.active {
-  background: #fff;
-  font-weight: 600;
+
+.card-header {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.list-group-item {
+  border: none;
+  padding: 12px 16px;
+}
+
+.list-group-item.active {
+  background-color: #0d6efd !important;
+  color: #fff;
+}
+
+#userAvatar {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  text-transform: uppercase;
+  width: 80px !important;
+  height: 80px !important;
+  font-size: 24px !important;
+  line-height: 80px !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #fbfcfe;
+}
+
+.btn {
+  border-radius: 8px;
 }

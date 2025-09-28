@@ -5,40 +5,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kannada Tatvapada Shop - Products</title>
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon" />
 
-    <!-- Bootstrap & DataTables CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap"
         rel="stylesheet" />
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Noto Sans Kannada';
-            font-size: 15px;
-            line-height: 1.1;
-            color: #2c2c2c;
-        }
+    <!-- CSS SECTION -->
+    <!-- Bootstrap CSS (local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+    <!-- DataTables CSS (local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/profile.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/shopping-index.css') }}" />
 
-        #productTable td {
-            white-space: normal;
-            max-width: 300px;
-            vertical-align: middle;
-        }
+    <!-- JS LIBRARIES SECTION (local) -->
+    <!-- jQuery (local) -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+    <!-- DataTables JS (local) -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+    <!-- Bootstrap Bundle JS (local) -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-        table td:last-child {
-            width: 140px;
-        }
-
-        .btn-action {
-            display: flex;
-            gap: 0.25rem;
-            justify-content: center;
-        }
-    </style>
 </head>
 
 <body>
@@ -149,11 +141,7 @@
         </div>
     </div>
 
-    <!-- JS Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
 
     <!-- Shopping JS -->
     <script type="module" src="{{ url_for('static', filename='js/shopping/shopping.js') }}"></script>
