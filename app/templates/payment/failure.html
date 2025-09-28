@@ -1,27 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Payment Failed</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-  body { background-color: #f8f9fa; font-family: Arial, Helvetica, sans-serif; }
-  .card { max-width: 500px; margin: 50px auto; padding: 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-radius: 8px; }
-  h1 { font-size: 24px; }
-  p { font-size: 14px; margin: 8px 0; }
-  .btn { width: 100%; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Failed</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+    }
+
+    .payment-slip {
+      max-width: 500px;
+      margin: 40px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .payment-header {
+      background-color: #dc3545;
+      /* Red for failure */
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .payment-body {
+      padding: 20px;
+    }
+
+    .payment-body h5 {
+      margin-bottom: 15px;
+    }
+
+    .table td,
+    .table th {
+      vertical-align: middle;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 15px;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="card text-center">
-    <h1 class="text-danger mb-3">❌ Payment Failed</h1>
-    <p>Order ID: <strong>{{ order_id }}</strong></p>
-    <p>Status: <strong>FAILED</strong></p>
-    {% if error %}
-      <p>Error: {{ error }}</p>
-    {% endif %}
-    <a href="/" class="btn btn-primary mt-3">Try Again</a>
+
+  <div class="payment-slip">
+    <div class="payment-header">
+      <h2>❌ Payment Failed</h2>
+    </div>
+
+    <div class="payment-body">
+      <h5>Transaction Details</h5>
+      <table class="table table-borderless">
+        <tbody>
+          <tr>
+            <th scope="row">Order ID</th>
+            <td>{{ order.order_id }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Status</th>
+            <td>{{ payment.payment_status or order.order_status or "FAILED" }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Amount</th>
+            <td>₹{{ payment.payment_amount or order.order_amount }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Transaction No</th>
+            <td>{{ payment.cf_payment_id or "N/A" }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Transaction Date</th>
+            <td>{{ payment.payment_time or order.created_at }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Bank Ref No</th>
+            <td>{{ payment.bank_reference or "N/A" }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Customer Details</h5>
+      <table class="table table-borderless">
+        <tbody>
+          <tr>
+            <th scope="row">Name</th>
+            <td>{{ order.customer_details.customer_name }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Email</th>
+            <td>{{ order.customer_details.customer_email }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Mobile</th>
+            <td>{{ order.customer_details.customer_phone }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="text-center mt-4">
+        <a href="/" class="btn btn-danger">Try Again</a>
+        <a href="mailto:support@example.com" class="btn btn-outline-secondary">Contact Support</a>
+      </div>
+
+      <div class="footer-note">
+        Powered by Cashfree Payments
+      </div>
+    </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -10,4 +10,4 @@ pandas
 requests
 cryptography
 cashfree_pg
-weasyprint
+fpdf2

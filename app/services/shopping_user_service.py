@@ -341,13 +341,26 @@ class ShoppingUserAddressService:
             return MessageTemplate.database_error(str(e))
 
 
-# -------------------------
-# ShoppingOrder Service
-# -------------------------
+
 class ShoppingOrderService:
 
     @staticmethod
-    def serialize_order(order: ShoppingOrder):
+    def _get_shopping_user_by_email(email: str) -> ShoppingUser | None:
+        """Fetch the ShoppingUser object by email."""
+        user = User.query.filter(func.lower(User.email) == email.strip().lower()).first()
+        if not user:
+            return None
+        shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+        if shopping_user:
+            return shopping_user
+        # Fetch or create shopping user from service
+        result = ShoppingUserService.get_user_by_email(email=email)
+        if result.get("success") and result.get("data"):
+            return ShoppingUser.query.get(result["data"]["id"])
+        return None
+
+    @staticmethod
+    def serialize_order(order: ShoppingOrder) -> dict:
         return {
             "id": order.id,
             "shopping_user_id": order.shopping_user_id,
@@ -362,18 +375,12 @@ class ShoppingOrderService:
         }
 
     @staticmethod
-    def create_order(email, order_number, total_amount, **kwargs):
+    def create_order(email: str, order_number: str, total_amount: float, **kwargs) -> dict:
         try:
-            user = User.query.filter(func.lower(User.email) == email.strip().lower()).first()
-            if not user:
-                return MessageTemplate.not_found("User")
-            shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+            shopping_user = ShoppingOrderService._get_shopping_user_by_email(email)
             if not shopping_user:
-                result = ShoppingUserService.get_user_by_email(email=email)
-                if not result.get("success"):
-                    return result
-                shopping_user_id = result["data"]["id"]
-                shopping_user = ShoppingUser.query.get(shopping_user_id)
+                return MessageTemplate.not_found("User")
+
             order = ShoppingOrder(
                 shopping_user_id=shopping_user.id,
                 order_number=order_number,
@@ -392,7 +399,7 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def update_order(order_id, **kwargs):
+    def update_order(order_id: int, **kwargs) -> dict:
         try:
             order = ShoppingOrder.query.get(order_id)
             if not order:
@@ -408,7 +415,7 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def delete_order(order_id):
+    def delete_order(order_id: int) -> dict:
         try:
             order = ShoppingOrder.query.get(order_id)
             if not order:
@@ -421,14 +428,11 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def list_orders(email=None, limit=100, offset=0):
+    def list_orders(email: str | None = None, limit: int = 100, offset: int = 0) -> dict:
         try:
             query = ShoppingOrder.query
             if email:
-                user = User.query.filter(func.lower(User.email) == email.strip().lower()).first()
-                if not user:
-                    return MessageTemplate.not_found("User")
-                shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+                shopping_user = ShoppingOrderService._get_shopping_user_by_email(email)
                 if not shopping_user:
                     return {"success": True, "message": "", "data": []}
                 query = query.filter_by(shopping_user_id=shopping_user.id)
@@ -436,7 +440,6 @@ class ShoppingOrderService:
             return {"success": True, "message": "", "data": [ShoppingOrderService.serialize_order(o) for o in orders]}
         except SQLAlchemyError as e:
             return MessageTemplate.database_error(str(e))
-
 
 
 class ShoppingTatvapadaService:

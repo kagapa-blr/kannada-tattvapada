@@ -385,6 +385,8 @@ function initCartPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
+      console.log('json', json)
+
       if (json.success && json.data) {
         userData = json.data.user;
         addressData = json.data.address;
