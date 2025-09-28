@@ -106,13 +106,22 @@ const apiEndpoints = {
         updateAddress: (id) => `${BASE_URL}/shopping/api/v1/addresses/${id}`,          // PUT
         deleteAddress: (id) => `${BASE_URL}/shopping/api/v1/addresses/${id}`,          // DELETE
 
-        // ---------------------------------
-        // ShoppingOrder APIs
-        // ---------------------------------
-        listOrdersByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/orders`,    // GET, ?limit=100&offset=0
-        createOrder: (email) => `${BASE_URL}/shopping/api/v1/users/${email}/orders`,    // POST
-        updateOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // PUT
-        deleteOrder: (id) => `${BASE_URL}/shopping/api/v1/orders/${id}`,             // DELETE
+        // -----------------------------
+        // ShoppingOrder API Endpoints
+        // -----------------------------
+        listOrdersByEmail: (email, limit = 100, offset = 0) =>
+            `${BASE_URL}/shopping/api/v1/users/${email}/orders?limit=${limit}&offset=${offset}`, // GET
+
+        createOrder: (email) =>
+            `${BASE_URL}/shopping/api/v1/users/${email}/orders`, // POST
+
+        updateOrder: (orderId) =>
+            `${BASE_URL}/shopping/api/v1/orders/${orderId}`, // PUT
+
+        deleteOrder: (orderId) =>
+            `${BASE_URL}/shopping/api/v1/orders/${orderId}`, // DELETE
+
+
 
         // Admin Manage shopping
         shoppingList: (offset = 0, limit = 10, search = "") => `${BASE_URL}/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,

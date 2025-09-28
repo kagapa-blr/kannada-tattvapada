@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from app.services.shopping_user_service import ShoppingUserService, ShoppingUserAddressService, ShoppingOrderService, \
-    ShoppingTatvapadaService
+    ShoppingTatvapadaService, MessageTemplate
 from app.utils.auth_decorator import admin_required
 from app.utils.logger_config import get_logger
 
@@ -97,39 +97,79 @@ def delete_address(address_id):
     result = ShoppingUserAddressService.delete_address(address_id=address_id)
     return jsonify(result)
 
-# --- Orders REST API ---
+
+
+
+# -----------------------------
+# List Orders by User Email
+# -----------------------------
 @shopping_user_bp.route(f"{API_PREFIX}/users/<string:email>/orders", methods=["GET"])
 def list_orders(email):
-    result = ShoppingOrderService.list_orders(email=email)
-    return jsonify(result)
+    try:
+        result = ShoppingOrderService.list_orders(email=email)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify(MessageTemplate.database_error(str(e))), 500
 
+# -----------------------------
+# Create Order for User
+# -----------------------------
 @shopping_user_bp.route(f"{API_PREFIX}/users/<string:email>/orders", methods=["POST"])
 def create_order(email):
-    data = request.get_json() or {}
-    # order_number/total_amount are required
-    if "order_number" not in data or "total_amount" not in data:
-        return jsonify({"success": False, "message": "order_number and total_amount are required.", "data": None}), 400
-    result = ShoppingOrderService.create_order(
-        email=email,
-        order_number=data["order_number"],
-        total_amount=data["total_amount"],
-        status=data.get("status"),
-        payment_method=data.get("payment_method"),
-        shipping_address_id=data.get("shipping_address_id"),
-        notes=data.get("notes")
-    )
-    return jsonify(result)
+    try:
+        data = request.get_json() or {}
+        required_fields = ["order_number", "total_amount"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify(MessageTemplate.invalid_request(f"{field} is required")), 400
 
+        # Optional fields
+        result = ShoppingOrderService.create_order(
+            email=email,
+            order_number=data["order_number"],
+            total_amount=float(data["total_amount"]),
+            status=data.get("status", "CREATED"),
+            payment_method=data.get("payment_method"),
+            shipping_address_id=data.get("shipping_address_id"),
+            notes=data.get("notes"),
+            user_info=data.get("user_info"),
+            address_info=data.get("address_info"),
+            items=data.get("items")
+        )
+        return jsonify(result), 201
+
+    except Exception as e:
+        return jsonify(MessageTemplate.database_error(str(e))), 500
+
+# -----------------------------
+# Update Order by ID
+# -----------------------------
 @shopping_user_bp.route(f"{API_PREFIX}/orders/<int:order_id>", methods=["PUT"])
 def update_order(order_id):
-    data = request.get_json() or {}
-    result = ShoppingOrderService.update_order(order_id=order_id, **data)
-    return jsonify(result)
+    try:
+        data = request.get_json() or {}
+        if not data:
+            return jsonify(MessageTemplate.invalid_request("No data provided for update")), 400
 
+        result = ShoppingOrderService.update_order(order_id=order_id, **data)
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify(MessageTemplate.database_error(str(e))), 500
+
+# -----------------------------
+# Delete Order by ID
+# -----------------------------
 @shopping_user_bp.route(f"{API_PREFIX}/orders/<int:order_id>", methods=["DELETE"])
 def delete_order(order_id):
-    result = ShoppingOrderService.delete_order(order_id=order_id)
-    return jsonify(result)
+    try:
+        result = ShoppingOrderService.delete_order(order_id=order_id)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify(MessageTemplate.database_error(str(e))), 500
+
+
+
 
 
 # --------------------------------------------------
