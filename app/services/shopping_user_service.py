@@ -2,8 +2,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada, ShoppingTatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+from app.models.tatvapada import Tatvapada, ShoppingTatvapada, TatvapadaAuthorInfo
+
 from app.models.user_management import ShoppingUser, ShoppingUserAddress, ShoppingOrder, User
 import pytz
 from datetime import datetime

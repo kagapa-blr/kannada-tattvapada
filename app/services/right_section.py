@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload
 from app.config.database import db_instance
 from app.models.documents import TatvapadakararaVivara
 from app.models.tatvapada import Tatvapada, Arthakosha, ParibhashikaPadavivarana
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+from app.models.tatvapada import TatvapadaAuthorInfo
 
 
 # ----------------- Tatvapada Service -----------------

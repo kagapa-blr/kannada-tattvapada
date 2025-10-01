@@ -1,8 +1,33 @@
 import hashlib
-from sqlalchemy import Column, String, Text, Integer, ForeignKey, UniqueConstraint, Numeric
+from datetime import datetime
+
+import pytz
+from sqlalchemy import Column, String, Text, Integer, Numeric, DateTime
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
+
 from app.config.database import db_instance
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+
+IST = pytz.timezone('Asia/Kolkata')
+
+
+def ist_now():
+    return datetime.now(IST)
+
+class TatvapadaAuthorInfo(db_instance.Model):
+    """
+    Stores Tatvapadakara (author) information with Integer ID.
+    Supports Unicode (Kannada).
+    """
+    __tablename__ = "tatvapada_author_info"
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8mb4',
+        'mysql_collate': 'utf8mb4_unicode_ci'
+    }
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    tatvapadakarara_hesaru = Column(String(255, collation='utf8mb4_unicode_ci'), unique=True, nullable=False)
 
 
 class Tatvapada(db_instance.Model):
@@ -116,3 +141,53 @@ class ShoppingTatvapada(db_instance.Model):
         self.samputa_sankhye = samputa_sankhye
         self.price = price
         self.tatvapadakosha_sheershike = tatvapadakosha_sheershike
+
+
+class ShoppingBooks(db_instance.Model):
+    """
+    General-purpose Book model for selling books.
+    Standalone version with IST timestamps, meaningful field names, and page count.
+    """
+    __tablename__ = "shopping_books"
+    __table_args__ = {
+        'mysql_engine': 'InnoDB',
+        'mysql_charset': 'utf8mb4',
+        'mysql_collate': 'utf8mb4_unicode_ci'
+    }
+
+    # Primary key
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Core book details
+    title = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=False)
+    subtitle = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+    author_name = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+    description = Column(Text(collation='utf8mb4_unicode_ci'), nullable=True)
+
+    # Book identification
+    book_code = Column(String(50, collation='utf8mb4_unicode_ci'), unique=True, nullable=True)
+    catalog_number = Column(String(50, collation='utf8mb4_unicode_ci'), nullable=True)
+
+    # Publishing details
+    publisher_name = Column(String(255, collation='utf8mb4_unicode_ci'), nullable=True)
+    publication_date = Column(DateTime, nullable=True)
+    number_of_pages = Column(Integer, nullable=True)  # New field added
+
+    # Pricing & inventory
+    price = Column(Numeric(10, 2), nullable=False)
+    discount_price = Column(Numeric(10, 2), nullable=True)
+    stock_quantity = Column(Integer, nullable=False, default=0)
+
+    # Media
+    cover_image_url = Column(String(500, collation='utf8mb4_unicode_ci'), nullable=True)
+
+    # Metadata
+    language = Column(String(50, collation='utf8mb4_unicode_ci'), nullable=True)
+    created_at = Column(DateTime, default=ist_now)
+    updated_at = Column(DateTime, default=ist_now, onupdate=ist_now)
+
+    def __init__(self, title, price, **kwargs):
+        self.title = title
+        self.price = price
+        for key, value in kwargs.items():
+            setattr(self, key, value)

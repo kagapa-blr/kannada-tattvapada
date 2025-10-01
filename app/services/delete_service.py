@@ -1,6 +1,5 @@
 from app.config.database import db_instance
-from app.models.tatvapada import Tatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+from app.models.tatvapada import Tatvapada, TatvapadaAuthorInfo
 
 
 class DeleteService:

@@ -5,7 +5,22 @@ import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
 import { showLoader, hideLoader } from "../loader.js";
 
-const email = "kagapa@gmail.com"; // Replace with session/email logic
+async function fetchUserEmail() {
+  try {
+    const response = await apiClient.get(apiEndpoints.auth.me);
+
+    if (response && response.user_email) {
+      return response.user_email;
+    } else {
+      console.warn("No email returned from API");
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to fetch user email:", error);
+    return null;
+  }
+}
+
 
 // ==============================
 // DOM ELEMENTS
@@ -112,30 +127,47 @@ const Utils = {
 // RENDER FUNCTIONS
 // ==============================
 const Render = {
+
+
   user: () => {
     if (!userData) return;
+
+    // Avatar and header
     DOM.avatar.textContent = Utils.getInitials(userData.name);
     DOM.avatar.style.background = Utils.randomGradient();
     DOM.nameDisplay.textContent = userData.name || "-";
     DOM.emailDisplay.textContent = userData.email || "-";
 
+    // Profile view (<dd>)
     const view = DOM.profileView;
     view.name.textContent = userData.name || "-";
     view.phone.textContent = userData.phone || "-";
     view.email.textContent = userData.email || "-";
     view.gender.textContent = userData.gender || "-";
-    view.dob.textContent = userData.date_of_birth ? userData.date_of_birth.slice(0, 10) : "-";
+    view.dob.textContent = userData.date_of_birth || "-";
     view.language.textContent = userData.preferred_language || "-";
     view.lastLogin.textContent = userData.last_login_at || "-";
 
+    // Profile inputs (for editing)
     const inputs = DOM.profileInputs;
     inputs.name.value = userData.name || "";
     inputs.phone.value = userData.phone || "";
     inputs.email.value = userData.email || "";
     inputs.gender.value = userData.gender || "";
-    inputs.dob.value = userData.date_of_birth ? userData.date_of_birth.slice(0, 10) : "";
     inputs.language.value = userData.preferred_language || "";
+
+    // Set date input (yyyy-MM-dd) safely for <input type="date">
+    if (userData.date_of_birth) {
+      const date = new Date(userData.date_of_birth);
+      // Ensure valid date
+      if (!isNaN(date)) {
+        inputs.dob.value = date.toISOString().slice(0, 10);
+      }
+    } else {
+      inputs.dob.value = "";
+    }
   },
+
 
   orders: () => {
     const table = DOM.orderTable;
@@ -238,9 +270,7 @@ const showOrderModal = (order) => {
       <tr>
         <td>${i + 1}</td>
         <td>${Utils.escapeHtml(item.title)}</td>
-        <td>${Utils.escapeHtml(item.author)}</td>
-        <td>${Utils.escapeHtml(item.kosha)}</td>
-        <td>${Utils.escapeHtml(item.samputa)}</td>
+        <td>${Utils.escapeHtml(item.author_name)}</td>
         <td>${item.quantity}</td>
         <td>${item.price}</td>
         <td>${total}</td>
@@ -250,6 +280,8 @@ const showOrderModal = (order) => {
 
   document.getElementById("modalOrderSummary").innerHTML = `
     <strong>Total Amount:</strong> ₹${order.total_amount}<br>
+    <strong>Total Amount:</strong> ₹${order.total_amount}<br>
+    <strong>Order ID:</strong> ${Utils.escapeHtml(order.order_number.toUpperCase())}<br>
     <strong>Status:</strong> ${Utils.escapeHtml(order.status.toUpperCase())}<br>
     <strong>Payment Method:</strong> ${order.payment_method ? Utils.escapeHtml(order.payment_method) : "N/A"}<br>
     <strong>Order Notes:</strong> ${order.notes ? Utils.escapeHtml(order.notes) : "-"}
@@ -265,6 +297,8 @@ const API = {
   loadUserData: async () => {
     try {
       showLoader();
+
+      const email = await fetchUserEmail();
       const userRes = await apiClient.get(apiEndpoints.shopping.getUserByEmail(email));
       if (!userRes.success) throw new Error(userRes.message || "Failed to fetch user");
       userData = userRes.data;
@@ -445,7 +479,11 @@ const Handlers = {
 // ==============================
 // INITIALIZATION
 // ==============================
+
+
+
 const profileInit = () => {
+
   document.addEventListener("DOMContentLoaded", API.loadUserData);
   DOM.addressInputs.pincode.addEventListener("blur", Handlers.onPINBlur);
   DOM.profileForm.addEventListener("submit", Handlers.onProfileSubmit);

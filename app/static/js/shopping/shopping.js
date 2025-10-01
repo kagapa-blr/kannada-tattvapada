@@ -2,7 +2,7 @@ import apiClient from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
 import { showLoader, hideLoader } from "../loader.js";
 
-// Cart stored in localStorage
+// ---------------- Cart helpers ----------------
 let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
 
 function saveCart() {
@@ -43,6 +43,7 @@ function getCartTotal() {
   return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
 }
 
+// ---------------- Product Listing Page ----------------
 function initProductListingPage() {
   const cartCount = $("#cartCount");
   const btnOpenCartModal = $("#btnOpenCartModal");
@@ -53,11 +54,20 @@ function initProductListingPage() {
 
   const bookDetailsModal = new bootstrap.Modal(document.getElementById("bookDetailsModal"));
   const detailTitle = $("#detailTitle"),
+    detailSubtitle = $("#detailSubtitle"),
     detailAuthor = $("#detailAuthor"),
     detailSamputa = $("#detailSamputa"),
     detailPrice = $("#detailPrice"),
+    detailDiscountPrice = $("#detailDiscountPrice"),
+    detailStock = $("#detailStock"),
+    detailPages = $("#detailPages"),
+    detailPublisher = $("#detailPublisher"),
+    detailLanguage = $("#detailLanguage"),
+    detailDescription = $("#detailDescription"),
     detailKoshasheershike = $("#detailKoshasheershike"),
+    detailCoverImage = $("#detailCoverImage"),
     btnAddToCartFromDetails = $("#btnAddToCartFromDetails");
+
   let currentDetailItem = null;
 
   const table = $("#productTable").DataTable({
@@ -65,20 +75,19 @@ function initProductListingPage() {
     processing: true,
     ajax: async (data, callback) => {
       try {
-        const res = await fetch(`/shopping/api/v1/orders/catalog?offset=${data.start}&limit=${data.length}&search=${data.search.value || ''}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const params = new URLSearchParams({
+          start: data.start,
+          length: data.length,
+          draw: data.draw,
+          search_word: data.search.value || ""
+        });
+        const res = await fetch(`/books/api/?${params.toString()}`);
         const json = await res.json();
-
-        const products = json.data.items.map(item => ({
-          id: item.id,
-          title: item.tatvapadakosha_sheershike || `Samputa ${item.samputa_sankhye}`,
-          author: item.author_name || `Author ID ${item.tatvapada_author_id}`,
-          samputa: item.samputa_sankhye,
-          price: parseFloat(item.price),
-          kosha: item.tatvapadakosha_sheershike || ""
-        }));
-
-        callback({ recordsTotal: json.data.total, recordsFiltered: json.data.total, data: products });
+        callback({
+          recordsTotal: json.recordsTotal,
+          recordsFiltered: json.recordsFiltered,
+          data: json.data // keep full API object
+        });
       } catch (err) {
         console.error(err);
         callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
@@ -87,8 +96,8 @@ function initProductListingPage() {
     columns: [
       { data: null, render: (data, type, row, meta) => meta.row + 1 },
       { data: "title" },
-      { data: "author" },
-      { data: "price", render: data => `₹${data.toFixed(2)}` },
+      { data: "author_name" },
+      { data: "price", render: data => `₹${parseFloat(data).toFixed(2)}` },
       {
         data: null,
         orderable: false,
@@ -106,15 +115,14 @@ function initProductListingPage() {
     pageLength: 10,
     lengthMenu: [10, 20, 50, 100],
     language: {
-      emptyTable: "No products available",
-      search: "Search author or title:",
+      emptyTable: "No books available",
+      search: "Search by title, subtitle or author:"
     }
   });
 
   function updateCartCount() {
     cartCount.text(cart.length);
-    if (cart.length > 0) cartCount.show();
-    else cartCount.hide();
+    cart.length > 0 ? cartCount.show() : cartCount.hide();
   }
 
   function toggleCartItem(id, btn) {
@@ -158,32 +166,44 @@ function initProductListingPage() {
     cartModalTotal.text(total.toFixed(2));
   }
 
-  // Event handlers
+  // ---------------- Event handlers ----------------
   $(document).on("click", ".btn-toggle", e => {
     const id = parseInt($(e.currentTarget).data("id"));
     toggleCartItem(id, $(e.currentTarget));
-    table.ajax.reload(null, false);
   });
 
-  $(document).on("click", ".btn-details", e => {
+  $(document).on("click", ".btn-details", async e => {
     const id = parseInt($(e.currentTarget).data("id"));
-    const data = table.rows().data().toArray().find(d => d.id === id);
-    if (!data) return;
+    try {
+      const res = await fetch(`/books/api/${id}`);
+      const book = await res.json();
+      currentDetailItem = book;
 
-    currentDetailItem = data;
-    detailTitle.text(data.title);
-    detailAuthor.text(data.author);
-    detailSamputa.text(data.samputa);
-    detailPrice.text(data.price.toFixed(2));
-    detailKoshasheershike.text(data.kosha);
+      detailTitle.text(book.title);
+      detailSubtitle.text(book.subtitle || "-");
+      detailAuthor.text(book.author_name || "-");
+      detailSamputa.text(book.samputa_sankhye || "-");
+      detailPrice.text(book.price.toFixed(2));
+      detailDiscountPrice.text(book.discount_price ? book.discount_price.toFixed(2) : "-");
+      detailStock.text(book.stock_quantity || "-");
+      detailPages.text(book.number_of_pages || "-");
+      detailPublisher.text(book.publisher_name || "-");
+      detailLanguage.text(book.language || "-");
+      detailDescription.text(book.description || "-");
+      detailKoshasheershike.text(book.tatvapadakosha_sheershike || "-");
+      detailCoverImage.attr("src", book.cover_image_url || "/static/images/placeholder.png");
 
-    if (isInCart(id)) {
-      btnAddToCartFromDetails.removeClass("btn-primary").addClass("btn-success").html('<i class="bi bi-cart-check me-1"></i>In Cart');
-    } else {
-      btnAddToCartFromDetails.removeClass("btn-success").addClass("btn-primary").html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
+      if (isInCart(id)) {
+        btnAddToCartFromDetails.removeClass("btn-primary").addClass("btn-success").html('<i class="bi bi-cart-check me-1"></i>In Cart');
+      } else {
+        btnAddToCartFromDetails.removeClass("btn-success").addClass("btn-primary").html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
+      }
+
+      bookDetailsModal.show();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch book details.");
     }
-
-    bookDetailsModal.show();
   });
 
   btnAddToCartFromDetails.on("click", () => {
@@ -191,7 +211,6 @@ function initProductListingPage() {
       addToCart(currentDetailItem);
       updateCartCount();
       bookDetailsModal.hide();
-      table.ajax.reload(null, false);
     }
   });
 
@@ -204,7 +223,6 @@ function initProductListingPage() {
     const id = parseInt($(e.currentTarget).data("id"));
     removeFromCart(id);
     renderCartModal();
-    table.ajax.reload(null, false);
     updateCartCount();
   });
 
@@ -220,7 +238,6 @@ function initProductListingPage() {
 
   updateCartCount();
 }
-
 
 
 
@@ -263,7 +280,7 @@ function initCartPage() {
         <tr class="cart-row">
           <td>${i + 1}</td>
           <td>${item.title}</td>
-          <td>${item.author}</td>
+          <td>${item.author_name}</td>
           <td>₹${item.price.toFixed(2)}</td>
           <td>
             <input type="number" min="1" class="form-control form-control-sm quantity-input" data-id="${item.id}" value="${qty}" />

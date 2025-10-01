@@ -5,12 +5,12 @@ from typing import List, Tuple
 from typing import Optional
 
 from sqlalchemy import distinct
-from sqlalchemy import func, or_
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config.database import db_instance
 from app.models.tatvapada import Tatvapada
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+from app.models.tatvapada import TatvapadaAuthorInfo
 from app.utils.logger import setup_logger
 
 

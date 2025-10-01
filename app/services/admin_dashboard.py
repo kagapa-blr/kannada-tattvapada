@@ -2,8 +2,8 @@ from sqlalchemy import func
 
 from app.config.database import db_instance
 from app.models.documents import TatvapadakararaVivara, KannadaDocument
-from app.models.tatvapada import Tatvapada, ParibhashikaPadavivarana, Arthakosha
-from app.models.tatvapada_author_info import TatvapadaAuthorInfo
+from app.models.tatvapada import Tatvapada, ParibhashikaPadavivarana, Arthakosha, TatvapadaAuthorInfo
+
 from app.models.user_management import User
 from app.utils.logger import setup_logger
 

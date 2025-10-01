@@ -170,10 +170,12 @@ def me():
 
     try:
         payload = user_service.decode_jwt_token(access_token)
+        user_email = user_service.get_user_by_id(payload["user_id"])
         return jsonify({
             "user_id": payload["user_id"],
             "username": payload["username"],
             "user_type": payload["user_type"],
+            "user_email":user_email.email
         })
     except ValueError as e:
         return jsonify({"error": str(e)}), 401

@@ -122,7 +122,7 @@ class ShoppingOrder(db_instance.Model):
     __tablename__ = "shopping_orders"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    shopping_user_id = Column(Integer, ForeignKey("shopping_users.id", ondelete="CASCADE"), nullable=False)
+    shopping_user_id = Column(Integer, ForeignKey("shopping_users.id"), nullable=False)
     order_number = Column(String(50), unique=True, nullable=False)
     status = Column(String(50), nullable=False, default="Pending")
     total_amount = Column(Float, nullable=False)
@@ -130,7 +130,6 @@ class ShoppingOrder(db_instance.Model):
     shipping_address_id = Column(Integer, ForeignKey("addresses.id"), nullable=True)
     notes = Column(Text, nullable=True)
 
-    # NEW columns to store extra info
     user_info = Column(JSON, nullable=True)
     address_info = Column(JSON, nullable=True)
     items = Column(JSON, nullable=True)
@@ -138,5 +137,5 @@ class ShoppingOrder(db_instance.Model):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
 
-    shopping_user = relationship("ShoppingUser", back_populates="orders")
-    shipping_address = relationship("ShoppingUserAddress")
+    shopping_user = relationship("ShoppingUser", back_populates="orders", passive_deletes=True)
+    shipping_address = relationship("ShoppingUserAddress", passive_deletes=True)

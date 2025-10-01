@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
-from app.routes.payment_service import CashfreePaymentService
+from app.services.payment_service import CashfreePaymentService
 from app.services.shopping_user_service import MessageTemplate
 from app.utils.logger import setup_logger
 
