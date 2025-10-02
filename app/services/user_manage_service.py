@@ -1,10 +1,12 @@
 import os
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, List
+from typing import Optional
 
 import jwt
 from dotenv import load_dotenv
 from flask_bcrypt import Bcrypt
+from sqlalchemy import or_
 
 from app.config.database import db_instance
 from app.models.user_management import User, Admin
@@ -242,11 +244,30 @@ class UserService:
     # ----------------------
     # AUTH
     # ----------------------
-    def verify_user_credentials(self, username: str, password: str) -> Optional[User]:
+    def verify_user_credentials1(self, username: str, password: str) -> Optional[User]:
         """Verify username & password."""
         user = User.query.filter_by(username=username).first()
         if not user or not self.bcrypt.check_password_hash(user.password_hash, password):
             return None
+        return user
+
+
+
+    def verify_user_credentials(self, identifier: str, password: str) -> Optional[User]:
+        """
+        Verify user credentials by username OR email.
+
+        :param identifier: Username or email entered by the user
+        :param password: Raw password entered by the user
+        :return: User object if credentials are correct, else None
+        """
+        user = User.query.filter(
+            or_(User.username == identifier, User.email == identifier)
+        ).first()
+
+        if not user or not self.bcrypt.check_password_hash(user.password_hash, password):
+            return None
+
         return user
 
     def generate_jwt_token(self, user: User, user_type: str, expires_in: int = 30) -> str:

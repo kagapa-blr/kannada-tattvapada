@@ -5,14 +5,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Cart - Kannada Tatvapada Shop</title>
-    <!-- Bootstrap & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon" />
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap"
         rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap CSS (local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+
+    <!-- DataTables CSS (local) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='cdn/dataTables/dataTables.dataTables.min.css') }}" />
+
+    <!-- Bootstrap Icons (local preferred; if not available, use CDN) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons/bootstrap-icons.css') }}" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/profile.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shopping/shopping-index.css') }}" />
+
+    <!-- jQuery (local) -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/jquery-3.7.1.js') }}"></script>
+
+    <!-- DataTables JS (local) -->
+    <script src="{{ url_for('static', filename='cdn/dataTables/dataTables.min.js') }}"></script>
+
+    <!-- Bootstrap Bundle JS (local) -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Cashfree SDK -->
     <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
-    <link rel="icon" type="image/png" href="/static/favicon.png" />
+
     <style>
         body {
             font-family: 'Noto Sans Kannada', Arial, sans-serif;
@@ -88,9 +113,9 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-2 shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/shopping">
+            <button id="shopBackBtn" class="btn btn-primary fw-bold">
                 <i class="bi bi-arrow-left-circle me-2"></i>Shop
-            </a>
+            </button>
         </div>
     </nav>
 
@@ -207,24 +232,31 @@
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-body text-center p-5">
                     <!-- Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="50" height="50" fill="currentColor"
-                        class="bi bi-exclamation-triangle-fill text-warning" viewBox="0 0 16 16">
-                        <path
-                            d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z" />
-                    </svg>
+                    <div class="mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="#FFC107"
+                            class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 
+                        0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 
+                        3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 
+                        1-2.002 0 1 1 0 0 1 2.002 0z" />
+                        </svg>
+                    </div>
 
-                    <h4 class="mb-3 fw-bold">Session Expired</h4>
-                    <p class="text-muted mb-4">Your session has expired. Please login to continue.</p>
+                    <!-- Title & Message -->
+                    <h4 class="mb-2 fw-bold text-dark">Session Expired</h4>
+                    <p class="text-secondary mb-4">Your session has expired. Please login to continue.</p>
 
-                    <a href="/login" class="btn btn-primary btn-lg rounded-pill px-5">Login</a>
+                    <!-- Login Button -->
+                    <a id="sessionLoginBtn" href="#" class="btn btn-primary btn-lg rounded-pill px-5">
+                        Login
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Shopping JS (to be implemented for dynamic cart actions) -->
+
+
     <script type="module" src="{{ url_for('static', filename='js/shopping/shopping.js') }}"></script>
 </body>
 

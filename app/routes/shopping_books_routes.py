@@ -20,46 +20,51 @@ shopping_books_bp = Blueprint(
 
 
 # ===================== API ROUTES =====================
+from flask import current_app
 
 @shopping_books_bp.route(f"{API_PREFIX}/", methods=["GET"])
 def api_list_books():
-    draw = int(request.args.get("draw", 1))
-    start = int(request.args.get("start", 0))
-    length = int(request.args.get("length", 10))
-    search_value = request.args.get("search_word", "").strip()
+    try:
+        draw = int(request.args.get("draw", 1))
+        start = int(request.args.get("start", 0))
+        length = int(request.args.get("length", 10))
+        search_value = request.args.get("search_word", "").strip()
 
-    total_count, filtered_count, books = service.list_books(
-        search_word=search_value,
-        limit=length,
-        offset=start
-    )
+        total_count, filtered_count, books = service.list_books(
+            search_word=search_value,
+            limit=length,
+            offset=start
+        )
 
-    data = [{
-        "id": b.id,
-        "title": b.title,
-        "subtitle": b.subtitle,
-        "author_name": b.author_name,
-        "description": b.description,
-        "book_code": b.book_code,
-        "catalog_number": b.catalog_number,
-        "publisher_name": b.publisher_name,
-        "publication_date": b.publication_date.isoformat() if b.publication_date else None,
-        "number_of_pages": b.number_of_pages,
-        "price": float(b.price),
-        "discount_price": float(b.discount_price) if b.discount_price else None,
-        "stock_quantity": b.stock_quantity,
-        "cover_image_url": b.cover_image_url,
-        "language": b.language,
-        "created_at": b.created_at.isoformat(),
-        "updated_at": b.updated_at.isoformat()
-    } for b in books]
+        data = [{
+            "id": b.id,
+            "title": b.title,
+            "subtitle": b.subtitle,
+            "author_name": b.author_name,
+            "description": b.description,
+            "book_code": b.book_code,
+            "catalog_number": b.catalog_number,
+            "publisher_name": b.publisher_name,
+            "publication_date": b.publication_date.isoformat() if b.publication_date else None,
+            "number_of_pages": b.number_of_pages,
+            "price": float(b.price),
+            "discount_price": float(b.discount_price) if b.discount_price else None,
+            "stock_quantity": b.stock_quantity,
+            "cover_image_url": b.cover_image_url,
+            "language": b.language,
+            "created_at": b.created_at.isoformat(),
+            "updated_at": b.updated_at.isoformat()
+        } for b in books]
 
-    return jsonify({
-        "draw": draw,
-        "recordsTotal": total_count,
-        "recordsFiltered": filtered_count,
-        "data": data
-    })
+        return jsonify({
+            "draw": draw,
+            "recordsTotal": total_count,
+            "recordsFiltered": filtered_count,
+            "data": data
+        })
+    except Exception as e:
+        current_app.logger.error(f"api_list_books failed: {str(e)}")
+        return jsonify({"error": "Failed to list books", "details": str(e)}), 500
 
 
 @shopping_books_bp.route(f"{API_PREFIX}/<int:book_id>", methods=["GET"])

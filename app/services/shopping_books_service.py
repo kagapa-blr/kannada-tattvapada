@@ -1,7 +1,7 @@
-import os
 import csv
+import os
 from datetime import datetime
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple, List
 
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
@@ -17,13 +17,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 class ShoppingBooksService:
     def __init__(self):
         self.db = db_instance
 
     # ---------------- CRUD ----------------
-    def create_book(self, cover_file=None, **kwargs) -> Tuple[Optional[ShoppingBooks], Optional[str]]:
+    def create_book(self, cover_file=None, **kwargs) -> Tuple[Optional["ShoppingBooks"], Optional[str]]:
         """Create a new book."""
         if not kwargs.get("title"):
             return None, "Title is required."
@@ -54,10 +53,10 @@ class ShoppingBooksService:
             self.db.session.rollback()
             return None, f"Database error: {str(e)}"
 
-    def get_book_by_id(self, book_id: int) -> Optional[ShoppingBooks]:
+    def get_book_by_id(self, book_id: int) -> Optional["ShoppingBooks"]:
         return self.db.session.get(ShoppingBooks, book_id)
 
-    def update_book(self, book_id: int, cover_file=None, **kwargs) -> Tuple[Optional[ShoppingBooks], Optional[str]]:
+    def update_book(self, book_id: int, cover_file=None, **kwargs) -> Tuple[Optional["ShoppingBooks"], Optional[str]]:
         """Update an existing book."""
         book = self.get_book_by_id(book_id)
         if not book:
@@ -66,7 +65,6 @@ class ShoppingBooksService:
         kwargs = self._sanitize_numeric_fields(kwargs)
         kwargs["publication_date"] = self._safe_date(kwargs.get("publication_date"))
 
-        # Handle cover upload
         if cover_file and allowed_file(cover_file.filename):
             try:
                 filename = secure_filename(cover_file.filename)
@@ -76,7 +74,6 @@ class ShoppingBooksService:
             except Exception:
                 pass
 
-        # Update fields dynamically
         for key, value in kwargs.items():
             if hasattr(book, key):
                 setattr(book, key, value)
@@ -97,7 +94,6 @@ class ShoppingBooksService:
         if not book:
             return False, "Book not found."
 
-        # Delete cover file
         if book.cover_image_url:
             try:
                 file_path = book.cover_image_url.lstrip("/")
@@ -115,8 +111,8 @@ class ShoppingBooksService:
             return False, f"Database error: {str(e)}"
 
     # ---------------- List / Search ----------------
-    def list_books(self, search_word: str = "", limit: int = 10, offset: int = 0) -> Tuple[int, int, list]:
-        """List books with search and pagination."""
+    def list_books(self, search_word: str = "", limit: int = 10, offset: int = 0) -> Tuple[int, int, List["ShoppingBooks"]]:
+        """List books with optional search and pagination."""
         query = self.db.session.query(ShoppingBooks)
         total_count = query.count()
 
@@ -133,14 +129,14 @@ class ShoppingBooksService:
         return total_count, filtered_count, books
 
     # ---------------- Bulk Upload ----------------
-    def bulk_upload_from_csv(self, csv_file_path: str) -> Tuple[List[ShoppingBooks], List[str]]:
+    def bulk_upload_from_csv(self, csv_file_path: str) -> Tuple[List["ShoppingBooks"], List[str]]:
         """Bulk upload books from a CSV file."""
         uploaded_books, errors = [], []
 
         with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for i, row in enumerate(reader, start=1):
-                kwargs = {k: v for k, v in row.items() if v is not None and v.strip() != ""}
+                kwargs = {k: v for k, v in row.items() if v and v.strip()}
                 kwargs = self._sanitize_numeric_fields(kwargs)
                 kwargs["publication_date"] = self._safe_date(kwargs.get("publication_date"))
 
@@ -245,10 +241,12 @@ class ShoppingBooksService:
         return kwargs
 
     def _safe_date(self, value: Optional[str]):
-        """Convert string to datetime, safely."""
-        if not value or value.strip() == "":
+        """Convert string to datetime safely, returns None if invalid."""
+        if not value:
             return None
+        if isinstance(value, datetime):
+            return value
         try:
             return datetime.fromisoformat(value)
-        except ValueError:
+        except (ValueError, TypeError):
             return None

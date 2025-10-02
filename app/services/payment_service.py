@@ -1,7 +1,8 @@
+# coding: utf-8
 import os
 import uuid
-
 import requests
+from flask import request
 from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 from cashfree_pg.models.customer_details import CustomerDetails
@@ -31,10 +32,27 @@ class CashfreePaymentService:
     def generate_customer_id() -> str:
         return f"cust_{uuid.uuid4().hex[:6]}"
 
-    def create_order(self, email: str, phone: str, amount: float, name: str = None,
-                     host_url: str = None, **kwargs):
-        """Create a Cashfree order and save full details locally."""
+    def _get_base_url(self, host_url: str = None) -> str:
+        """Get base host URL from env, Flask request, or fallback."""
+        return (host_url or os.getenv("HOST_URL") or request.url_root or "http://localhost:5000/").rstrip("/") + "/"
+
+    def create_order(
+            self,
+            email: str,
+            phone: str,
+            amount: float,
+            name: str = None,
+            host_url: str = None,
+            **kwargs
+    ):
+        """
+        Create a Cashfree order and save full details locally.
+
+        Returns:
+            (order_id, payment_session_id)
+        """
         order_id = self.generate_order_id()
+        base_url = self._get_base_url(host_url)
 
         # Customer info
         customer = CustomerDetails(
@@ -44,15 +62,17 @@ class CashfreePaymentService:
             customer_phone=phone
         )
 
-        # Order meta
+        # Order meta – use `{order_id}` placeholder as per Cashfree spec
         order_meta = OrderMeta(
-            return_url=f"{host_url}payment/success?order_id={order_id}" if host_url else None,
-            notify_url=f"{host_url}payment/webhook" if host_url else None
+            return_url=f"{base_url}payment/success?order_id={{order_id}}",
+            notify_url=f"{base_url}payment/webhook",
+            payment_methods=kwargs.get("payment_methods")
         )
 
+        # Create order request
         create_order_request = CreateOrderRequest(
             order_id=order_id,
-            order_amount=amount,
+            order_amount=round(amount, 2),
             order_currency="INR",
             customer_details=customer,
             order_meta=order_meta,
@@ -60,15 +80,24 @@ class CashfreePaymentService:
         )
 
         # Call Cashfree API
-        api_response = self.client.PGCreateOrder(self.api_version, create_order_request)
+        try:
+            api_response = self.client.PGCreateOrder(
+                self.api_version,
+                create_order_request,
+                x_idempotency_key=str(uuid.uuid4())
+            )
+        except Exception as e:
+            self.logger.exception("Failed to create order with Cashfree")
+            raise RuntimeError("Cashfree order creation failed") from e
+
         order_data = getattr(api_response, "data", None)
         payment_session_id = getattr(order_data, "payment_session_id", None)
 
         if not payment_session_id:
             self.logger.error(f"Cashfree response missing payment_session_id: {api_response}")
-            raise Exception("Payment Session ID not found")
+            raise ValueError("Payment Session ID not found")
 
-        # Save order in DB
+        # Save order locally
         ShoppingOrderService.create_order(
             email=email,
             order_number=order_id,
@@ -82,6 +111,7 @@ class CashfreePaymentService:
             items=kwargs.get("items")
         )
 
+        self.logger.info(f"✅ Order created successfully: {order_id}")
         return order_id, payment_session_id
 
     def fetch_order_with_payments(self, order_id: str):
@@ -91,7 +121,6 @@ class CashfreePaymentService:
         if not order:
             raise Exception("Order not found in Cashfree")
 
-        # Fetch payments
         env = os.getenv("CASHFREE_ENV", "sandbox").lower()
         base_url = "https://sandbox.cashfree.com" if env == "sandbox" else "https://api.cashfree.com"
         payments_url = f"{base_url}/pg/orders/{order_id}/payments"

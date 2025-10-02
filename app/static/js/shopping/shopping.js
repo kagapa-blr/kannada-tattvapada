@@ -1,4 +1,4 @@
-import apiClient from "../apiClient.js";
+import apiClient, { BASE_URL } from "../apiClient.js";
 import apiEndpoints from "../apiEndpoints.js";
 import { showLoader, hideLoader } from "../loader.js";
 
@@ -235,7 +235,7 @@ function initProductListingPage() {
     renderCartModal();
   });
 
-  $("#btnGoToCartPage").on("click", () => window.location.href = "/shopping/cart");
+  $("#btnGoToCartPage").on("click", () => window.location.href = `${BASE_URL}/shopping/cart`);
 
   updateCartCount();
 }
@@ -496,6 +496,13 @@ function initCartPage() {
   if (updateAddressBtn) {
     updateAddressBtn.addEventListener('click', goToProfile);
   }
+
+  const shopBackBtn = document.getElementById('shopBackBtn');
+  const shopUrl = `${BASE_URL}/shopping`
+  shopBackBtn.addEventListener('click', () => {
+    window.location.href = shopUrl;
+  });
+
 
 
 

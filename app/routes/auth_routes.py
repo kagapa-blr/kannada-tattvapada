@@ -117,7 +117,7 @@ def login():
                 "message": "Username and password are required"
             }), 400
 
-        user = user_service.verify_user_credentials(username, password)
+        user = user_service.verify_user_credentials(identifier=username.strip(), password=password.strip())
         if not user:
             return jsonify({
                 "success": False,

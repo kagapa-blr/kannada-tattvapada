@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
@@ -527,7 +529,7 @@ class ShoppingUserAddressService:
 class ShoppingOrderService:
 
     @staticmethod
-    def _get_shopping_user_by_email(email: str) -> ShoppingUser | None:
+    def _get_shopping_user_by_email(email: str) -> Optional[ShoppingUser]:
         """Fetch ShoppingUser by joining User table (hybrid-safe)."""
         if not email:
             return None
@@ -614,7 +616,7 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def list_orders(email: str | None = None, limit: int = 100, offset: int = 0) -> dict:
+    def list_orders(email: Optional[str] = None, limit: int = 100, offset: int = 0) -> dict:
         try:
             query = ShoppingOrder.query
             if email:
@@ -623,7 +625,11 @@ class ShoppingOrderService:
                     return {"success": True, "message": "", "data": []}
                 query = query.filter_by(shopping_user_id=shopping_user.id)
             orders = query.offset(offset).limit(limit).all()
-            return {"success": True, "message": "", "data": [ShoppingOrderService.serialize_order(o) for o in orders]}
+            return {
+                "success": True,
+                "message": "",
+                "data": [ShoppingOrderService.serialize_order(o) for o in orders]
+            }
         except SQLAlchemyError as e:
             return MessageTemplate.database_error(str(e))
 
