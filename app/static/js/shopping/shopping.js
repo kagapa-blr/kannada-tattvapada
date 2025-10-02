@@ -519,7 +519,7 @@ async function callProtectedApi() {
   console.log('Validating user session...');
   try {
     const response = await apiClient.get(apiEndpoints.auth.me);
-    console.log('API response:', response);
+
     // handle success if needed
   } catch (err) {
     console.log('API error status:', err.status);
