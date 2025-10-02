@@ -16,7 +16,7 @@
     }
 
     .modal-lg {
-      max-width: 800px;
+      max-width: 900px;
     }
 
     #coverPreview {
@@ -112,9 +112,6 @@
           <button class="btn btn-primary btn-sm" id="searchBtn">🔍</button>
         </div>
       </div>
-
-
-
     </div>
 
     <div class="text-center my-3">
@@ -151,14 +148,26 @@
 
           <div class="modal-body">
             <input type="hidden" name="id" id="bookId">
+
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Title *</label>
                 <input type="text" class="form-control" name="title" placeholder="Enter book title" required>
               </div>
               <div class="col-md-6">
+                <label class="form-label">Subtitle</label>
+                <input type="text" class="form-control" name="subtitle" placeholder="Enter book subtitle">
+              </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+              <div class="col-md-6">
                 <label class="form-label">Author</label>
                 <input type="text" class="form-control" name="author_name" placeholder="Author name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Language</label>
+                <input type="text" class="form-control" name="language" placeholder="Language">
               </div>
             </div>
 
@@ -181,12 +190,34 @@
               </div>
             </div>
 
-            <div class="mb-3 mt-3">
-              <label class="form-label">Description</label>
-              <textarea class="form-control" name="description" rows="3" placeholder="Short description..."></textarea>
+            <div class="row g-3 mt-2">
+              <div class="col-md-4">
+                <label class="form-label">Book Code</label>
+                <input type="text" class="form-control" name="book_code" placeholder="Book code">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Catalog Number</label>
+                <input type="text" class="form-control" name="catalog_number" placeholder="Catalog number">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Publisher</label>
+                <input type="text" class="form-control" name="publisher_name" placeholder="Publisher name">
+              </div>
             </div>
 
-            <div class="mb-3">
+            <div class="row g-3 mt-2">
+              <div class="col-md-4">
+                <label class="form-label">Publication Date</label>
+                <input type="date" class="form-control" name="publication_date">
+              </div>
+              <div class="col-md-8">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="3"
+                  placeholder="Short description..."></textarea>
+              </div>
+            </div>
+
+            <div class="mb-3 mt-3">
               <label class="form-label">Cover Image</label>
               <input type="file" class="form-control" name="cover_file" id="coverFileInput">
               <img id="coverPreview" src="" alt="Cover Preview" class="d-none border mt-2 rounded">
@@ -294,38 +325,52 @@
 
       // Controls
       $('#refreshBtn').click(() => table.ajax.reload());
-      $('#searchBtn').click(() => {
-        const searchValue = $('#manualSearchInput').val().trim();
-        if (!searchValue) {
-          alert('Please enter a valid search term.');
-          return;
-        }
-        table.ajax.reload();
+      $('#searchBtn').click(() => table.ajax.reload());
+
+      $('#addBookBtn').click(() => {
+        $('#bookForm')[0].reset();
+        $('#bookId').val('');
+        $('#coverPreview').attr('src', '').addClass('d-none');
+        new bootstrap.Modal('#bookModal').show();
       });
 
+      $('#autoFillBtn').click(() => {
+        $('#autoFillForm')[0].reset();
+        new bootstrap.Modal('#autoFillModal').show();
+      });
 
-      $('#addBookBtn').click(() => { $('#bookForm')[0].reset(); $('#bookId').val(''); $('#coverPreview').attr('src', '').addClass('d-none'); new bootstrap.Modal('#bookModal').show(); });
-      $('#autoFillBtn').click(() => { $('#autoFillForm')[0].reset(); new bootstrap.Modal('#autoFillModal').show(); });
-
-      // Edit & Delete
+      // Edit book
       $('#booksTable').on('click', '.edit', function () {
         const id = $(this).data('id');
         $.getJSON(`/books/api/${id}`)
           .done(book => {
             $('#bookId').val(book.id);
             $('#bookForm [name="title"]').val(book.title);
+            $('#bookForm [name="subtitle"]').val(book.subtitle);
             $('#bookForm [name="author_name"]').val(book.author_name);
+            $('#bookForm [name="language"]').val(book.language);
             $('#bookForm [name="price"]').val(book.price);
             $('#bookForm [name="discount_price"]').val(book.discount_price);
             $('#bookForm [name="stock_quantity"]').val(book.stock_quantity);
             $('#bookForm [name="number_of_pages"]').val(book.number_of_pages);
             $('#bookForm [name="description"]').val(book.description);
-            if (book.cover_image_url) $('#coverPreview').attr('src', book.cover_image_url).removeClass('d-none');
+            $('#bookForm [name="book_code"]').val(book.book_code);
+            $('#bookForm [name="catalog_number"]').val(book.catalog_number);
+            $('#bookForm [name="publisher_name"]').val(book.publisher_name);
+            $('#bookForm [name="publication_date"]').val(book.publication_date ? book.publication_date.split('T')[0] : '');
+
+            if (book.cover_image_url) {
+              $('#coverPreview').attr('src', book.cover_image_url).removeClass('d-none');
+            } else {
+              $('#coverPreview').attr('src', '').addClass('d-none');
+            }
+
             new bootstrap.Modal('#bookModal').show();
           })
           .fail(() => alert('❌ Failed to fetch book details.'));
       });
 
+      // Delete book
       $('#booksTable').on('click', '.delete', function () {
         const id = $(this).data('id');
         if (confirm('Are you sure you want to delete this book?')) {

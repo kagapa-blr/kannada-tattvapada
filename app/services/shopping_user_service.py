@@ -12,6 +12,8 @@ import traceback
 
 # Define IST timezone
 IST = pytz.timezone("Asia/Kolkata")
+
+
 class MessageTemplate:
     @staticmethod
     def database_error(error: str, code: int = 500) -> dict:
@@ -69,6 +71,7 @@ class MessageTemplate:
             "code": code
         }
 
+
 # -------------------------
 # ShoppingUser Service
 # -------------------------
@@ -118,6 +121,53 @@ class ShoppingUserService:
             db_instance.session.refresh(shopping_user)
 
             return {"success": True, "message": "", "data": ShoppingUserService.serialize_user(shopping_user)}
+        except SQLAlchemyError as e:
+            db_instance.session.rollback()
+            traceback.print_exc()
+            return MessageTemplate.database_error(str(e))
+
+    @staticmethod
+    def sync_user_to_shopping(email, auto_create=True):
+        try:
+            email_normalized = email.strip().lower()
+            user = User.query.filter(func.lower(User.email) == email_normalized).first()
+            if not user:
+                return MessageTemplate.not_found("User")
+
+            shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+
+            if shopping_user:
+                # ✅ Already exists, update last login and return message
+                shopping_user.last_login_at = datetime.now(IST)
+                db_instance.session.commit()
+                db_instance.session.refresh(shopping_user)
+
+                return {
+                    "success": True,
+                    "message": "User already synced successfully.",
+                    "data": ShoppingUserService.serialize_user(shopping_user)
+                }
+
+            # If shopping_user does not exist and auto_create is True, create new
+            if auto_create:
+                shopping_user = ShoppingUser(
+                    user_id=user.id,
+                    name_override=user.name.strip() if user.name else None,
+                    phone_override=user.phone.strip() if user.phone else None,
+                    last_login_at=datetime.now(IST)  # Set last login in IST
+                )
+                db_instance.session.add(shopping_user)
+                db_instance.session.commit()
+                db_instance.session.refresh(shopping_user)
+
+                return {
+                    "success": True,
+                    "message": "User created and synced successfully.",
+                    "data": ShoppingUserService.serialize_user(shopping_user)
+                }
+            else:
+                return MessageTemplate.not_found("ShoppingUser")
+
         except SQLAlchemyError as e:
             db_instance.session.rollback()
             traceback.print_exc()
@@ -201,7 +251,7 @@ class ShoppingUserService:
             return MessageTemplate.database_error(str(e))
 
     @staticmethod
-    def get_default_address_with_user(email):
+    def get_default_address_with_user1(email):
         """
         Get default shipping address along with essential user information
         (name, email, phone) for checkout/payment purpose.
@@ -261,6 +311,96 @@ class ShoppingUserService:
             traceback.print_exc()
             return MessageTemplate.database_error(str(e))
 
+    def get_default_address_with_user(self, email):
+        """
+        Get default shipping address and essential user information.
+        If the user exists but has no ShoppingUser, try to sync/create it automatically.
+        If the user exists but has no address, return user info with a message
+        prompting them to add an address.
+        """
+        try:
+            email_normalized = email.strip().lower()
+
+            # Fetch User
+            user = User.query.filter(func.lower(User.email) == email_normalized).first()
+            if not user:
+                return {"success": False, "message": "User not found.", "data": None}
+
+            # Fetch or Sync ShoppingUser
+            shopping_user = ShoppingUser.query.filter_by(user_id=user.id).first()
+            if not shopping_user:
+                try:
+                    data = self.sync_user_to_shopping(email=email_normalized)
+                    return {
+                        "success": True,
+                        "message": "User successfully synced to Shopping.",
+                        "data": data
+                    }
+                except Exception as e:
+                    return {
+                        "success": False,
+                        "message": f"Shopping profile not found for this user. Error: {str(e)}",
+                        "data": None
+                    }
+
+            # Fetch default address
+            default_address = ShoppingUserAddress.query.filter_by(
+                shopping_user_id=shopping_user.id, is_default=True
+            ).first()
+
+            # Fallback: first address if no default
+            if not default_address:
+                default_address = ShoppingUserAddress.query.filter_by(
+                    shopping_user_id=shopping_user.id
+                ).first()
+
+            # No address exists
+            if not default_address:
+                return {
+                    "success": False,
+                    "message": "No default address found. Please add one.",
+                    "data": {
+                        "user": {
+                            "id": shopping_user.id,
+                            "name": shopping_user.name,
+                            "email": shopping_user.email,
+                            "phone": shopping_user.phone,
+                        },
+                        "address": None
+                    }
+                }
+
+            # Address exists, return full info
+            data = {
+                "user": {
+                    "id": shopping_user.id,
+                    "name": shopping_user.name,
+                    "email": shopping_user.email,
+                    "phone": shopping_user.phone,
+                },
+                "address": {
+                    "id": default_address.id,
+                    "recipient_name": default_address.recipient_name or shopping_user.name,
+                    "phone_number": default_address.phone_number or shopping_user.phone,
+                    "address_line": default_address.address_line,
+                    "city": default_address.city,
+                    "taluk_division": default_address.taluk_division,
+                    "state": default_address.state,
+                    "country": default_address.country,
+                    "postal_code": default_address.postal_code,
+                    "address_type": default_address.address_type,
+                    "latitude": default_address.latitude,
+                    "longitude": default_address.longitude,
+                    "delivery_instructions": default_address.delivery_instructions,
+                }
+            }
+
+            return {"success": True, "message": "Default address retrieved successfully.", "data": data}
+
+        except SQLAlchemyError as e:
+            db_instance.session.rollback()
+            traceback.print_exc()
+            return {"success": False, "message": f"Database error: {str(e)}", "data": None}
 
 
 # -------------------------
@@ -384,8 +524,6 @@ class ShoppingUserAddressService:
             return MessageTemplate.database_error(str(e))
 
 
-
-
 class ShoppingOrderService:
 
     @staticmethod
@@ -490,7 +628,6 @@ class ShoppingOrderService:
             return MessageTemplate.database_error(str(e))
 
 
-
 class ShoppingTatvapadaService:
 
     @staticmethod
@@ -588,8 +725,8 @@ class ShoppingTatvapadaService:
         book = session.query(ShoppingTatvapada).filter_by(id=book_id).first()
         if not book:
             return None
-        author_name = session.query(TatvapadaAuthorInfo.tatvapadakarara_hesaru)\
-                             .filter_by(id=book.tatvapada_author_id).scalar()
+        author_name = session.query(TatvapadaAuthorInfo.tatvapadakarara_hesaru) \
+            .filter_by(id=book.tatvapada_author_id).scalar()
         return {
             "id": book.id,
             "samputa_sankhye": book.samputa_sankhye,

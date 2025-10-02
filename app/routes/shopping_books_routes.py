@@ -39,11 +39,19 @@ def api_list_books():
         "title": b.title,
         "subtitle": b.subtitle,
         "author_name": b.author_name,
+        "description": b.description,
+        "book_code": b.book_code,
+        "catalog_number": b.catalog_number,
+        "publisher_name": b.publisher_name,
+        "publication_date": b.publication_date.isoformat() if b.publication_date else None,
+        "number_of_pages": b.number_of_pages,
         "price": float(b.price),
         "discount_price": float(b.discount_price) if b.discount_price else None,
         "stock_quantity": b.stock_quantity,
-        "number_of_pages": b.number_of_pages,
-        "cover_image_url": b.cover_image_url
+        "cover_image_url": b.cover_image_url,
+        "language": b.language,
+        "created_at": b.created_at.isoformat(),
+        "updated_at": b.updated_at.isoformat()
     } for b in books]
 
     return jsonify({

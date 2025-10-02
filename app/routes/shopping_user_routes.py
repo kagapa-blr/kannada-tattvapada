@@ -8,7 +8,7 @@ shopping_user_bp = Blueprint("shopping_user",__name__,template_folder="templates
 API_PREFIX = "/api/v1"
 WEB_UI_PREFIX = "/"
 logger = get_logger(name="shopping_route")
-
+shopping_user_service = ShoppingUserService()
 # User Profile Page
 @shopping_user_bp.route(f"{WEB_UI_PREFIX}/profile", methods=["GET"])
 def shopping_user_profile():
@@ -32,7 +32,7 @@ def get_user(email):
     return jsonify(result)
 @shopping_user_bp.route(f"{API_PREFIX}/users/default/<string:email>", methods=["GET"])
 def get_default_address_and_user(email):
-    result = ShoppingUserService.get_default_address_with_user(email=email)
+    result = shopping_user_service.get_default_address_with_user(email=email)
     return jsonify(result)
 @shopping_user_bp.route(f"{API_PREFIX}/users/", methods=["POST"])
 def create_user():

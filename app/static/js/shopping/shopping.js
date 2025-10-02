@@ -43,6 +43,7 @@ function getCartTotal() {
   return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
 }
 
+
 // ---------------- Product Listing Page ----------------
 function initProductListingPage() {
   const cartCount = $("#cartCount");
@@ -75,22 +76,25 @@ function initProductListingPage() {
     processing: true,
     ajax: async (data, callback) => {
       try {
-        const params = new URLSearchParams({
-          start: data.start,
-          length: data.length,
-          draw: data.draw,
-          search_word: data.search.value || ""
-        });
-        const res = await fetch(`/books/api/?${params.toString()}`);
-        const json = await res.json();
+        const res = await apiClient.get(
+          apiEndpoints.shoppingbooks.listbooks(
+            data.start,
+            data.length,
+            data.draw,
+            data.search.value || ""
+          )
+        );
+
+        // Directly use returned JSON
         callback({
-          recordsTotal: json.recordsTotal,
-          recordsFiltered: json.recordsFiltered,
-          data: json.data // keep full API object
+          draw: res.draw,
+          recordsTotal: res.recordsTotal,
+          recordsFiltered: res.recordsFiltered,
+          data: res.data
         });
       } catch (err) {
         console.error(err);
-        callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+        callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
       }
     },
     columns: [
@@ -172,38 +176,35 @@ function initProductListingPage() {
     toggleCartItem(id, $(e.currentTarget));
   });
 
-  $(document).on("click", ".btn-details", async e => {
+  // Use DataTable row data directly for details
+  $(document).on("click", ".btn-details", e => {
     const id = parseInt($(e.currentTarget).data("id"));
-    try {
-      const res = await fetch(`/books/api/${id}`);
-      const book = await res.json();
-      currentDetailItem = book;
+    const book = table.rows().data().toArray().find(b => b.id === id);
+    if (!book) return;
 
-      detailTitle.text(book.title);
-      detailSubtitle.text(book.subtitle || "-");
-      detailAuthor.text(book.author_name || "-");
-      detailSamputa.text(book.samputa_sankhye || "-");
-      detailPrice.text(book.price.toFixed(2));
-      detailDiscountPrice.text(book.discount_price ? book.discount_price.toFixed(2) : "-");
-      detailStock.text(book.stock_quantity || "-");
-      detailPages.text(book.number_of_pages || "-");
-      detailPublisher.text(book.publisher_name || "-");
-      detailLanguage.text(book.language || "-");
-      detailDescription.text(book.description || "-");
-      detailKoshasheershike.text(book.tatvapadakosha_sheershike || "-");
-      detailCoverImage.attr("src", book.cover_image_url || "/static/images/placeholder.png");
+    currentDetailItem = book;
 
-      if (isInCart(id)) {
-        btnAddToCartFromDetails.removeClass("btn-primary").addClass("btn-success").html('<i class="bi bi-cart-check me-1"></i>In Cart');
-      } else {
-        btnAddToCartFromDetails.removeClass("btn-success").addClass("btn-primary").html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
-      }
+    detailTitle.text(book.title);
+    detailSubtitle.text(book.subtitle || "-");
+    detailAuthor.text(book.author_name || "-");
+    detailSamputa.text(book.samputa_sankhye || "-");
+    detailPrice.text(book.price.toFixed(2));
+    detailDiscountPrice.text(book.discount_price ? book.discount_price.toFixed(2) : "-");
+    detailStock.text(book.stock_quantity || "-");
+    detailPages.text(book.number_of_pages || "-");
+    detailPublisher.text(book.publisher_name || "-");
+    detailLanguage.text(book.language || "-");
+    detailDescription.text(book.description || "-");
+    detailKoshasheershike.text(book.tatvapadakosha_sheershike || "-");
+    detailCoverImage.attr("src", book.cover_image_url || "/static/images/placeholder.png");
 
-      bookDetailsModal.show();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to fetch book details.");
+    if (isInCart(id)) {
+      btnAddToCartFromDetails.removeClass("btn-primary").addClass("btn-success").html('<i class="bi bi-cart-check me-1"></i>In Cart');
+    } else {
+      btnAddToCartFromDetails.removeClass("btn-success").addClass("btn-primary").html('<i class="bi bi-cart-plus me-1"></i>Add to Cart');
     }
+
+    bookDetailsModal.show();
   });
 
   btnAddToCartFromDetails.on("click", () => {
@@ -242,6 +243,8 @@ function initProductListingPage() {
 
 
 
+
+
 function initCartPage() {
   const cartTableBody = $("#cartTableBody"),
     cartTotalSpan = $("#cartTotal"),
@@ -251,7 +254,7 @@ function initCartPage() {
     confirmTotalSpan = $("#confirmTotalAmount"),
     confirmAddressText = $("#confirmAddressText"),
     confirmOrderBtn = $("#confirmOrderBtn");
-
+  const updateAddressBtn = document.getElementById('updateAddressBtn');
   let userData = null;
   let addressData = null;
 
@@ -333,7 +336,6 @@ function initCartPage() {
   // -----------------------
   proceedPaymentBtn.on("click", () => {
     if (!userData || !addressData) return;
-
     const totalAmount = getCartTotal();
     confirmTotalSpan.text(totalAmount.toFixed(2));
     confirmAddressText.text($("#fullAddress").text());
@@ -363,7 +365,7 @@ function initCartPage() {
       };
 
       // Call backend API to create Cashfree order
-      const res = await fetch("/payment/api/v1/create-order", {
+      const res = await fetch(apiEndpoints.paymentApi.createOrder, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderPayload)
@@ -386,10 +388,11 @@ function initCartPage() {
         paymentSessionId,
         redirectTarget: "_self",
         onSuccess: function () {
-          window.location.href = `/payment/success?order_id=${orderId}`;
+          // window.location.href = `/payment/success?order_id=${orderId}`;
+          window.location.href = apiEndpoints.paymentApi.successOrder(orderId);
         },
         onFailure: function () {
-          window.location.href = `/payment/failure?order_id=${orderId}`;
+          window.location.href = apiEndpoints.paymentApi.failureOrder(orderId);
         }
       });
 
@@ -414,48 +417,131 @@ function initCartPage() {
       alert("Failed to initiate payment: " + err.message);
     }
   });
-
-
-  // -----------------------
-  // Fetch User Info & Address
-  // -----------------------
-  async function fetchUserAndAddress() {
+  async function fetchUserEmail() {
     try {
-      const res = await fetch("http://127.0.0.1:5000/shopping/api/v1/users/default/kagapa@gmail.com");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
+      const response = await apiClient.get(apiEndpoints.auth.me);
 
-      console.log('json', json)
-
-      if (json.success && json.data) {
-        userData = json.data.user;
-        addressData = json.data.address;
-
-        $("#userName").text(userData.name || "-");
-        $("#userEmail").text(userData.email || "-");
-        $("#userPhone").text(userData.phone || "-");
-
-        $("#fullAddress").text(
-          `${addressData.recipient_name}, ${addressData.address_line}, ${addressData.city}, ${addressData.state}, ${addressData.country} - ${addressData.postal_code}, 📞 ${addressData.phone_number}`
-        );
-
-        updatePayButtonState();
+      if (response && response.user_email) {
+        return response.user_email;
+      } else {
+        console.warn("No email returned from API");
+        return null;
       }
-    } catch (err) {
-      console.error("Failed to fetch user/address:", err);
+    } catch (error) {
+      console.error("Failed to fetch user email:", error);
+      return null;
     }
   }
+  // -----------------------
+  // Fetch User Info & Address
+
+
+
+  async function fetchUserAndAddress() {
+    try {
+      const email = await fetchUserEmail();
+      const json = await apiClient.get(apiEndpoints.shoppingbooks.userDetailsByEmail(email));
+
+      const user = json.data?.user;
+      const address = json.data?.address;
+
+      if (user) {
+        userData = user
+        // Populate user info
+        $("#userName").text(user.name || "-");
+        $("#userEmail").text(user.email || "-");
+        $("#userPhone").text(user.phone || "-");
+
+        // Populate address if exists
+        if (address) {
+          addressData = address
+          $("#fullAddress").text(
+            `${address.recipient_name || user.name}, ${address.address_line || ""}, ${address.city || ""}, ${address.state || ""}, ${address.country || ""} - ${address.postal_code || ""}, Phone: ${address.phone_number || user.phone}`
+          );
+          $("#proceedPaymentBtn").prop("disabled", false);
+        } else {
+          $("#fullAddress").text(json.message || "No default address found. Please add one.");
+          $("#proceedPaymentBtn").prop("disabled", true);
+        }
+
+      } else {
+        // User not found
+        $("#userName").text("-");
+        $("#userEmail").text("-");
+        $("#userPhone").text("-");
+        $("#fullAddress").text(json.message || "User or address not found.");
+        $("#proceedPaymentBtn").prop("disabled", true);
+      }
+
+    } catch (err) {
+      console.error("Failed to fetch user/address:", err);
+      $("#userName").text("-");
+      $("#userEmail").text("-");
+      $("#userPhone").text("-");
+      $("#fullAddress").text("Error fetching user details. Please try again.");
+      $("#proceedPaymentBtn").prop("disabled", true);
+    }
+  }
+
+
+  // Function to go to Shopping Profile
+  async function goToProfile() {
+    try {
+      let profileUrl = apiEndpoints.shopping.shoppingUserProfile
+      window.location.href = profileUrl;
+    } catch (err) {
+      console.error("Failed to fetch profile info:", err);
+    }
+  }
+  if (updateAddressBtn) {
+    updateAddressBtn.addEventListener('click', goToProfile);
+  }
+
+
 
   // -----------------------
   // Initialize
   // -----------------------
+
   fetchUserAndAddress();
   renderCart();
+
+}
+
+async function callProtectedApi() {
+  console.log('Validating user session...');
+  try {
+    const response = await apiClient.get(apiEndpoints.auth.me);
+    console.log('API response:', response);
+    // handle success if needed
+  } catch (err) {
+    console.log('API error status:', err.status);
+
+    if (err.status === 401) {
+      const modalEl = document.getElementById('sessionExpiredModal');
+      if (modalEl) {
+        // Set login URL dynamically
+        const loginBtn = modalEl.querySelector('#sessionLoginBtn');
+        if (loginBtn) {
+          loginBtn.setAttribute('href', apiEndpoints.auth.login);
+        }
+
+        const sessionModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+        sessionModal.show();
+      } else {
+        console.error("Session Expired modal element not found!");
+      }
+    } else {
+      console.error("API error:", err);
+    }
+  }
 }
 
 
 
+
 $(document).ready(() => {
+  callProtectedApi();
   if ($("#productTable").length) initProductListingPage();
   else if ($("#cartTableBody").length) initCartPage();
 });

@@ -20,7 +20,7 @@ async function fetchUserEmail() {
     return null;
   }
 }
-
+let email = ""
 
 // ==============================
 // DOM ELEMENTS
@@ -297,8 +297,7 @@ const API = {
   loadUserData: async () => {
     try {
       showLoader();
-
-      const email = await fetchUserEmail();
+      email = await fetchUserEmail();
       const userRes = await apiClient.get(apiEndpoints.shopping.getUserByEmail(email));
       if (!userRes.success) throw new Error(userRes.message || "Failed to fetch user");
       userData = userRes.data;
@@ -315,7 +314,7 @@ const API = {
       Render.addresses();
       Render.orders();
     } catch (err) {
-      alert("Failed to load user profile: " + err.message);
+      //alert("Failed to load user profile: " + err.message);
       console.error(err);
     } finally {
       hideLoader();
@@ -377,8 +376,41 @@ const API = {
     } finally {
       hideLoader();
     }
-  }
+  },
+
+
 };
+
+async function callProtectedApi() {
+  console.log('Validating user session...');
+  try {
+    const response = await apiClient.get(apiEndpoints.auth.me);
+    console.log('API response:', response);
+    // handle success if needed
+  } catch (err) {
+    console.log('API error status:', err.status);
+
+    if (err.status === 401) {
+      const modalEl = document.getElementById('sessionExpiredModal');
+      if (modalEl) {
+        // Set login URL dynamically
+        const loginBtn = modalEl.querySelector('#sessionLoginBtn');
+        if (loginBtn) {
+          loginBtn.setAttribute('href', apiEndpoints.auth.login);
+        }
+
+        const sessionModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+        sessionModal.show();
+      } else {
+        console.error("Session Expired modal element not found!");
+      }
+    } else {
+      console.error("API error:", err);
+    }
+  }
+}
+
+
 
 // ==============================
 // EVENT HANDLERS
@@ -465,8 +497,8 @@ const Handlers = {
   onLogout: async () => {
     try {
       showLoader();
-      await apiClient.post(apiEndpoints.auth.logout);
-      window.location.href = "/login";
+      //await apiClient.post(apiEndpoints.auth.logout);
+      window.location.href = apiEndpoints.auth.logout;
     } catch (err) {
       alert("Logout failed: " + err.message);
       console.error(err);
@@ -474,6 +506,8 @@ const Handlers = {
       hideLoader();
     }
   }
+
+
 };
 
 // ==============================
@@ -483,13 +517,19 @@ const Handlers = {
 
 
 const profileInit = () => {
-
-  document.addEventListener("DOMContentLoaded", API.loadUserData);
+  // Load user data
+  API.loadUserData();
+  // Attach event listeners
   DOM.addressInputs.pincode.addEventListener("blur", Handlers.onPINBlur);
   DOM.profileForm.addEventListener("submit", Handlers.onProfileSubmit);
   DOM.addressForm.addEventListener("submit", Handlers.onAddressSubmit);
   DOM.addressList.addEventListener("click", Handlers.onAddressListClick);
   DOM.logoutBtn.addEventListener("click", Handlers.onLogout);
 };
+// Ensure session validation runs after DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  callProtectedApi();
 
-profileInit();
+  // Initialize profile page
+  profileInit();
+});

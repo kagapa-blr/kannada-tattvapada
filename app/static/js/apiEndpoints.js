@@ -127,8 +127,25 @@ const apiEndpoints = {
         shoppingList: (offset = 0, limit = 10, search = "") => `${BASE_URL}/shopping/api/v1/orders/catalog?offset=${offset}&limit=${limit}&search=${encodeURIComponent(search)}`,
         shoppingUpdate: (id) => `${BASE_URL}/shopping/api/v1/orders/catalog/${id}`,
         shoppingDelete: (id) => `${BASE_URL}/shopping/api/v1/orders/catalog/${id}`,
-        shoppingSync: (default_price = 100) => `${BASE_URL}/shopping/api/v1/orders/catalog/sync?default_price=${default_price}`
+        shoppingSync: (default_price = 100) => `${BASE_URL}/shopping/api/v1/orders/catalog/sync?default_price=${default_price}`,
+    
+        //Shopping User profile 
+        shoppingUserProfile : `${BASE_URL}/shopping/profile`
     },
+    shoppingbooks: {
+        listbooks: (start = 0, length = 10, draw = 1, search_word = "") =>
+            `${BASE_URL}/books/api/?start=${start}&length=${length}&draw=${draw}&search_word=${encodeURIComponent(search_word)}`,
+        userDetailsByEmail: (email) => `${BASE_URL}/shopping/api/v1/users/default/${email}`,
+        
+
+    },
+    paymentApi: {
+        createOrder: `${BASE_URL}/payment/api/v1/create-order`,
+        successOrder: (orderId) => `${BASE_URL}/payment/success?order_id=${orderId}`,
+        failureOrder: (orderId) => `${BASE_URL}/payment/failure?order_id=${orderId}`,
+    }
+
+
 
 
 

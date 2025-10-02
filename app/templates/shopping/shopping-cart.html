@@ -138,31 +138,43 @@
                     <hr />
                     <h6 class="fw-semibold text-primary mb-3"><i class="bi bi-person-circle me-2"></i>Customer Info</h6>
                     <div class="row mb-3" id="userInfoSection">
-                        <div class="col-6 col-md-12 mb-2"><span class="info-label">Name:</span> <span class="info-value"
-                                id="userName">-</span></div>
-                        <div class="col-6 col-md-12 mb-2"><span class="info-label">Email:</span> <span
-                                class="info-value" id="userEmail">-</span></div>
-                        <div class="col-6 col-md-12"><span class="info-label">Phone:</span> <span class="info-value"
-                                id="userPhone">-</span></div>
+                        <div class="col-6 col-md-12 mb-2">
+                            <span class="info-label">Name:</span>
+                            <span class="info-value" id="userName">-</span>
+                        </div>
+                        <div class="col-6 col-md-12 mb-2">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value" id="userEmail">-</span>
+                        </div>
+                        <div class="col-6 col-md-12">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value" id="userPhone">-</span>
+                        </div>
                     </div>
                     <hr />
                     <h6 class="fw-semibold text-primary mb-2"><i class="bi bi-geo-alt-fill me-2"></i>Delivery Address
                     </h6>
                     <div id="addressSection" class="mb-3">
                         <p class="info-value" id="fullAddress">No address found.</p>
-                        <div class="mt-2 p-2 bg-warning bg-opacity-25 border-start border-3 border-warning rounded">
-                            <i class="bi bi-exclamation-circle-fill me-1"></i>
-                            Update your address from <a href="/shopping/profile"
-                                class="fw-semibold text-decoration-none">Profile Section</a> if needed.
+                        <div
+                            class="mt-2 p-2 bg-warning bg-opacity-25 border-start border-3 border-warning rounded d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-exclamation-circle-fill me-1"></i>
+                                Update your address if needed
+                            </div>
+                            <!-- Small button for profile link, URL can be set via JS -->
+                            <button id="updateAddressBtn" class="btn btn-sm btn-warning fw-semibold">Profile</button>
                         </div>
                     </div>
                     <div class="mt-4 text-end">
-                        <button id="proceedPaymentBtn" class="btn btn-success checkout-btn" disabled>
+                        <button id="proceedPaymentBtn" class="btn btn-success checkout-btn">
                             <i class="bi bi-credit-card me-2"></i>Pay Now
                         </button>
                     </div>
                 </div>
             </div>
+
+
         </div>
     </main>
 
@@ -189,6 +201,28 @@
         </div>
     </div>
 
+    <!-- Modern Session Expired Modal -->
+    <div class="modal fade" id="sessionExpiredModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center p-5">
+                    <!-- Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="50" height="50" fill="currentColor"
+                        class="bi bi-exclamation-triangle-fill text-warning" viewBox="0 0 16 16">
+                        <path
+                            d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z" />
+                    </svg>
+
+                    <h4 class="mb-3 fw-bold">Session Expired</h4>
+                    <p class="text-muted mb-4">Your session has expired. Please login to continue.</p>
+
+                    <a href="/login" class="btn btn-primary btn-lg rounded-pill px-5">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Shopping JS (to be implemented for dynamic cart actions) -->
     <script type="module" src="{{ url_for('static', filename='js/shopping/shopping.js') }}"></script>
