@@ -54,10 +54,13 @@
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
+                            <th>Cover</th>
                             <th>Title</th>
                             <th>Author</th>
-                            <th>Price (₹)</th>
-                            <th class="text-center">Action</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Rating</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody"></tbody>
@@ -107,67 +110,79 @@
 
     <!-- Book Details Modal -->
     <div class="modal fade" id="bookDetailsModal" tabindex="-1" aria-labelledby="bookDetailsLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="bookDetailsLabel"><i class="bi bi-book me-2"></i>Book Details</h5>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+
+                <!-- Header -->
+                <div class="modal-header bg-primary text-white py-2">
+                    <h5 class="modal-title"><i class="bi bi-book me-2"></i>Book Details</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-3">Title</dt>
-                        <dd class="col-sm-9" id="detailTitle"></dd>
 
-                        <dt class="col-sm-3">Subtitle</dt>
-                        <dd class="col-sm-9" id="detailSubtitle"></dd>
+                <!-- Body -->
+                <div class="modal-body p-4">
 
-                        <dt class="col-sm-3">Author</dt>
-                        <dd class="col-sm-9" id="detailAuthor"></dd>
+                    <div class="row g-4">
 
-                        <dt class="col-sm-3">Price</dt>
-                        <dd class="col-sm-9">₹<span id="detailPrice"></span></dd>
+                        <!-- Left: Cover -->
+                        <div class="col-md-4 text-center">
+                            <img id="detailCoverImage" class="img-fluid rounded shadow-sm"
+                                style="max-height: 420px; object-fit: contain;">
+                        </div>
 
-                        <dt class="col-sm-3">Discount Price</dt>
-                        <dd class="col-sm-9">₹<span id="detailDiscountPrice"></span></dd>
+                        <!-- Right: Details -->
+                        <div class="col-md-8">
 
-                        <dt class="col-sm-3">Stock</dt>
-                        <dd class="col-sm-9" id="detailStock"></dd>
+                            <h4 id="detailTitle" class="fw-bold"></h4>
+                            <h6 id="detailSubtitle" class="text-muted mb-2"></h6>
 
-                        <dt class="col-sm-3">Number of Pages</dt>
-                        <dd class="col-sm-9" id="detailPages"></dd>
+                            <div id="detailAuthor" class="fw-semibold mb-2"></div>
 
-                        <dt class="col-sm-3">Publisher</dt>
-                        <dd class="col-sm-9" id="detailPublisher"></dd>
+                            <!-- Rating -->
+                            <div class="mb-2">
+                                <span id="detailRating" class="badge bg-success fs-6 px-3 py-2">4.5 ★</span>
+                            </div>
 
-                        <dt class="col-sm-3">Language</dt>
-                        <dd class="col-sm-9" id="detailLanguage"></dd>
+                            <!-- Price -->
+                            <div class="mb-3">
+                                <span class="fs-3 fw-bold text-success">₹<span id="detailPrice"></span></span>
+                                <span class="text-decoration-line-through text-danger ms-2 fs-6"
+                                    id="detailDiscountPrice"></span>
+                            </div>
 
-                        <dt class="col-sm-3">Samputa Sankhye</dt>
-                        <dd class="col-sm-9" id="detailSamputa"></dd>
+                            <p id="detailDescription" class="text-secondary"></p>
 
-                        <dt class="col-sm-3">Tatvapadakosha Sheershike</dt>
-                        <dd class="col-sm-9" id="detailKoshasheershike"></dd>
+                            <div class="row small mb-3">
+                                <div class="col-6"><b>Pages:</b> <span id="detailPages"></span></div>
+                                <div class="col-6"><b>Language:</b> <span id="detailLanguage"></span></div>
+                                <div class="col-6 mt-2"><b>Publisher:</b> <span id="detailPublisher"></span></div>
+                                <div class="col-6 mt-2"><b>Stock:</b> <span class="badge bg-info"
+                                        id="detailStock"></span></div>
+                            </div>
 
-                        <dt class="col-sm-3">Description</dt>
-                        <dd class="col-sm-9" id="detailDescription"></dd>
+                            <!-- Buttons -->
+                            <div class="d-flex flex-wrap gap-2 mt-4">
+                                <button id="btnAddToCartFromDetails" class="btn btn-primary flex-grow-1 py-2">
+                                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                                </button>
 
-                        <dt class="col-sm-3">Cover Image</dt>
-                        <dd class="col-sm-9">
-                            <img id="detailCoverImage" src="" alt="Cover Image" class="img-fluid rounded"
-                                style="max-height: 300px;">
-                        </dd>
-                    </dl>
+                                <button id="btnBuyNow" class="btn btn-warning flex-grow-1 py-2">
+                                    <i class="bi bi-lightning-charge-fill me-1"></i>Buy Now
+                                </button>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="btnAddToCartFromDetails" class="btn btn-primary">
-                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button id="btnShareWhatsApp" class="btn btn-success flex-grow-1 py-2">
+                                    <i class="bi bi-whatsapp me-1"></i>Share
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Modern Session Expired Modal -->
     <div class="modal fade" id="sessionExpiredModal" tabindex="-1" aria-hidden="true">

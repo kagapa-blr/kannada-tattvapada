@@ -43,7 +43,6 @@ function getCartTotal() {
   return cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
 }
 
-
 // ---------------- Product Listing Page ----------------
 function initProductListingPage() {
   const cartCount = $("#cartCount");
@@ -57,7 +56,6 @@ function initProductListingPage() {
   const detailTitle = $("#detailTitle"),
     detailSubtitle = $("#detailSubtitle"),
     detailAuthor = $("#detailAuthor"),
-    detailSamputa = $("#detailSamputa"),
     detailPrice = $("#detailPrice"),
     detailDiscountPrice = $("#detailDiscountPrice"),
     detailStock = $("#detailStock"),
@@ -65,8 +63,8 @@ function initProductListingPage() {
     detailPublisher = $("#detailPublisher"),
     detailLanguage = $("#detailLanguage"),
     detailDescription = $("#detailDescription"),
-    detailKoshasheershike = $("#detailKoshasheershike"),
     detailCoverImage = $("#detailCoverImage"),
+    detailRating = $("#detailRating"),
     btnAddToCartFromDetails = $("#btnAddToCartFromDetails");
 
   let currentDetailItem = null;
@@ -85,7 +83,6 @@ function initProductListingPage() {
           )
         );
 
-        // Directly use returned JSON
         callback({
           draw: res.draw,
           recordsTotal: res.recordsTotal,
@@ -98,10 +95,25 @@ function initProductListingPage() {
       }
     },
     columns: [
-      { data: null, render: (data, type, row, meta) => meta.row + 1 },
+      { data: null, render: (data, type, row, meta) => meta.row + 1 }, // Serial number
+      {
+        data: "cover_image_url",
+        render: (data) => data
+          ? `<img src="${data}" alt="Cover" width="50" class="rounded">`
+          : '<span class="text-muted">No image</span>'
+      },
       { data: "title" },
       { data: "author_name" },
-      { data: "price", render: data => `₹${parseFloat(data).toFixed(2)}` },
+      {
+        data: "price",
+        render: (data) => data ? `₹${parseFloat(data).toFixed(2)}` : '-'
+      },
+      { data: "stock_quantity", defaultContent: '0', className: 'text-center' },
+      {
+        data: "rating",
+        render: d => d ? `${parseFloat(d).toFixed(1)} ★` : '-',
+        className: 'text-center'
+      },
       {
         data: null,
         orderable: false,
@@ -170,13 +182,13 @@ function initProductListingPage() {
     cartModalTotal.text(total.toFixed(2));
   }
 
-  // ---------------- Event handlers ----------------
+  // Event handlers
   $(document).on("click", ".btn-toggle", e => {
     const id = parseInt($(e.currentTarget).data("id"));
     toggleCartItem(id, $(e.currentTarget));
   });
 
-  // Use DataTable row data directly for details
+  // Show book details from DataTable row data
   $(document).on("click", ".btn-details", e => {
     const id = parseInt($(e.currentTarget).data("id"));
     const book = table.rows().data().toArray().find(b => b.id === id);
@@ -187,15 +199,14 @@ function initProductListingPage() {
     detailTitle.text(book.title);
     detailSubtitle.text(book.subtitle || "-");
     detailAuthor.text(book.author_name || "-");
-    detailSamputa.text(book.samputa_sankhye || "-");
-    detailPrice.text(book.price.toFixed(2));
+    detailPrice.text(book.price ? book.price.toFixed(2) : "-");
     detailDiscountPrice.text(book.discount_price ? book.discount_price.toFixed(2) : "-");
     detailStock.text(book.stock_quantity || "-");
     detailPages.text(book.number_of_pages || "-");
     detailPublisher.text(book.publisher_name || "-");
     detailLanguage.text(book.language || "-");
     detailDescription.text(book.description || "-");
-    detailKoshasheershike.text(book.tatvapadakosha_sheershike || "-");
+    detailRating.text(book.rating ? `${parseFloat(book.rating).toFixed(1)} ★` : "-");
     detailCoverImage.attr("src", book.cover_image_url || "/static/images/placeholder.png");
 
     if (isInCart(id)) {
@@ -212,6 +223,17 @@ function initProductListingPage() {
       addToCart(currentDetailItem);
       updateCartCount();
       bookDetailsModal.hide();
+
+      // Update product table toggle button
+      if (table) {
+        table.rows().every(function () {
+          const data = this.data();
+          if (data && data.id === currentDetailItem.id) {
+            this.invalidate();
+          }
+        });
+        table.draw(false); // redraw, keep page
+      }
     }
   });
 
@@ -239,9 +261,6 @@ function initProductListingPage() {
 
   updateCartCount();
 }
-
-
-
 
 
 

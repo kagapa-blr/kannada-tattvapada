@@ -1,7 +1,9 @@
 import os
+
 from dotenv import load_dotenv
-from flask import Flask
-from flask_migrate import Migrate, init as migrate_init, upgrade
+from flask import Flask, send_from_directory
+from flask_migrate import Migrate, upgrade
+
 from app.config.database import db_instance, init_db
 from app.routes.admin_routes import admin_bp
 from app.routes.auth_routes import auth_bp
@@ -22,8 +24,6 @@ from app.utils.logger import setup_logger
 # -------------------- Step 1: Load Environment -------------------- #
 load_dotenv()
 
-
-
 # ------------------- Default Admin Config ------------------- #
 DEFAULT_ADMIN_USERNAME = os.getenv("KAGAPA_USERNAME", "kagapa")
 DEFAULT_ADMIN_PASSWORD = os.getenv("KAGAPA_PASSWORD", "kagapa")
@@ -34,8 +34,6 @@ DEFAULT_ADMIN_PAYLOAD = {
     "username": DEFAULT_ADMIN_USERNAME,
     "password": DEFAULT_ADMIN_PASSWORD,
 }
-
-
 
 # -------------------- Step 2: Logger Setup -------------------- #
 logger = setup_logger("main", "main.log")
@@ -84,6 +82,13 @@ app.register_blueprint(shopping_books_bp)
 logger.info(
     "Blueprints registered: home_bp, tatvapada_bp, auth_bp, admin_bp, delete_bp, documents_bp, errors_bp, right_section_bp, right_section_impl_bp"
 )
+UPLOAD_FOLDER = os.path.join(app_root, "uploads")
+
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
 
 # -------------------- Step 8: Automatic Upgrade (without autogeneration) -------------------- #
 def auto_upgrade():
@@ -92,7 +97,7 @@ def auto_upgrade():
 
     if not os.path.exists(migrations_path):
         logger.info("Migrations folder not found. Initializing with create_all...\n")
-        db_instance.create_all()   # <-- directly create tables
+        db_instance.create_all()  # <-- directly create tables
         logger.info("All tables created from models.")
         return
 
@@ -104,6 +109,7 @@ def auto_upgrade():
         logger.error(f"Migration failed: {e}")
         logger.info("Falling back to create_all()...")
         db_instance.create_all()
+
 
 # -------------------- Step 9: Entry Point -------------------- #
 if __name__ == "__main__":
@@ -122,7 +128,7 @@ if __name__ == "__main__":
         print(f"default user creation : {result}")
         if tables:
             tables_list = "\n".join([f"  {i + 1}. {table}" for i, table in enumerate(tables)])
-           # print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")
+            # print(f"\n\nCreated/Updated Tables:\n{tables_list}\n\n")
             logger.info(f"Tables in the database:\n{tables_list}\n")
         else:
             print("\n\nNo tables found in the database.\n\n")

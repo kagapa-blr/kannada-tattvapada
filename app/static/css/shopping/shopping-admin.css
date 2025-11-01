@@ -1,0 +1,86 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Noto Sans Kannada';
+    font-size: 15px;
+    line-height: 1.1;
+    color: #2c2c2c;
+}
+
+.modal-lg {
+    max-width: 900px;
+}
+
+#coverPreview {
+    max-width: 150px;
+    max-height: 200px;
+    margin-top: 10px;
+}
+
+.spinner-border {
+    display: none;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: #1e88e5;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+}
+
+.btn-success {
+    background-color: #43a047;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #2e7d32;
+}
+
+.btn-secondary {
+    background-color: #757575;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #424242;
+}
+
+/* Search input alignment */
+.top-controls {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+
+.search-group {
+    display: flex;
+    gap: 5px;
+}
+
+.search-group input,
+.search-group button {
+    height: 38px;
+}
+
+@media (max-width: 576px) {
+    .top-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-group {
+        justify-content: flex-start;
+    }
+}
