@@ -5,6 +5,7 @@ from app.services.shopping_books_service import ShoppingBooksService, allowed_fi
 
 UPLOAD_FOLDER = "uploads/covers"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+DEFAULT_COVER_URL = "/uploads/covers/default.jpg"
 
 service = ShoppingBooksService()
 
@@ -47,7 +48,7 @@ def api_list_books():
             "price": float(b.price),
             "discount_price": float(b.discount_price) if b.discount_price else None,
             "stock_quantity": b.stock_quantity,
-            "cover_image_url": b.cover_image_url,
+            "cover_image_url": b.cover_image_url if b.cover_image_url else DEFAULT_COVER_URL,
             "rating": b.rating,
             "language": b.language,
             "created_at": b.created_at.isoformat(),
@@ -172,5 +173,3 @@ def api_auto_create_from_tatvapada():
 @shopping_books_bp.route("/admin", methods=["GET"])
 def web_list_books_admin():
     return render_template("shopping/shoppingbooks-admin.html")
-
-
