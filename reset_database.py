@@ -6,7 +6,6 @@ from flask import Flask
 from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.config.database import db_instance
 from app.utils.logger import setup_logger
 
 # Initialize logger
@@ -48,16 +47,7 @@ def test_db_connection():
         return False, str(e)
 
 
-def init_app():
-    app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db_instance.init_app(app)
-    return app
-
-
 def list_tables():
-    """List all tables in the database."""
     engine = create_engine(DATABASE_URI)
     insp = inspect(engine)
     return insp.get_table_names()
@@ -67,7 +57,6 @@ def reset_database():
     print_db_config()
     print("\nWarning: Make sure the application is not running before continuing.")
     proceed = input("Have you stopped the application? (yes/no): ").strip().lower()
-    logger.debug(f"User input for application stop confirmation: {proceed}")
 
     if proceed not in ["yes", "y"]:
         print("Operation aborted. Please stop the app and try again.")
@@ -78,21 +67,27 @@ def reset_database():
         logger.error(f"Database connection failed: {error}")
         return
 
-    # Ask reset mode
-    mode = input("\nDo you want to:\n"
-                 "1. Reset specific table(s)\n"
-                 "2. Full reset (drop & recreate DB)\n"
-                 "Enter choice (1 or 2): ").strip()
+    mode = input(
+        "\nDo you want to:\n"
+        "1. Reset specific table(s)\n"
+        "2. Full reset (drop database)\n"
+        "Enter choice (1 or 2): "
+    ).strip()
 
+    # --------------------------------------------------
+    # FULL RESET (Drop Database Only)
+    # --------------------------------------------------
     if mode == "2":
-        confirm = input(f"\nConnection successful.\nDo you want to DROP and RECREATE the database '{DB_NAME}' and delete all migrations? (yes/no): ").strip().lower()
-        logger.debug(f"User input for drop/create confirmation: {confirm}")
+        confirm = input(
+            f"\nConnection successful.\n"
+            f"Do you want to DROP the database '{DB_NAME}' and delete all migrations? (yes/no): "
+        ).strip().lower()
 
         if confirm not in ["yes", "y"]:
             print("Operation cancelled.")
             return
 
-        # Step 1: Delete migrations folder
+        # Delete migrations folder
         if os.path.exists(MIGRATIONS_DIR):
             try:
                 shutil.rmtree(MIGRATIONS_DIR)
@@ -101,25 +96,21 @@ def reset_database():
                 logger.error(f"Failed to delete migrations directory: {e}")
                 return
 
-        # Step 2: Drop and recreate database
+        # Drop database
         try:
             engine = create_engine(ROOT_URI)
             with engine.connect() as conn:
                 conn.execute(text(f"DROP DATABASE IF EXISTS `{DB_NAME}`;"))
-                conn.execute(text(f"CREATE DATABASE `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"))
-            logger.info(f"Database '{DB_NAME}' dropped and recreated.")
+            logger.info(f"Database '{DB_NAME}' dropped successfully.")
+            print("Database dropped successfully.")
         except SQLAlchemyError as e:
-            logger.error(f"Error during database reset: {e}")
+            logger.error(f"Error during database drop: {e}")
             return
 
-        # Step 3: Re-initialize app and create tables
-        app = init_app()
-        with app.app_context():
-            db_instance.create_all()
-            logger.info("Tables created successfully from models.")
-
+    # --------------------------------------------------
+    # TABLE RESET (Drop Tables Only)
+    # --------------------------------------------------
     elif mode == "1":
-        # Step 1: List tables
         try:
             tables = list_tables()
         except Exception as e:
@@ -133,15 +124,15 @@ def reset_database():
         print("\nTables in database:")
         for idx, tbl in enumerate(tables, start=1):
             print(f"{idx}. {tbl}")
-        print(f"{len(tables)+1}. All (reset all tables)")
+        print(f"{len(tables)+1}. All (drop all tables)")
 
-        table_choice = input("Select table(s) to reset (comma separated numbers): ").strip()
+        table_choice = input("Select table(s) to drop (comma separated numbers): ").strip()
         selected = [x.strip() for x in table_choice.split(",")]
 
         engine = create_engine(DATABASE_URI)
         with engine.connect() as conn:
-            if str(len(tables)+1) in selected:
-                # Drop all tables
+
+            if str(len(tables) + 1) in selected:
                 for tbl in tables:
                     try:
                         conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
@@ -151,19 +142,14 @@ def reset_database():
             else:
                 for idx in selected:
                     try:
-                        tbl = tables[int(idx)-1]
+                        tbl = tables[int(idx) - 1]
                         conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
                         logger.info(f"Dropped table {tbl}")
                     except Exception as e:
                         logger.error(f"Failed to drop table: {e}")
-                        continue
 
-        # Step 2: Recreate dropped tables from models
-        app = init_app()
-        with app.app_context():
-            db_instance.create_all()
-            logger.info("Selected table(s) recreated successfully from models.")
-        print("Table(s) reset successfully.")
+        print("Selected table(s) dropped successfully.")
+
     else:
         print("Invalid option selected.")
 
@@ -172,7 +158,6 @@ def main():
     print("\nSelect an operation:")
     print("1. Reset database (table-level or full DB)")
     choice = input("Enter your choice (1): ").strip()
-    logger.debug(f"User selected option: {choice}")
 
     if choice == "1":
         reset_database()
