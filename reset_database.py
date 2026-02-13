@@ -26,7 +26,7 @@ DB_NAME = os.getenv("DB_NAME")
 ROOT_URI = f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/"
 DATABASE_URI = f"{ROOT_URI}{DB_NAME}?charset=utf8mb4"
 
-MIGRATIONS_DIR = "migrations"
+MIGRATIONS_DIR = "migrations/versions"
 
 
 def print_db_config():

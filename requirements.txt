@@ -11,3 +11,4 @@ requests
 cryptography
 cashfree_pg
 fpdf2
+alembic

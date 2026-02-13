@@ -16,14 +16,24 @@ class CashfreePaymentService:
     def __init__(self, environment: str = None, api_version: str = "2023-08-01"):
         self.logger = setup_logger("CashfreePaymentService")
 
-        Cashfree.XClientId = os.getenv("CASHFREE_CLIENT_ID")
-        Cashfree.XClientSecret = os.getenv("CASHFREE_CLIENT_SECRET")
-        env = environment or os.getenv("CASHFREE_ENV", "sandbox")
-        Cashfree.XEnvironment = Cashfree.SANDBOX if env.lower() == "sandbox" else Cashfree.PRODUCTION
+        env = (environment or os.getenv("CASHFREE_ENV", "sandbox")).lower()
+
+        if env == "sandbox":
+            x_environment = Cashfree.SANDBOX
+        else:
+            x_environment = Cashfree.PRODUCTION
+
+        self.client = Cashfree(
+            XClientId=os.getenv("CASHFREE_CLIENT_ID"),
+            XClientSecret=os.getenv("CASHFREE_CLIENT_SECRET"),
+            XEnvironment=x_environment
+        )
 
         self.api_version = api_version
-        self.client = Cashfree()
 
+    # -----------------------------
+    # Utility Generators
+    # -----------------------------
     @staticmethod
     def generate_order_id() -> str:
         return f"order_{uuid.uuid4().hex[:12]}"
@@ -33,28 +43,28 @@ class CashfreePaymentService:
         return f"cust_{uuid.uuid4().hex[:6]}"
 
     def _get_base_url(self, host_url: str = None) -> str:
-        """Get base host URL from env, Flask request, or fallback."""
-        return (host_url or os.getenv("HOST_URL") or request.url_root or "http://localhost:5000/").rstrip("/") + "/"
+        return (
+            host_url
+            or os.getenv("HOST_URL")
+            or request.url_root
+            or "http://localhost:5000/"
+        ).rstrip("/") + "/"
 
+    # -----------------------------
+    # Create Order
+    # -----------------------------
     def create_order(
-            self,
-            email: str,
-            phone: str,
-            amount: float,
-            name: str = None,
-            host_url: str = None,
-            **kwargs
+        self,
+        email: str,
+        phone: str,
+        amount: float,
+        name: str = None,
+        host_url: str = None,
+        **kwargs
     ):
-        """
-        Create a Cashfree order and save full details locally.
-
-        Returns:
-            (order_id, payment_session_id)
-        """
         order_id = self.generate_order_id()
         base_url = self._get_base_url(host_url)
 
-        # Customer info
         customer = CustomerDetails(
             customer_id=self.generate_customer_id(),
             customer_name=name or "Guest User",
@@ -62,14 +72,12 @@ class CashfreePaymentService:
             customer_phone=phone
         )
 
-        # Order meta – use `{order_id}` placeholder as per Cashfree spec
         order_meta = OrderMeta(
             return_url=f"{base_url}payment/success?order_id={{order_id}}",
             notify_url=f"{base_url}payment/webhook",
             payment_methods=kwargs.get("payment_methods")
         )
 
-        # Create order request
         create_order_request = CreateOrderRequest(
             order_id=order_id,
             order_amount=round(amount, 2),
@@ -79,7 +87,6 @@ class CashfreePaymentService:
             order_note=kwargs.get("order_note", "Cashfree Hosted Checkout")
         )
 
-        # Call Cashfree API
         try:
             api_response = self.client.PGCreateOrder(
                 self.api_version,
@@ -97,7 +104,6 @@ class CashfreePaymentService:
             self.logger.error(f"Cashfree response missing payment_session_id: {api_response}")
             raise ValueError("Payment Session ID not found")
 
-        # Save order locally
         ShoppingOrderService.create_order(
             email=email,
             order_number=order_id,
@@ -111,18 +117,33 @@ class CashfreePaymentService:
             items=kwargs.get("items")
         )
 
-        self.logger.info(f"✅ Order created successfully: {order_id}")
+        self.logger.info(f"Order created successfully: {order_id}")
         return order_id, payment_session_id
 
+    # -----------------------------
+    # Fetch Order & Payments
+    # -----------------------------
     def fetch_order_with_payments(self, order_id: str):
-        """Fetch Cashfree order + payment details."""
-        order_response = self.client.PGFetchOrder(self.api_version, order_id=order_id)
+        try:
+            order_response = self.client.PGFetchOrder(
+                self.api_version,
+                order_id=order_id
+            )
+        except Exception as e:
+            self.logger.exception("Failed to fetch order from Cashfree")
+            raise RuntimeError("Unable to fetch order") from e
+
         order = getattr(order_response, "data", None)
         if not order:
             raise Exception("Order not found in Cashfree")
 
         env = os.getenv("CASHFREE_ENV", "sandbox").lower()
-        base_url = "https://sandbox.cashfree.com" if env == "sandbox" else "https://api.cashfree.com"
+        base_url = (
+            "https://sandbox.cashfree.com"
+            if env == "sandbox"
+            else "https://api.cashfree.com"
+        )
+
         payments_url = f"{base_url}/pg/orders/{order_id}/payments"
 
         headers = {
@@ -132,7 +153,17 @@ class CashfreePaymentService:
         }
 
         verify_ssl = False if env == "sandbox" else True
-        payments_response = requests.get(payments_url, headers=headers, verify=verify_ssl)
+
+        try:
+            payments_response = requests.get(
+                payments_url,
+                headers=headers,
+                verify=verify_ssl,
+                timeout=15
+            )
+        except Exception as e:
+            self.logger.exception("Failed to fetch payments")
+            raise RuntimeError("Unable to fetch payment details") from e
 
         payment = {}
         if payments_response.status_code == 200:
@@ -151,14 +182,22 @@ class CashfreePaymentService:
 
         return order, payment_info
 
+    # -----------------------------
+    # Webhook Verification
+    # -----------------------------
     def verify_webhook(self, signature: str, raw_body: str, timestamp: str):
-        """Verify Cashfree webhook and update local order."""
-        webhook_event, err = self.client.PGVerifyWebhookSignature(signature, raw_body, timestamp)
+        webhook_event, err = self.client.PGVerifyWebhookSignature(
+            signature,
+            raw_body,
+            timestamp
+        )
+
         if err:
             raise Exception(f"Invalid webhook signature: {err}")
 
         event_obj = webhook_event.get("object", {})
         event_data = event_obj.get("data", {})
+
         cf_order_id = event_data.get("order_id")
         payment_status = event_data.get("payment_status")
 

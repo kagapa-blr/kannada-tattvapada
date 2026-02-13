@@ -3,7 +3,7 @@
 .idea
 *.log
 logs
-migrations
+migrations/versions
 *.pyc
 __pycache__
 .env
