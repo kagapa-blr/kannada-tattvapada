@@ -1,77 +1,113 @@
-# app/utils/auth_decorator.py
 from functools import wraps
 from flask import g, jsonify, request, redirect, url_for, flash
 
 from app.services.user_manage_service import UserService
 from app.utils.logger import setup_logger
 
-logger = setup_logger("auth_decorator", )
+logger = setup_logger("auth_decorator")
 
 user_service = UserService()
+
+
+# ------------------------------------------------------------
+# Helper: Extract token from Cookie OR Header
+# ------------------------------------------------------------
+def _extract_token():
+    # 1. Try cookie
+    token = request.cookies.get("access_token")
+    if token:
+        return token
+
+    # 2. Try Authorization header
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header.split(" ")[1]
+
+    return None
+
+
+# ------------------------------------------------------------
+# LOGIN REQUIRED
+# ------------------------------------------------------------
 def login_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        token = request.cookies.get("access_token")
+
+        token = _extract_token()
+
         if not token:
+            # API → return JSON
+            if request.path.startswith("/api/"):
+                return jsonify({
+                    "error": "unauthorized",
+                    "message": "Authentication token missing."
+                }), 401
+
+            # Web → redirect
             flash("ದಯವಿಟ್ಟು ಲಾಗಿನ್ ಆಗಿ.", "warning")
-            logger.warning("Login required but no token found")
             return redirect(url_for("auth.login"))
+
         try:
             payload = user_service.decode_jwt_token(token)
-            g.user = user_service.get_user_by_id(payload.get("user_id"))
-            if not g.user:
-                logger.warning("Token valid but user not found in DB")
-                return redirect(url_for("auth.login"))
+            user = user_service.get_user_by_id(payload.get("user_id"))
+
+            if not user:
+                raise Exception("User not found")
+
+            g.user = user
+
         except Exception as e:
-            flash(str(e), "danger")
-            logger.error(f"Login check failed: {str(e)}")
+            logger.warning(f"Login check failed: {str(e)}")
+
+            if request.path.startswith("/api/"):
+                return jsonify({
+                    "error": "invalid_token",
+                    "message": "Invalid or expired token."
+                }), 401
+
+            flash("Session expired. Please login again.", "danger")
             return redirect(url_for("auth.login"))
+
         return view_func(*args, **kwargs)
 
     return wrapper
 
+
+# ------------------------------------------------------------
+# ADMIN REQUIRED
+# ------------------------------------------------------------
 def admin_required(route_function):
-    """
-    Decorator to ensure the user is authenticated and has admin privileges.
-    Special case: user 'kagapa' is always allowed.
-    Returns structured JSON errors instead of redirects for frontend handling.
-    """
 
     @wraps(route_function)
     def wrapper(*args, **kwargs):
-        access_token = request.cookies.get("access_token")
-        if not access_token:
-            logger.warning("Admin access denied: no token provided")
-            return jsonify({
-                "error": "unauthorized",
-                "message": "Access token is missing. Please log in."
-            }), 401
+
+        token = _extract_token()
+
+        if not token:
+            if request.path.startswith("/api/"):
+                return jsonify({
+                    "error": "unauthorized",
+                    "message": "Authentication token missing."
+                }), 401
+
+            return redirect(url_for("auth.login"))
 
         try:
-            # Decode and validate token
-            token_payload = user_service.decode_jwt_token(access_token)
-            user_id = token_payload.get("user_id")
-            if not user_id:
-                logger.warning("Admin access denied: invalid token payload")
-                return jsonify({
-                    "error": "invalid_token",
-                    "message": "Invalid or expired access token."
-                }), 401
+            payload = user_service.decode_jwt_token(token)
+            user_id = payload.get("user_id")
 
-            # Fetch user
+            if not user_id:
+                raise Exception("Invalid token payload")
+
             current_user = user_service.get_user_by_id(user_id)
+
             if not current_user:
-                logger.info("Admin access denied: user not found")
-                return jsonify({
-                    "error": "user_not_found",
-                    "message": "User does not exist."
-                }), 401
+                raise Exception("User not found")
 
             g.user = current_user
 
-            # Special bypass for username "kagapa"
+            # Special bypass for kagapa
             if g.user.username == "kagapa":
-                logger.info("Special admin bypass granted for user 'kagapa'")
                 return route_function(*args, **kwargs)
 
             # Normal admin check
@@ -82,20 +118,19 @@ def admin_required(route_function):
             }
 
             if g.user.username not in admin_users:
-                logger.warning(f"User '{g.user.username}' tried admin route without rights")
                 return jsonify({
                     "error": "forbidden",
-                    "message": "Admin privileges are required to access this resource."
+                    "message": "Admin privileges required."
                 }), 403
 
-            # ✅ All checks passed
             return route_function(*args, **kwargs)
 
         except Exception as exc:
             logger.error(f"Admin check failed: {str(exc)}", exc_info=True)
+
             return jsonify({
-                "error": "server_error",
-                "message": "An internal error occurred while verifying admin access."
-            }), 500
+                "error": "invalid_token",
+                "message": "Invalid or expired token."
+            }), 401
 
     return wrapper

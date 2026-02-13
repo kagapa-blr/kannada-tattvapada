@@ -179,3 +179,58 @@ def me():
         })
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
+
+# ------------------- Generate Token (API Style) ------------------- #
+@auth_bp.route("/generate-token", methods=["POST"])
+def generate_token():
+    """
+    Generate JWT token using username and password.
+    Does NOT set cookie.
+    Returns token in JSON response.
+    """
+
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "error": "Invalid request",
+                "message": "JSON body required"
+            }), 400
+
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({
+                "error": "missing_fields",
+                "message": "Username and password are required"
+            }), 400
+
+        user = user_service.verify_user_credentials(
+            identifier=username.strip(),
+            password=password.strip()
+        )
+
+        if not user:
+            return jsonify({
+                "error": "invalid_credentials",
+                "message": "Invalid username or password"
+            }), 401
+
+        user_type = "admin" if user_service.is_admin(user.id) else "user"
+        token = user_service.generate_jwt_token(user, user_type)
+
+        return jsonify({
+            "access_token": token,
+            "token_type": "Bearer",
+            "username": user.username,
+            "user_type": user_type
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Token generation failed: {str(e)}", exc_info=True)
+        return jsonify({
+            "error": "server_error",
+            "message": "Internal server error"
+        }), 500

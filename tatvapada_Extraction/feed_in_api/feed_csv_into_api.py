@@ -2,111 +2,146 @@ import time
 import pandas as pd
 import requests
 import os
+import sys
 
-# API endpoint
-#API_URL = f"https://kagapa.com/kannada-tattvapada/api/tatvapada/add"
-API_URL = f"http://localhost:5000/api/tatvapada/add"
+BASE_URL = "http://127.0.0.1:5000"
 
-# Ask for folder path
-folder_path = input("Enter the folder path containing CSV files: ").strip()
+GENERATE_TOKEN_URL = f"{BASE_URL}/generate-token"
+UPLOAD_URL = f"{BASE_URL}/api/tatvapada/add"
 
-# Check if folder exists
-if not os.path.isdir(folder_path):
-    print("Invalid folder path.")
-    exit(1)
-
-# List all CSV files in the folder
-csv_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".csv")]
-
-if not csv_files:
-    print("No CSV files found in the folder.")
-    exit(1)
-
-total_success = 0
-total_fail = 0
-failed_rows_list = []  # To store all failed rows
-
-for csv_file in csv_files:
-    file_path = os.path.join(folder_path, csv_file)
-    print(f"\nProcessing file: {csv_file}")
-
+# ----------------------------
+# Generate JWT Token
+# ----------------------------
+def generate_token(username, password):
     try:
-        df = pd.read_csv(file_path, encoding="utf-8-sig")
+        response = requests.post(
+            GENERATE_TOKEN_URL,
+            json={"username": username, "password": password}
+        )
+
+        if response.status_code != 200:
+            print("Token generation failed:", response.text)
+            return None
+
+        data = response.json()
+        return data.get("access_token")
+
     except Exception as e:
-        print(f"Failed to read {csv_file}: {e}")
-        continue
+        print("Error generating token:", str(e))
+        return None
 
-    print(f"Total rows to upload in {csv_file}: {len(df)}\n")
 
-    success_count = 0
-    fail_count = 0
+# ----------------------------
+# Upload CSV Folder
+# ----------------------------
+def upload_csv_folder(folder_path, token):
 
-    for index, row in df.iterrows():
-        payload = {
-            "samputa_sankhye": str(row.get("samputa_sankhye", "")),
-            "tatvapadakosha_sheershike": row.get("tatvapadakosha_sheershike", ""),
-            "tatvapadakarara_hesaru": row.get("tatvapadakarara_hesaru", ""),
-            "vibhag": row.get("vibhag", "-"),
-            "tatvapada_sheershike": row.get("tatvapada_sheershike", ""),
-            "tatvapada_sankhye": str(row.get("tatvapada_sankhye", "")),
-            "tatvapada_first_line": row.get("tatvapada_first_line", ""),
-            "tatvapada": row.get("tatvapada", ""),
-            "bhavanuvada": row.get("bhavanuvada", "-"),
-            "klishta_padagalu_artha": row.get("klishta_padagalu_artha", "-"),
-            "tippani": row.get("tippani", "-"),
-        }
+    session = requests.Session()
+    session.headers.update({
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    })
 
-        # Print key info before inserting
-        print(f"Inserting row {index + 1}: "
-              f"samputa_sankhye={payload['samputa_sankhye']}, "
-              f"tatvapadakarara_hesaru={payload['tatvapadakarara_hesaru']}, "
-              f"tatvapada_sankhye={payload['tatvapada_sankhye']}")
+    csv_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".csv")]
+
+    if not csv_files:
+        print("No CSV files found.")
+        return
+
+    total_success = 0
+    total_fail = 0
+    failed_rows_list = []
+
+    for csv_file in csv_files:
+        file_path = os.path.join(folder_path, csv_file)
+        print(f"\nProcessing file: {csv_file}")
 
         try:
-            response = requests.post(API_URL, json=payload)
+            df = pd.read_csv(file_path, encoding="utf-8-sig")
+        except Exception as e:
+            print(f"Failed to read {csv_file}: {e}")
+            continue
 
-            if response.status_code in (200, 201):
-                print(f"Row {index + 1} uploaded successfully.")
-                success_count += 1
-            else:
-                print(f"Row {index + 1} failed. Status: {response.status_code}")
+        success_count = 0
+        fail_count = 0
+
+        for index, row in df.iterrows():
+
+            payload = {
+                "samputa_sankhye": str(row.get("samputa_sankhye", "")),
+                "tatvapadakosha_sheershike": row.get("tatvapadakosha_sheershike", ""),
+                "tatvapadakarara_hesaru": row.get("tatvapadakarara_hesaru", ""),
+                "vibhag": row.get("vibhag", "-"),
+                "tatvapada_sheershike": row.get("tatvapada_sheershike", ""),
+                "tatvapada_sankhye": str(row.get("tatvapada_sankhye", "")),
+                "tatvapada_first_line": row.get("tatvapada_first_line", ""),
+                "tatvapada": row.get("tatvapada", ""),
+                "bhavanuvada": row.get("bhavanuvada", "-"),
+                "klishta_padagalu_artha": row.get("klishta_padagalu_artha", "-"),
+                "tippani": row.get("tippani", "-"),
+            }
+
+            try:
+                response = session.post(UPLOAD_URL, json=payload)
+
+                if response.status_code in (200, 201):
+                    success_count += 1
+                else:
+                    fail_count += 1
+                    failed_rows_list.append({
+                        "file": csv_file,
+                        "row": index + 1,
+                        "status": response.status_code,
+                        "response": response.text
+                    })
+
+            except Exception as e:
                 fail_count += 1
                 failed_rows_list.append({
                     "file": csv_file,
-                    "row_index": index + 1,
-                    "data": row.to_dict(),
-                    "status": response.status_code,
-                    "response": response.text
+                    "row": index + 1,
+                    "status": "Exception",
+                    "response": str(e)
                 })
 
-        except Exception as e:
-            print(f"Error uploading row {index + 1}: {e}")
-            fail_count += 1
-            failed_rows_list.append({
-                "file": csv_file,
-                "row_index": index + 1,
-                "data": row.to_dict(),
-                "status": "Exception",
-                "response": str(e)
-            })
+        print(f"Finished {csv_file}: Success={success_count}, Failed={fail_count}")
 
-    print(f"\nFinished uploading {csv_file}: Success: {success_count}, Failed: {fail_count}")
+        total_success += success_count
+        total_fail += fail_count
 
-    total_success += success_count
-    total_fail += fail_count
+        print("Waiting 5 seconds before next file...")
+        time.sleep(5)
 
-    # Wait for 1 minute before processing next CSV
-    print("Waiting 15 seconds before processing next file...")
-    time.sleep(15)
+    print("\nUpload Summary")
+    print("Total Success:", total_success)
+    print("Total Failed:", total_fail)
 
-print("\nAll files processed.")
-print(f"Total Success: {total_success}")
-print(f"Total Failed: {total_fail}")
+    if failed_rows_list:
+        failed_df = pd.DataFrame(failed_rows_list)
+        failed_df.to_csv("failed_rows_report.csv", index=False)
+        print("Failed rows saved to failed_rows_report.csv")
 
-# Display failed rows as a table
-if failed_rows_list:
-    print("\nFailed Rows Table:")
-    failed_df = pd.DataFrame(failed_rows_list)
-    print(failed_df)
-else:
-    print("\nNo failed rows.")
+
+# ----------------------------
+# Main
+# ----------------------------
+if __name__ == "__main__":
+
+    username = input("Enter username: ").strip()
+    password = input("Enter password: ").strip()
+
+    token = generate_token(username, password)
+
+    if not token:
+        print("Unable to proceed without token.")
+        sys.exit(1)
+
+    print("Token generated successfully.\n")
+
+    folder_path = input("Enter the folder path containing CSV files: ").strip()
+
+    if not os.path.isdir(folder_path):
+        print("Invalid folder path.")
+        sys.exit(1)
+
+    upload_csv_folder(folder_path, token)

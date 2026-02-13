@@ -246,5 +246,5 @@ def rename_docx_files(directory):
 # === MAIN ===
 if __name__ == "__main__":
     inp = input("Folder with .docx: ").strip()
-    # rename_docx_files(inp)
+    #rename_docx_files(inp)
     process_folder(inp)
