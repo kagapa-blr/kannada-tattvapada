@@ -1,4 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
+from flask import jsonify, request
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.config.database import db_instance
 from app.services.right_section import (
 
@@ -6,7 +9,7 @@ from app.services.right_section import (
     ArthakoshaService,
     BulkUploadService, TatvapadaSuchiService,
 )
-from app.utils.auth_decorator import login_required, admin_required
+from app.utils.auth_decorator import admin_required
 
 # Blueprint with url_prefix for API versioning
 right_section_impl_bp = Blueprint(
@@ -137,75 +140,148 @@ def delete_padavivarana(samputa, author_id, entry_id):
 
 
 # ----------------- Arthakosha Routes -----------------
-@right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>", methods=["GET"])
+@right_section_impl_bp.route("/arthakosha/<samputa>/<int:author_id>", methods=["GET"])
 def get_arthakosha_by_samputa_author(samputa, author_id):
-    entries = arthakosha_service.get_by_samputa_author(samputa, int(author_id))
+    entries = ArthakoshaService.get_by_samputa_author(
+        samputa=samputa.strip(),
+        author_id=author_id
+    )
     return jsonify({"success": True, "results": entries})
 
 
 @right_section_impl_bp.route("/arthakosha", methods=["POST"])
 @admin_required
 def create_arthakosha():
-    data = request.json or {}
-    entry = arthakosha_service.create(
-        samputa=data["samputa"].strip(),
-        author_id=int(data["author_id"]),
-        title=data.get("title", "").strip() if data.get("title") else None,
-        word=data["word"].strip(),
-        meaning=data["meaning"].strip(),
-        notes=data.get("notes", "").strip() if data.get("notes") else None
-    )
-    return jsonify({"success": True, "entry": entry}), 201
+    data = request.get_json(silent=True) or {}
+
+    try:
+        entry = ArthakoshaService.create(
+            samputa=(data.get("samputa") or "").strip(),
+            author_id=data.get("author_id"),
+            word=(data.get("word") or "").strip(),
+            meaning=(data.get("meaning") or "").strip(),
+            notes=(data.get("notes") or "").strip() or None
+        )
+        return jsonify({"success": True, "entry": entry}), 201
+
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+    except SQLAlchemyError:
+        return jsonify({"success": False, "message": "Database error occurred while creating Arthakosha"}), 500
+
+    except Exception:
+        return jsonify({"success": False, "message": "Failed to create Arthakosha"}), 500
 
 
 @right_section_impl_bp.route("/arthakosha", methods=["GET"])
+@admin_required
 def list_arthakoshas():
-    offset = int(request.args.get("offset", 0))
-    limit = int(request.args.get("limit", 10))
-    search = request.args.get("search")
-    samputa = request.args.get("samputa")
-    author_id = request.args.get("author_id")
-    if author_id:
-        author_id = int(author_id)
-    data = arthakosha_service.list(
-        samputa=samputa, author_id=author_id, offset=offset, limit=limit, search=search
-    )
-    return jsonify(data)
+    try:
+        offset = int(request.args.get("offset", 0))
+        limit = int(request.args.get("limit", 10))
+        search = (request.args.get("search") or "").strip()
+        samputa = (request.args.get("samputa") or "").strip()
+
+        author_id = request.args.get("author_id")
+        author_id = int(author_id) if author_id and str(author_id).isdigit() else None
+
+        data = ArthakoshaService.list(
+            samputa=samputa or None,
+            author_id=author_id,
+            offset=offset,
+            limit=limit,
+            search=search or None
+        )
+        return jsonify({"success": True, **data})
+
+    except Exception:
+        return jsonify({"success": False, "message": "Failed to list Arthakosha entries"}), 500
 
 
-@right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>/<arthakosha_id>", methods=["GET"])
+@right_section_impl_bp.route("/arthakosha/<samputa>/<int:author_id>/<int:arthakosha_id>", methods=["GET"])
+@admin_required
 def get_arthakosha(samputa, author_id, arthakosha_id):
-    entry = arthakosha_service.get(samputa, int(author_id), int(arthakosha_id))
+    entry = ArthakoshaService.get(
+        samputa=samputa.strip(),
+        author_id=author_id,
+        id=arthakosha_id
+    )
     if entry:
-        return jsonify(entry)
-    return jsonify({"error": "Word not found"}), 404
+        return jsonify({"success": True, "entry": entry})
+    return jsonify({"success": False, "message": "Arthakosha entry not found"}), 404
 
 
-@right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>/<arthakosha_id>", methods=["PUT"])
+@right_section_impl_bp.route("/arthakosha/<samputa>/<int:author_id>/<int:arthakosha_id>", methods=["PUT"])
 @admin_required
 def update_arthakosha(samputa, author_id, arthakosha_id):
-    data = request.json or {}
-    entry = arthakosha_service.update(
-        samputa,
-        int(author_id),
-        int(arthakosha_id),
-        title=data.get("title"),
-        word=data.get("word"),
-        meaning=data.get("meaning"),
-        notes=data.get("notes")
-    )
-    if entry:
-        return jsonify({"message": "Updated successfully", "entry": entry})
-    return jsonify({"error": "Word not found"}), 404
+    data = request.get_json(silent=True) or {}
+
+    try:
+        entry = ArthakoshaService.update(
+            samputa=samputa.strip(),
+            author_id=author_id,
+            id=arthakosha_id,
+            word=(data.get("word") or "").strip() if data.get("word") is not None else None,
+            meaning=(data.get("meaning") or "").strip() if data.get("meaning") is not None else None,
+            notes=(data.get("notes") or "").strip() if data.get("notes") is not None else None
+        )
+
+        if entry:
+            return jsonify({"success": True, "message": "Updated successfully", "entry": entry})
+
+        return jsonify({"success": False, "message": "Arthakosha entry not found"}), 404
+
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+
+    except SQLAlchemyError:
+        return jsonify({"success": False, "message": "Database error occurred while updating Arthakosha"}), 500
+
+    except Exception:
+        return jsonify({"success": False, "message": "Failed to update Arthakosha"}), 500
 
 
-@right_section_impl_bp.route("/arthakosha/<samputa>/<author_id>/<arthakosha_id>", methods=["DELETE"])
+@right_section_impl_bp.route("/arthakosha/<samputa>/<int:author_id>/<int:arthakosha_id>", methods=["DELETE"])
 @admin_required
 def delete_arthakosha(samputa, author_id, arthakosha_id):
-    success = arthakosha_service.delete(samputa, int(author_id), int(arthakosha_id))
-    if success:
-        return jsonify({"message": "Deleted successfully"})
-    return jsonify({"error": "Word not found"}), 404
+    try:
+        success = ArthakoshaService.delete(
+            samputa=samputa.strip(),
+            author_id=author_id,
+            id=arthakosha_id
+        )
+        if success:
+            return jsonify({"success": True, "message": "Deleted successfully"})
+        return jsonify({"success": False, "message": "Arthakosha entry not found"}), 404
+
+    except SQLAlchemyError:
+        return jsonify({"success": False, "message": "Database error occurred while deleting Arthakosha"}), 500
+
+    except Exception:
+        return jsonify({"success": False, "message": "Failed to delete Arthakosha"}), 500
+
+
+@right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
+@admin_required
+def bulk_upload_arthakosha():
+    if "file" not in request.files or not request.files["file"].filename.strip():
+        return jsonify({
+            "success": False,
+            "message": "No file selected"
+        }), 400
+
+    file = request.files["file"]
+
+    records_added, errors = bulk_service.upload_arthakosha(file.stream)
+
+    status_code = 200 if records_added > 0 else 400
+
+    return jsonify({
+        "success": records_added > 0,
+        "message": f"{records_added} Arthakosha record(s) added successfully" if records_added else "No records were added",
+        "errors": errors
+    }), status_code
 
 
 # ----------------- Bulk Upload Routes -----------------
@@ -221,21 +297,5 @@ def bulk_upload_padavivarana():
     return jsonify({
         "success": True,
         "message": f"{records_added} Padavivarana record(s) added successfully",
-        "errors": errors
-    })
-
-
-@right_section_impl_bp.route("/upload-arthakosha", methods=["POST"])
-@admin_required
-def bulk_upload_arthakosha():
-    if "file" not in request.files or request.files["file"].filename.strip() == "":
-        return jsonify({"success": False, "message": "No file selected"}), 400
-
-    file = request.files["file"]
-    records_added, errors = bulk_service.upload_arthakosha(file.stream)
-    db_instance.session.commit()
-    return jsonify({
-        "success": True,
-        "message": f"{records_added} Arthakosha record(s) added successfully",
         "errors": errors
     })

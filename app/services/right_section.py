@@ -2,6 +2,7 @@ import csv
 import io
 from typing import Tuple, List
 from sqlalchemy import func
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from app.config.database import db_instance
@@ -158,9 +159,9 @@ class ParibhashikaPadavivaranaService:
         return [
             {"paribhashika_padavivarana_id": row.paribhashika_padavivarana_id}
             for row in db_instance.session.query(ParibhashikaPadavivarana.paribhashika_padavivarana_id)
-                .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
-                .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
-                .all()
+            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+            .all()
         ]
 
     @staticmethod
@@ -171,9 +172,9 @@ class ParibhashikaPadavivaranaService:
                 ParibhashikaPadavivarana.paribhashika_padavivarana_id,
                 ParibhashikaPadavivarana.paribhashika_padavivarana_title
             )
-                .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
-                .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
-                .all()
+            .filter_by(samputa_sankhye=samputa, tatvapada_author_id=author_id)
+            .order_by(ParibhashikaPadavivarana.paribhashika_padavivarana_id.asc())
+            .all()
         ]
 
     @staticmethod
@@ -265,145 +266,153 @@ class ArthakoshaService:
     """Service to manage Arthakosha entries"""
 
     @staticmethod
-    def create(samputa: str, author_id: int, title: str, word: str, meaning: str, notes: str = None):
+    def create(**kwargs):
+        samputa = (kwargs.get("samputa") or "").strip()
+        author_id = kwargs.get("author_id")
+        word = (kwargs.get("word") or "").strip()
+        meaning = (kwargs.get("meaning") or "").strip()
+        notes = (kwargs.get("notes") or "").strip() or None
+
         if not samputa or not author_id or not word or not meaning:
             raise ValueError("samputa, author_id, word, and meaning are required")
 
-        if title:
-            existing = Arthakosha.query.filter_by(author_id=int(author_id), title=title.strip()).first()
-            if existing:
-                raise ValueError(f"Arthakosha title '{title}' already exists for this author")
-
         entry = Arthakosha(
-            samputa=str(samputa).strip(),
+            samputa=samputa,
             author_id=int(author_id),
-            title=str(title).strip() if title else None,
-            word=str(word).strip(),
-            meaning=str(meaning).strip(),
-            notes=str(notes).strip() if notes else None
+            word=word,
+            notes=notes
         )
-        db_instance.session.add(entry)
-        db_instance.session.commit()
+        entry.set_meaning(meaning)
 
-        return {
-            "id": entry.id,
-            "samputa": entry.samputa,
-            "author_id": entry.author_id,
-            "title": entry.title,
-            "word": entry.word,
-            "meaning": entry.meaning,
-            "notes": entry.notes
-        }
+        try:
+            db_instance.session.add(entry)
+            db_instance.session.commit()
+        except IntegrityError:
+            db_instance.session.rollback()
+            raise ValueError("Duplicate entry: same word and meaning already exist for this author")
+
+        return ArthakoshaService._to_dict(entry)
 
     @staticmethod
-    def list(samputa: str = None, author_id: int = None, offset=0, limit=10, search: str = None):
+    def list(**kwargs):
+        samputa = kwargs.get("samputa")
+        author_id = kwargs.get("author_id")
+        offset = int(kwargs.get("offset") or 0)
+        limit = int(kwargs.get("limit") or 10)
+        search = (kwargs.get("search") or "").strip()
+
         query = Arthakosha.query.join(Arthakosha.author)
+
         if samputa:
             query = query.filter(Arthakosha.samputa == samputa)
         if author_id:
-            query = query.filter(Arthakosha.author_id == author_id)
+            query = query.filter(Arthakosha.author_id == int(author_id))
+
         if search:
-            term = search.strip()
+            like_term = f"{search}%"
             query = query.filter(
-                Arthakosha.word.ilike(f"{term}%") |
-                Arthakosha.meaning.ilike(f"{term}%") |
-                TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(f"{term}%")
+                or_(
+                    Arthakosha.word.ilike(like_term),
+                    Arthakosha.meaning.ilike(like_term),
+                    TatvapadaAuthorInfo.tatvapadakarara_hesaru.ilike(like_term),
+                )
             )
 
         total = query.count()
         rows = query.offset(offset).limit(limit).all()
+
         return {
             "total": total,
             "offset": offset,
             "limit": limit,
-            "results": [
-                {
-                    "id": r.id,
-                    "samputa": r.samputa,
-                    "author_id": r.author_id,
-                    "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
-                    "title": r.title,
-                    "word": r.word,
-                    "meaning": r.meaning,
-                    "notes": r.notes
-                }
-                for r in rows
-            ]
+            "results": [ArthakoshaService._to_dict(r) for r in rows]
         }
 
     @staticmethod
-    def get(samputa: str, author_id: int, arthakosha_id: int):
-        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
+    def get(**kwargs):
+        query = Arthakosha.query
+
+        if kwargs.get("id"):
+            query = query.filter(Arthakosha.id == kwargs.get("id"))
+        if kwargs.get("samputa"):
+            query = query.filter(Arthakosha.samputa == kwargs.get("samputa"))
+        if kwargs.get("author_id"):
+            query = query.filter(Arthakosha.author_id == kwargs.get("author_id"))
+
+        entry = query.first()
+        return ArthakoshaService._to_dict(entry) if entry else None
+
+    @staticmethod
+    def update(**kwargs):
+        query = Arthakosha.query
+
+        if kwargs.get("id"):
+            query = query.filter(Arthakosha.id == kwargs.get("id"))
+        if kwargs.get("samputa"):
+            query = query.filter(Arthakosha.samputa == kwargs.get("samputa"))
+        if kwargs.get("author_id"):
+            query = query.filter(Arthakosha.author_id == kwargs.get("author_id"))
+
+        entry = query.first()
         if not entry:
             return None
-        return {
-            "id": entry.id,
-            "samputa": entry.samputa,
-            "author_id": entry.author_id,
-            "author_name": entry.author.tatvapadakarara_hesaru if entry.author else None,
-            "title": entry.title,
-            "word": entry.word,
-            "meaning": entry.meaning,
-            "notes": entry.notes
-        }
+
+        if "word" in kwargs and kwargs.get("word") is not None:
+            entry.word = kwargs["word"].strip()
+
+        if "meaning" in kwargs and kwargs.get("meaning") is not None:
+            entry.set_meaning(kwargs["meaning"].strip())
+
+        if "notes" in kwargs:
+            entry.notes = (kwargs.get("notes") or "").strip() or None
+
+        try:
+            db_instance.session.commit()
+        except IntegrityError:
+            db_instance.session.rollback()
+            raise ValueError("Duplicate entry: same word and meaning already exist for this author")
+
+        return ArthakoshaService._to_dict(entry)
 
     @staticmethod
-    def update(samputa: str, author_id: int, arthakosha_id: int, title: str = None, word: str = None,
-               meaning: str = None, notes: str = None):
-        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
-        if not entry:
-            return None
-        if title and title.strip() != entry.title:
-            existing = Arthakosha.query.filter_by(author_id=author_id, title=title.strip()).first()
-            if existing:
-                raise ValueError(f"Arthakosha title '{title}' already exists for this author")
-        if title is not None:
-            entry.title = title.strip()
-        if word is not None:
-            entry.word = word.strip()
-        if meaning is not None:
-            entry.meaning = meaning.strip()
-        if notes is not None:
-            entry.notes = notes.strip()
-        db_instance.session.commit()
-        return {
-            "id": entry.id,
-            "samputa": entry.samputa,
-            "author_id": entry.author_id,
-            "title": entry.title,
-            "word": entry.word,
-            "meaning": entry.meaning,
-            "notes": entry.notes
-        }
+    def delete(**kwargs):
+        query = Arthakosha.query
 
-    @staticmethod
-    def delete(samputa: str, author_id: int, arthakosha_id: int):
-        entry = Arthakosha.query.filter_by(samputa=samputa, author_id=author_id, id=arthakosha_id).first()
+        if kwargs.get("id"):
+            query = query.filter(Arthakosha.id == kwargs.get("id"))
+        if kwargs.get("samputa"):
+            query = query.filter(Arthakosha.samputa == kwargs.get("samputa"))
+        if kwargs.get("author_id"):
+            query = query.filter(Arthakosha.author_id == kwargs.get("author_id"))
+
+        entry = query.first()
         if not entry:
             return False
+
         db_instance.session.delete(entry)
         db_instance.session.commit()
         return True
 
     @staticmethod
-    def get_by_samputa_author(samputa: str, author_id: int):
+    def get_by_samputa_author(**kwargs):
         rows = Arthakosha.query.join(Arthakosha.author).filter(
-            Arthakosha.samputa == samputa,
-            Arthakosha.author_id == author_id
+            Arthakosha.samputa == kwargs.get("samputa"),
+            Arthakosha.author_id == kwargs.get("author_id")
         ).all()
-        return [
-            {
-                "id": r.id,
-                "samputa": r.samputa,
-                "author_id": r.author_id,
-                "author_name": r.author.tatvapadakarara_hesaru if r.author else None,
-                "title": r.title,
-                "word": r.word,
-                "meaning": r.meaning,
-                "notes": r.notes
-            }
-            for r in rows
-        ]
+
+        return [ArthakoshaService._to_dict(r) for r in rows]
+
+    @staticmethod
+    def _to_dict(entry):
+        return {
+            "id": entry.id,
+            "samputa": entry.samputa,
+            "author_id": entry.author_id,
+            "author_name": entry.author.tatvapadakarara_hesaru if entry.author else None,
+            "word": entry.word,
+            "meaning": entry.meaning,
+            "notes": entry.notes
+        }
 
 
 # ----------------- Bulk Upload Service -----------------
@@ -414,59 +423,9 @@ class BulkUploadService:
         self.db = db_session or db_instance.session
 
     def upload_paribhashika_padavivarana(self, file_stream) -> Tuple[int, List[str]]:
-            """Bulk upload ParibhashikaPadavivarana from CSV.
-            Ignores duplicates but logs them in errors.
-            """
-            records_added = 0
-            errors: List[str] = []
-
-            try:
-                file_content = file_stream.read().decode("utf-8-sig")
-                reader = csv.DictReader(io.StringIO(file_content))
-                if not reader.fieldnames:
-                    return 0, ["CSV file has no header row."]
-
-                required_cols = {
-                    "tatvapada_author_id",
-                    "samputa_sankhye",
-                    "paribhashika_padavivarana_title",
-                    "paribhashika_padavivarana_content",
-                }
-                missing_cols = required_cols - set(reader.fieldnames)
-                if missing_cols:
-                    return 0, [f"Missing columns: {', '.join(missing_cols)}"]
-
-                for i, row in enumerate(reader, 1):
-                    try:
-                        padavivarana = ParibhashikaPadavivarana(
-                            tatvapada_author_id=int(row.get("tatvapada_author_id")),
-                            samputa_sankhye=row.get("samputa_sankhye").strip(),
-                            paribhashika_padavivarana_title=row.get("paribhashika_padavivarana_title").strip(),
-                            paribhashika_padavivarana_content=row.get("paribhashika_padavivarana_content").strip(),
-                        )
-                        self.db.add(padavivarana)
-                        self.db.flush()  # check constraints immediately
-                        records_added += 1
-                    except IntegrityError:
-                        self.db.rollback()  # rollback only this failed row
-                        errors.append(
-                            f"Row {i}: Duplicate entry (title='{row.get('paribhashika_padavivarana_title')}', "
-                            f"author_id={row.get('tatvapada_author_id')})"
-                        )
-                    except Exception as row_err:
-                        self.db.rollback()
-                        errors.append(f"Row {i}: {str(row_err)}")
-
-                # commit only successful ones
-                self.db.commit()
-                return records_added, errors
-
-            except Exception as e:
-                self.db.rollback()
-                return 0, [f"Unexpected error: {str(e)}"]
-
-    def upload_arthakosha(self, file_stream) -> Tuple[int, List[str]]:
-        """Bulk upload Arthakosha from CSV"""
+        """Bulk upload ParibhashikaPadavivarana from CSV.
+        Ignores duplicates but logs them in errors.
+        """
         records_added = 0
         errors: List[str] = []
 
@@ -476,36 +435,106 @@ class BulkUploadService:
             if not reader.fieldnames:
                 return 0, ["CSV file has no header row."]
 
-            required_cols = {"samputa", "author_id", "title", "word", "meaning", "notes"}
+            required_cols = {
+                "tatvapada_author_id",
+                "samputa_sankhye",
+                "paribhashika_padavivarana_title",
+                "paribhashika_padavivarana_content",
+            }
             missing_cols = required_cols - set(reader.fieldnames)
             if missing_cols:
-                return 0, [f"Missing columns: {', '.join(missing_cols)}"]
+                return 0, [f"Missing columns: {', '.join(sorted(missing_cols))}"]
 
-            for i, row in enumerate(reader, 1):
-                if not row.get("samputa") or not row.get("author_id") or not row.get("title") \
-                        or not row.get("word") or not row.get("meaning"):
-                    errors.append(f"Row {i}: Missing required field(s).")
-                    continue
+            for i, row in enumerate(reader, start=2):
                 try:
-                    arthakosha = Arthakosha(
-                        samputa=row.get("samputa").strip(),
-                        author_id=int(row.get("author_id")),
-                        title=row.get("title").strip(),
-                        word=row.get("word").strip(),
-                        meaning=row.get("meaning").strip(),
-                        notes=row.get("notes").strip() if row.get("notes") else None,
+                    padavivarana = ParibhashikaPadavivarana(
+                        tatvapada_author_id=int(row.get("tatvapada_author_id")),
+                        samputa_sankhye=(row.get("samputa_sankhye") or "").strip(),
+                        paribhashika_padavivarana_title=(row.get("paribhashika_padavivarana_title") or "").strip(),
+                        paribhashika_padavivarana_content=(row.get("paribhashika_padavivarana_content") or "").strip(),
                     )
-                    self.db.add(arthakosha)
-                    self.db.flush()
+
+                    if not padavivarana.samputa_sankhye or not padavivarana.paribhashika_padavivarana_title or not padavivarana.paribhashika_padavivarana_content:
+                        errors.append(f"Row {i}: Missing required field(s).")
+                        continue
+
+                    self.db.add(padavivarana)
+                    self.db.flush()  # catch duplicates early
                     records_added += 1
+
                 except IntegrityError:
                     self.db.rollback()
-                    errors.append(f"Row {i}: Duplicate title '{row.get('title')}' for author_id {row.get('author_id')}")
+                    errors.append(
+                        f"Row {i}: Duplicate entry (title='{row.get('paribhashika_padavivarana_title')}', "
+                        f"author_id={row.get('tatvapada_author_id')})"
+                    )
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
+
+            self.db.commit()
             return records_added, errors
+
+        except UnicodeDecodeError:
+            self.db.rollback()
+            return 0, ["File encoding error. Please upload UTF-8 encoded CSV."]
+
         except Exception as e:
+            self.db.rollback()
+            return 0, [f"Unexpected error: {str(e)}"]
+
+    def upload_arthakosha(self, file_stream) -> Tuple[int, List[str]]:
+        """Bulk upload Arthakosha from CSV"""
+
+        records_added = 0
+        errors: List[str] = []
+
+        try:
+            file_content = file_stream.read().decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(file_content))
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
+            required_cols = {"samputa", "author_id", "word", "meaning"}
+            missing_cols = required_cols - set(reader.fieldnames)
+            if missing_cols:
+                return 0, [f"Missing columns: {', '.join(sorted(missing_cols))}"]
+
+            for i, row in enumerate(reader, start=2):
+                try:
+                    payload = {
+                        "samputa": (row.get("samputa") or "").strip(),
+                        "author_id": row.get("author_id"),
+                        "word": (row.get("word") or "").strip(),
+                        "meaning": (row.get("meaning") or "").strip(),
+                        "notes": (row.get("notes") or "").strip() or None
+                    }
+
+                    if not payload["samputa"] or not payload["author_id"] or not payload["word"] or not payload[
+                        "meaning"]:
+                        errors.append(f"Row {i}: Missing required field(s).")
+                        continue
+
+                    # Let service handle validation & commit
+                    ArthakoshaService.create(**payload)
+                    records_added += 1
+
+                except ValueError as ve:
+                    db_instance.session.rollback()
+                    errors.append(f"Row {i}: {str(ve)}")
+
+                except Exception as row_err:
+                    db_instance.session.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
+
+            return records_added, errors
+
+        except UnicodeDecodeError:
+            return 0, ["File encoding error. Please upload UTF-8 encoded CSV."]
+
+        except Exception as e:
+            db_instance.session.rollback()
             return 0, [f"Unexpected error: {str(e)}"]
 
 

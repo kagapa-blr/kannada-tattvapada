@@ -52,7 +52,7 @@ const apiClient = {
             const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
             error.status = response.status;
             error.data = data;
-            throw error;
+            //throw error;
         }
 
         return data;
