@@ -6,8 +6,11 @@ import hashlib
 from typing import List, Dict, Tuple, Optional
 import docx
 
-from tatvapada_Extraction.tatvapada_extractorv2 import kannada_to_arabic
-
+# === Rename DOCX Utility ===
+kannada_to_arabic = str.maketrans({
+    '೦': '0', '೧': '1', '೨': '2', '೩': '3', '೪': '4',
+    '೫': '5', '೬': '6', '೭': '7', '೮': '8', '೯': '9'
+})
 # ---------------- Constants ----------------
 SAMPUTA_RE = re.compile(r"ಸಂಪುಟ\s*[-–]?\s*([೦-೯0-9]+)")
 

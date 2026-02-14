@@ -433,70 +433,161 @@ function resetDropdown(dropdown, placeholder, disable = false) {
     dropdown.disabled = disable;
 }
 
-
-
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function initializeBulkUploadHandler() {
     const bulkForm = document.getElementById('bulk_upload_form');
     if (!bulkForm) return;
 
-    bulkForm.addEventListener('submit', async function (event) {
+    if (bulkForm.dataset.bound === "1") return;
+    bulkForm.dataset.bound = "1";
+
+    const confirmModalEl = document.getElementById('bulk_upload_confirmModal');
+    const confirmModal = new bootstrap.Modal(confirmModalEl);
+    const confirmListEl = document.getElementById('bulk_upload_confirmFileList');
+    const confirmEmptyEl = document.getElementById('bulk_upload_confirmEmpty');
+    const confirmBtn = document.getElementById('bulk_upload_confirmBtn');
+
+    let selectedFiles = [];
+
+    bulkForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
         const fileInput = document.getElementById('bulk_upload_file');
+
         if (!fileInput.files || !fileInput.files.length) {
             alert("CSV ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ");
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+        selectedFiles = Array.from(fileInput.files);
+        renderConfirmList();
+        confirmModal.show();
+    });
 
-        showLoader();
+    function renderConfirmList() {
+        confirmListEl.innerHTML = "";
 
-        try {
-            const response = await fetch(apiEndpoints.tatvapada.bulkUploadUsingCSV, {
-                method: 'POST',
-                body: formData,
+        if (!selectedFiles.length) {
+            confirmEmptyEl.classList.remove("d-none");
+            confirmBtn.disabled = true;
+            return;
+        }
+
+        confirmEmptyEl.classList.add("d-none");
+        confirmBtn.disabled = false;
+
+        selectedFiles.forEach((file, index) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
+                <span>${file.name}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger">Remove</button>
+            `;
+
+            li.querySelector("button").addEventListener("click", function () {
+                selectedFiles.splice(index, 1);
+                renderConfirmList();
             });
 
-            // Use clone() to safely read response body multiple times if needed
-            const clonedResponse = response.clone();
-            let data;
-            try {
-                data = await response.json();
-            } catch {
-                data = { success: false, message: await clonedResponse.text() };
-            }
+            confirmListEl.appendChild(li);
+        });
+    }
 
-            hideLoader();
-
-            if (response.ok && data.success) {
-                let msg = data.message || "ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಪ್‌ಲೋಡ್ ಆಯಿತು.";
-
-                // Show row-wise errors if any
-                if (data.errors && Array.isArray(data.errors) && data.errors.length) {
-                    msg += `<br><strong>ದೋಷಗಳು:</strong><ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
-                }
-
-                document.getElementById('bulk_upload_successMessage').innerHTML = msg;
-                new bootstrap.Modal(document.getElementById('bulk_upload_successModal')).show();
-                bulkForm.reset();
-            } else {
-                // Populate error modal with multiple errors if available
-                const errorContainer = document.getElementById('bulk_upload_errorMessage');
-                if (data.errors && Array.isArray(data.errors) && data.errors.length) {
-                    errorContainer.innerHTML = `<ul style="text-align:left;">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
-                } else {
-                    errorContainer.textContent = data.message || data.error || "ಅಪ್ಪ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.";
-                }
-                new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
-            }
-        } catch (err) {
-            hideLoader();
-            const errorContainer = document.getElementById('bulk_upload_errorMessage');
-            errorContainer.textContent = "ಸರ್ವರ್ ದೋಷ: " + (err.message || '');
-            new bootstrap.Modal(document.getElementById('bulk_upload_errorModal')).show();
+    confirmBtn.addEventListener('click', async function () {
+        if (!selectedFiles.length) {
+            alert("No files selected for upload.");
+            return;
         }
+
+        confirmModal.hide();
+        await startBulkUpload();
     });
+
+    async function startBulkUpload() {
+        const progressEl = document.getElementById('bulk_upload_progress');
+        const progressBar = document.getElementById('bulk_upload_progressbar');
+        const submitBtn = bulkForm.querySelector("button[type='submit']");
+
+        const files = selectedFiles.slice();
+        const total = files.length;
+
+        if (!total) return;
+
+        submitBtn.disabled = true;
+
+        progressEl.textContent = `Total files: ${total}. Upload started.`;
+        progressBar.style.width = "0%";
+        progressBar.textContent = `0 / ${total}`;
+
+        const finalMessages = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            progressEl.textContent = `Uploading file ${i + 1} of ${total}: ${file.name}`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(apiEndpoints.tatvapada.bulkUploadUsingCSV, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const clonedResponse = response.clone();
+                let data;
+                try {
+                    data = await response.json();
+                } catch {
+                    data = { success: false, message: await clonedResponse.text() };
+                }
+
+                if (response.ok && data.success) {
+                    let msg = `<strong>${file.name}</strong> uploaded successfully.`;
+
+                    if (Array.isArray(data.errors) && data.errors.length > 0) {
+                        msg += `<br>Row errors:<ul>${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                    }
+
+                    finalMessages.push(msg);
+                } else {
+                    let errMsg = `<strong>${file.name}</strong> upload failed.`;
+
+                    if (Array.isArray(data.errors) && data.errors.length > 0) {
+                        errMsg += `<ul>${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+                    } else {
+                        errMsg += `<br>${data.message || data.error || "Upload failed due to server error."}`;
+                    }
+
+                    finalMessages.push(errMsg);
+                }
+            } catch (err) {
+                finalMessages.push(
+                    `<strong>${file.name}</strong> upload failed due to network error: ${err.message || ""}`
+                );
+            }
+
+            const percent = Math.round(((i + 1) / total) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = `${i + 1} / ${total}`;
+
+            if (i < files.length - 1) {
+                progressEl.textContent = "Waiting 5 seconds before uploading the next file...";
+                await sleep(5000);
+            }
+        }
+
+        submitBtn.disabled = false;
+        bulkForm.reset();
+        selectedFiles = [];
+
+        progressEl.textContent = `Upload completed. ${total} file(s) processed.`;
+
+        document.getElementById('bulk_upload_successMessage').innerHTML = finalMessages.join("<hr>");
+        new bootstrap.Modal(document.getElementById('bulk_upload_successModal')).show();
+    }
 }

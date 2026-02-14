@@ -107,4 +107,4 @@ if __name__ == "__main__":
             logger.info("No tables found in the database.\n")
 
     logger.info("Flask app is up and running\n")
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=8443, debug=False)

@@ -5,6 +5,7 @@ import os
 import sys
 
 BASE_URL = "http://127.0.0.1:5000"
+#BASE_URL = "https://kagapa.com/kannada-tattvapada/"
 
 GENERATE_TOKEN_URL = f"{BASE_URL}/generate-token"
 UPLOAD_URL = f"{BASE_URL}/api/tatvapada/add"

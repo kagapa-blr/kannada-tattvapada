@@ -181,15 +181,33 @@
             <p class="text-center text-muted mb-4">
                 Upload your CSV file containing tatvapada entries. Ensure the required columns are included.
             </p>
+            <div class="form-text mt-1">
+                Tip: Use <kbd>Ctrl</kbd> + <kbd>A</kbd> to select all files, or hold <kbd>Shift</kbd> to select a range.
+            </div>
 
             <form id="bulk_upload_form" enctype="multipart/form-data" novalidate>
                 <div class="mb-3">
-                    <label for="bulk_upload_file" class="form-label fw-bold">Select CSV File</label>
-                    <input class="form-control" type="file" id="bulk_upload_file" name="file" accept=".csv" required />
+                    <label for="bulk_upload_file" class="form-label fw-bold">Select CSV File(s)</label>
+                    <input class="form-control" type="file" id="bulk_upload_file" name="file" accept=".csv" multiple
+                        required />
                     <div class="form-text">
-                        Required columns: <code>samputa_sankhye, tatvapadakosha_sheershike, tatvapadakarara_hesaru, vibhag,
-                        tatvapada_sheershike, tatvapada_sankhye, tatvapada_first_line, tatvapada, bhavanuvada,
-                        klishta_padagalu_artha, tippani</code>
+                        Required columns:
+                        <code>
+                            samputa_sankhye, tatvapadakosha_sheershike, tatvapadakarara_hesaru, vibhag,
+                            tatvapada_sheershike, tatvapada_sankhye, tatvapada_first_line, tatvapada, bhavanuvada,
+                            klishta_padagalu_artha, tippani
+                        </code>
+                    </div>
+                </div>
+
+                <!-- Progress Text -->
+                <div id="bulk_upload_progress" class="text-center fw-bold text-primary mb-2"></div>
+
+                <!-- Progress Bar -->
+                <div class="progress mb-3" style="height: 22px;">
+                    <div id="bulk_upload_progressbar" class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar" style="width: 0%">
+                        0%
                     </div>
                 </div>
 
@@ -203,12 +221,12 @@
     </div>
 
     <!-- Success Modal -->
-    <div class="modal fade" id="bulk_upload_successModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade" id="bulk_upload_successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content p-4">
                 <div class="text-center">
-                    <h5 class="text-success">Upload Successful!</h5>
-                    <p id="bulk_upload_successMessage" class="mt-2"></p>
+                    <h5 class="text-success">Upload Completed!</h5>
+                    <div id="bulk_upload_successMessage" class="mt-3 text-start"></div>
                     <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">OK</button>
                 </div>
             </div>
@@ -216,7 +234,7 @@
     </div>
 
     <!-- Error Modal -->
-    <div class="modal fade" id="bulk_upload_errorModal" tabindex="-1">
+    <div class="modal fade" id="bulk_upload_errorModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="text-center">
@@ -249,6 +267,30 @@
             <p>ತತ್ವಪದವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ.</p>
             <p id="add_tatvapada_errorMessage" class="mt-2 text-muted"></p>
             <button type="button" class="btn btn-danger mt-3" data-bs-dismiss="modal">ಮುಚ್ಚಿ</button>
+        </div>
+    </div>
+</div>
+<!-- Confirm Bulk Upload Modal -->
+<div class="modal fade" id="bulk_upload_confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content p-4">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Bulk Upload</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>The following files will be uploaded:</p>
+                <ul id="bulk_upload_confirmFileList" class="list-group"></ul>
+                <div id="bulk_upload_confirmEmpty" class="text-muted mt-2 d-none">
+                    No files selected.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="bulk_upload_confirmBtn" class="btn btn-primary" disabled>
+                    Confirm and Upload
+                </button>
+            </div>
         </div>
     </div>
 </div>

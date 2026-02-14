@@ -1,6 +1,6 @@
 // static/js/apiClient.js
 
-export const BASE_URL = "http://127.0.0.1:5000";
+export const BASE_URL = "http://localhost:8443/";
 
 const defaultHeaders = {
     "Content-Type": "application/json"
