@@ -382,66 +382,112 @@ export async function initParibhashikaPadavivaranaManageTab() {
 
 
 
+    // ---------- Multiple CSV Upload ----------
+    const csvInput = document.getElementById("paribhashika_csv");
+    const fileListEl = document.getElementById("paribhashika_file_list");
+    const uploadBtn = document.getElementById("paribhashika_upload_btn");
+    const progressEl = document.querySelector("#paribhashika_fileModal .progress");
+    const progressBarEl = document.querySelector("#paribhashika_fileModal .progress-bar");
 
+    let selectedFiles = [];
 
+    // Update file review list
+    csvInput.addEventListener("change", () => {
+        selectedFiles = Array.from(csvInput.files);
+        fileListEl.innerHTML = "";
 
+        if (!selectedFiles.length) {
+            fileListEl.innerHTML = "<li class='list-group-item'>No files selected</li>";
+            return;
+        }
 
+        selectedFiles.forEach((file, idx) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.textContent = file.name;
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "btn btn-sm btn-outline-danger";
+            removeBtn.textContent = "Remove";
+            removeBtn.addEventListener("click", () => {
+                selectedFiles.splice(idx, 1);
+                const dt = new DataTransfer();
+                selectedFiles.forEach(f => dt.items.add(f));
+                csvInput.files = dt.files;
+                li.remove();
+            });
+            li.appendChild(removeBtn);
+            fileListEl.appendChild(li);
+        });
+    });
 
+    // Sequential upload
+    uploadBtn.addEventListener("click", async () => {
+        if (!selectedFiles.length) return alert("No files selected.");
 
+        progressEl.style.display = "block";
+        progressBarEl.style.width = "0%";
+        progressBarEl.textContent = "0%";
 
-
-    // ----------------- CSV Upload ----------------- //
-    async function uploadParibhashikaCSV(file) {
         const successEl = document.getElementById("paribhashika_upload_success");
         const errorEl = document.getElementById("paribhashika_upload_error");
         const warningsEl = document.getElementById("paribhashika_upload_warnings");
 
-        // Reset messages
         successEl.style.display = "none";
         errorEl.style.display = "none";
         warningsEl.style.display = "none";
         warningsEl.innerHTML = "";
 
-        if (!file) {
-            errorEl.textContent = "Please select a CSV file first.";
-            errorEl.style.display = "block";
-            return;
-        }
+        let uploadedCount = 0;
 
-        const formData = new FormData();
-        formData.append("file", file); // must match Flask backend key: request.files["file"]
+        for (const file of selectedFiles) {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        try {
-            showLoader();
+            try {
+                const resp = await apiClient.request({
+                    method: "POST",
+                    endpoint: apiEndpoints.rightSection.padavivaranaApiUpload,
+                    body: formData,
+                    headers: {}
+                });
 
-            // IMPORTANT: tell apiClient this is FormData so it won’t JSON.stringify
-            const resp = await apiClient.request({
-                method: "POST",
-                endpoint: apiEndpoints.rightSection.padavivaranaApiUpload,
-                body: formData,
-                headers: {} // let browser set multipart boundary automatically
-            });
+                uploadedCount++;
 
-            if (resp.success) {
-                successEl.textContent = resp.message;
-                successEl.style.display = "block";
+                progressBarEl.style.width = `${Math.round((uploadedCount / selectedFiles.length) * 100)}%`;
+                progressBarEl.textContent = `${Math.round((uploadedCount / selectedFiles.length) * 100)}%`;
 
-                if (resp.errors && resp.errors.length) {
-                    warningsEl.innerHTML = resp.errors.map(e => `<li>${e}</li>`).join("");
-                    warningsEl.style.display = "block";
+                if (resp.success) {
+                    if (resp.errors?.length) {
+                        resp.errors.forEach(e => {
+                            const li = document.createElement("li");
+                            li.textContent = e;
+                            warningsEl.appendChild(li);
+                        });
+                    }
+                } else {
+                    const li = document.createElement("li");
+                    li.textContent = resp.message || "Upload failed";
+                    warningsEl.appendChild(li);
                 }
-            } else {
-                errorEl.textContent = `Upload failed: ${resp.message || "Unknown error"}`;
-                errorEl.style.display = "block";
+
+            } catch (err) {
+                console.error(err);
+                const li = document.createElement("li");
+                li.textContent = `Error uploading ${file.name}`;
+                warningsEl.appendChild(li);
             }
-        } catch (err) {
-            console.error("Upload error:", err);
-            errorEl.textContent = "Something went wrong while uploading.";
-            errorEl.style.display = "block";
-        } finally {
-            hideLoader();
         }
-    }
+
+        progressEl.style.display = "none";
+        if (warningsEl.children.length) warningsEl.style.display = "block";
+        successEl.textContent = `Uploaded ${uploadedCount} / ${selectedFiles.length} file(s)`;
+        successEl.style.display = "block";
+
+        // Reset input
+        csvInput.value = "";
+        selectedFiles = [];
+        fileListEl.innerHTML = "<li class='list-group-item'>No files selected</li>";
+    });
 
 
 

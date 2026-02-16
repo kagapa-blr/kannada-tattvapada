@@ -138,6 +138,21 @@ def delete_padavivarana(samputa, author_id, entry_id):
         return jsonify({"success": True, "message": "Deleted successfully"})
     return jsonify({"success": False, "error": "Entry not found"}), 404
 
+@right_section_impl_bp.route("/upload-padavivarana", methods=["POST"])
+@admin_required
+def bulk_upload_padavivarana():
+    if "file" not in request.files or request.files["file"].filename.strip() == "":
+        return jsonify({"success": False, "message": "No file selected"}), 400
+
+    file = request.files["file"]
+    records_added, errors = bulk_service.upload_paribhashika_padavivarana(file.stream)
+    db_instance.session.commit()
+    return jsonify({
+        "success": True,
+        "message": f"{records_added} Padavivarana record(s) added successfully",
+        "errors": errors
+    })
+
 
 # ----------------- Arthakosha Routes -----------------
 @right_section_impl_bp.route("/arthakosha/<samputa>/<int:author_id>", methods=["GET"])
@@ -284,18 +299,3 @@ def bulk_upload_arthakosha():
     }), status_code
 
 
-# ----------------- Bulk Upload Routes -----------------
-@right_section_impl_bp.route("/upload-padavivarana", methods=["POST"])
-@admin_required
-def bulk_upload_padavivarana():
-    if "file" not in request.files or request.files["file"].filename.strip() == "":
-        return jsonify({"success": False, "message": "No file selected"}), 400
-
-    file = request.files["file"]
-    records_added, errors = bulk_service.upload_paribhashika_padavivarana(file.stream)
-    db_instance.session.commit()
-    return jsonify({
-        "success": True,
-        "message": f"{records_added} Padavivarana record(s) added successfully",
-        "errors": errors
-    })
