@@ -207,7 +207,7 @@ export async function initArthakoshaManageTab() {
                 manageAuthor.dispatchEvent(new Event("change"));
             }
         } catch (err) {
-           console.log(err.json ? err.json() : err);
+            console.log(err.json ? err.json() : err);
             showInfo(err.message || "Failed to create.");
         } finally {
             hideLoader();
@@ -256,11 +256,13 @@ export async function initArthakoshaManageTab() {
 
         function renderConfirmList() {
             confirmListEl.innerHTML = "";
+
             if (!selectedFiles.length) {
                 confirmEmptyEl.classList.remove("d-none");
                 confirmBtn.disabled = true;
                 return;
             }
+
             confirmEmptyEl.classList.add("d-none");
             confirmBtn.disabled = false;
 
@@ -269,21 +271,22 @@ export async function initArthakoshaManageTab() {
                 li.className = "list-group-item";
                 li.dataset.index = index;
                 li.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
-                            <strong>${file.name}</strong>
-                            <div class="text-muted small">${(file.size / 1024).toFixed(2)} KB</div>
-                        </div>
-                        <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove">Remove</button>
-                    </div>
-                    <div class="progress d-none">
-                        <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
-                    </div>
-                    <div class="text-muted small upload-status"></div>
-                `;
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong>${file.name}</strong>
+                    <div class="text-muted small">${(file.size / 1024).toFixed(2)} KB</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove">Remove</button>
+            </div>
+            <div class="progress d-none">
+                <div class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div class="text-muted small upload-status"></div>
+        `;
                 confirmListEl.appendChild(li);
             });
         }
+
 
         confirmListEl.addEventListener("click", function (e) {
             const btn = e.target.closest("button[data-action='remove']");
@@ -306,7 +309,9 @@ export async function initArthakoshaManageTab() {
 
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
-                const listItem = confirmListEl.children[i];
+                const listItem = confirmListEl.querySelector(`li[data-index="${i}"]`);
+                if (!listItem) continue;
+
                 const progressContainer = listItem.querySelector(".progress");
                 const progressBar = listItem.querySelector(".progress-bar");
                 const statusEl = listItem.querySelector(".upload-status");

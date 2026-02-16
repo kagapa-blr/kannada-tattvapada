@@ -107,7 +107,9 @@
             <form id="arthakosha_upload_form" enctype="multipart/form-data" novalidate>
                 <div class="mb-3">
                     <label for="arthakosha_csv" class="form-label fw-bold">Choose CSV File</label>
-                    <input type="file" id="arthakosha_csv" name="file" class="form-control" accept=".csv" required />
+                    <input type="file" id="arthakosha_csv" name="files" class="form-control" accept=".csv" multiple
+                        required />
+
                     <div class="form-text">
                         Only .csv files are supported. Use the template for correct format.
                     </div>
