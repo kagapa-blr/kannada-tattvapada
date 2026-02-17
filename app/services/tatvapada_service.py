@@ -21,6 +21,7 @@ class TatvapadaService:
 
     def __init__(self):
         self.logger = setup_logger("tatvapada_service", "tatvapada_service.log")
+
     def insert_tatvapada(self, data: dict) -> Optional[Tatvapada]:
         """
         Insert a new Tatvapada entry with author management.
@@ -74,11 +75,11 @@ class TatvapadaService:
             raise
 
     def update_by_composite_keys(
-        self,
-        samputa_sankhye: float,
-        tatvapada_sankhye: str,
-        tatvapada_author_id: int,
-        data: dict
+            self,
+            samputa_sankhye: float,
+            tatvapada_sankhye: str,
+            tatvapada_author_id: int,
+            data: dict
     ) -> Optional[Tatvapada]:
         """
         Update a Tatvapada entry identified by composite keys.
@@ -171,10 +172,10 @@ class TatvapadaService:
             raise
 
     def delete_by_composite_keys(
-        self,
-        samputa_sankhye: float,
-        tatvapada_sankhye: str,
-        tatvapada_author_id: int
+            self,
+            samputa_sankhye: float,
+            tatvapada_sankhye: str,
+            tatvapada_author_id: int
     ) -> bool:
         """
         Delete a specific Tatvapada entry given composite keys.
@@ -338,10 +339,10 @@ class TatvapadaService:
             return []
 
     def get_specific_tatvapada(
-        self,
-        samputa_sankhye: int,
-        tatvapada_author_id: int,
-        tatvapada_sankhye: str
+            self,
+            samputa_sankhye: int,
+            tatvapada_author_id: int,
+            tatvapada_sankhye: str
     ) -> Optional[Tatvapada]:
         """
         Fetch a specific Tatvapada entry by composite keys.
@@ -479,13 +480,107 @@ class BulkService:
                         records_added += 1
                     except IntegrityError:
                         self.db.rollback()
-                        errors.append(f"Row {i}: Duplicate Tatvapada detected (samputa '{row.get('samputa_sankhye')}', sankhye '{row.get('tatvapada_sankhye')}').")
+                        errors.append(
+                            f"Row {i}: Duplicate Tatvapada detected (samputa '{row.get('samputa_sankhye')}', sankhye '{row.get('tatvapada_sankhye')}').")
 
                 except Exception as row_err:
                     self.db.rollback()
                     errors.append(f"Row {i}: {str(row_err)}")
 
             return records_added, errors
+
+        except UnicodeDecodeError:
+            return 0, ["Failed to decode CSV. Ensure the file is UTF-8 encoded."]
+        except csv.Error as csv_err:
+            return 0, [f"CSV parsing error: {str(csv_err)}"]
+        except Exception as e:
+            return 0, [f"Unexpected error: {str(e)}"]
+
+    def update_csv_records(self, file_stream) -> Tuple[int, List[str]]:
+        """
+        Reads CSV and updates existing Tatvapada records.
+        Matching is done using (samputa_sankhye + tatvapada_sankhye + tatvapadakarara_hesaru).
+
+        Returns:
+            records_updated (int)
+            errors (List[str])
+        """
+        records_updated = 0
+        errors: List[str] = []
+
+        try:
+            file_content = file_stream.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(file_content))
+
+            if not reader.fieldnames:
+                return 0, ["CSV file has no header row."]
+
+            header = [h.strip() for h in reader.fieldnames]
+            missing_cols = set(BULK_UPLOAD_COLUMNS) - set(header)
+            if missing_cols:
+                return 0, [f"Missing columns in CSV header: {', '.join(missing_cols)}"]
+
+            for i, row in enumerate(reader, 1):
+                try:
+                    row = {k.strip(): (v.strip() if v else None) for k, v in row.items()}
+
+                    samputa = row.get("samputa_sankhye")
+                    sankhye = row.get("tatvapada_sankhye")
+                    author_name = row.get("tatvapadakarara_hesaru")
+
+                    if not samputa or not sankhye:
+                        errors.append(f"Row {i}: samputa_sankhye or tatvapada_sankhye missing.")
+                        continue
+
+                    if not author_name:
+                        errors.append(f"Row {i}: tatvapadakarara_hesaru (author) missing.")
+                        continue
+
+                    # --- Find Author ---
+                    author = TatvapadaAuthorInfo.query.filter_by(
+                        tatvapadakarara_hesaru=author_name
+                    ).first()
+
+                    if not author:
+                        errors.append(
+                            f"Row {i}: Author '{author_name}' not found. Cannot match Tatvapada."
+                        )
+                        continue
+
+                    # --- Find Tatvapada using samputa + sankhye + author ---
+                    tatvapada = Tatvapada.query.filter_by(
+                        samputa_sankhye=samputa,
+                        tatvapada_sankhye=sankhye,
+                        tatvapada_author_id=author.id
+                    ).first()
+
+                    if not tatvapada:
+                        errors.append(
+                            f"Row {i}: Tatvapada not found (samputa {samputa}, sankhye {sankhye}, author {author_name})."
+                        )
+                        continue
+
+                    # --- Update fields ---
+                    tatvapada.tatvapadakosha_sheershike = row.get('tatvapadakosha_sheershike')
+                    tatvapada.vibhag = row.get('vibhag')
+                    tatvapada.tatvapada_sheershike = row.get('tatvapada_sheershike')
+                    tatvapada.tatvapada_first_line = row.get('tatvapada_first_line')
+                    tatvapada.tatvapada = row.get('tatvapada')
+                    tatvapada.bhavanuvada = row.get('bhavanuvada')
+                    tatvapada.klishta_padagalu_artha = row.get('klishta_padagalu_artha')
+                    tatvapada.tippani = row.get('tippani')
+
+                    self.db.flush()
+                    records_updated += 1
+
+                except IntegrityError:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: Integrity error while updating record.")
+                except Exception as row_err:
+                    self.db.rollback()
+                    errors.append(f"Row {i}: {str(row_err)}")
+
+            return records_updated, errors
 
         except UnicodeDecodeError:
             return 0, ["Failed to decode CSV. Ensure the file is UTF-8 encoded."]

@@ -102,6 +102,51 @@ def add_tatvapada():
         logger.error("Unexpected error in add_tatvapada", exc_info=True)
         return jsonify({"error": "Unexpected error occurred."}), 500
 
+
+# ---------- BULK UPDATE ----------
+@tatvapada_bp.route("/api/tatvapada/bulk-update", methods=["POST"])
+@admin_required
+def bulk_update_tatvapada():
+    """
+    Bulk update Tatvapada records from CSV upload.
+    Expects multipart/form-data with file field: 'file'
+    Matching: samputa_sankhye + tatvapada_sankhye + tatvapadakarara_hesaru
+    """
+    if "file" not in request.files:
+        return jsonify({"error": "CSV file is required"}), 400
+
+    file = request.files["file"]
+
+    if not file or file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
+
+    if not file.filename.lower().endswith(".csv"):
+        return jsonify({"error": "Only CSV files are supported"}), 400
+
+    try:
+        records_updated, errors = tatvapada_service.bulk_service.update_csv_records(file)
+
+        response = {
+            "records_updated": records_updated,
+            "errors": errors
+        }
+
+        # Partial success
+        if errors and records_updated > 0:
+            return jsonify(response), 207  # Multi-Status
+
+        # Full success
+        if records_updated > 0 and not errors:
+            return jsonify(response), 200
+
+        # Full failure (no records updated)
+        return jsonify(response), 400
+
+    except Exception:
+        logger.error("Unexpected error in bulk_update_tatvapada", exc_info=True)
+        return jsonify({"error": "Unexpected error occurred during bulk update."}), 500
+
+
 # ---------- SEARCH TATVAPADA ----------
 @tatvapada_bp.route("/api/tatvapada/search", methods=["POST"])
 def search_tatvapada():
@@ -145,6 +190,7 @@ def search_tatvapada():
             f"Error in search_tatvapada route (keyword='{keyword}', samputa={samputa}, author_id={author_id}): {e}"
         )
         return jsonify({"error": "Internal server error"}), 500
+
 
 @tatvapada_bp.route("/api/tatvapada/<samputa_sankhye>/<tatvapada_author_id>/<tatvapada_sankhye>", methods=["GET"])
 def get_specific_tatvapada(samputa_sankhye, tatvapada_author_id, tatvapada_sankhye):
@@ -209,7 +255,8 @@ def update_tatvapada_by_composite_keys():
             data["samputa_sankhye"], data["tatvapada_sankhye"], data["tatvapada_author_id"], data
         )
 
-        return jsonify({"message": "Tatvapada updated successfully", "updated_entry": _serialize_tatvapada(updated_entry)})
+        return jsonify(
+            {"message": "Tatvapada updated successfully", "updated_entry": _serialize_tatvapada(updated_entry)})
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
     except SQLAlchemyError as db_err:
@@ -232,13 +279,16 @@ def delete_tatvapada_by_samputa(samputa_sankhye):
         return jsonify({"error": f"Failed to delete entries: {str(e)}"}), 500
 
 
-@tatvapada_bp.route("/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>", methods=["DELETE"])
+@tatvapada_bp.route(
+    "/api/tatvapada/delete/<string:samputa_sankhye>/<string:tatvapada_sankhye>/<int:tatvapada_author_id>",
+    methods=["DELETE"])
 @admin_required
 def delete_specific_tatvapada(samputa_sankhye, tatvapada_sankhye, tatvapada_author_id):
     """Delete a single tatvapada by composite keys."""
     try:
         samputa_sankhye_val = float(samputa_sankhye)
-        deleted = tatvapada_service.delete_by_composite_keys(samputa_sankhye_val, tatvapada_sankhye, tatvapada_author_id)
+        deleted = tatvapada_service.delete_by_composite_keys(samputa_sankhye_val, tatvapada_sankhye,
+                                                             tatvapada_author_id)
         if deleted:
             return jsonify({"message": "Tatvapada entry deleted successfully"})
         return jsonify({"error": "Tatvapada entry not found"}), 404

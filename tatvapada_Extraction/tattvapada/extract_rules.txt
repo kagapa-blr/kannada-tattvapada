@@ -1,0 +1,136 @@
+=====================================
+DOCX PREPARATION RULES
+=====================================
+
+Column: samputa_sankhye
+Rule:
+Must be written as:
+ಸಂಪುಟ ೧  OR  ಸಂಪುಟ-2  OR  ಸಂಪುಟ: 3
+
+How script extracts:
+- Script searches first line starting with "ಸಂಪುಟ"
+- Kannada numbers are converted to Arabic numbers
+
+Example:
+ಸಂಪುಟ ೨
+
+
+-------------------------------------
+
+Column: tatvapadakosha_sheershike
+Rule:
+Immediately after "ಸಂಪುಟ" line, main document title must appear
+
+How script extracts:
+- First non-empty line after "ಸಂಪುಟ" is taken
+
+Example:
+ಶಿಶುನಾಳ ಶರೀಫರ ತತ್ವಪದಗಳು
+
+
+-------------------------------------
+
+Column: tatvapadakarara_hesaru
+Rule:
+Author name must end with "ತತ್ವಪದಗಳು"
+
+How script extracts:
+- Any heading ending with "ತತ್ವಪದಗಳು" is treated as author
+- Author changes reset tatvapada_sankhye counter and vibhag
+
+Example:
+ಶಿಶುನಾಳ ಶರೀಫರ ತತ್ವಪದಗಳು
+
+
+-------------------------------------
+
+Column: vibhag
+Rule:
+vibhaga must appear just before verse and:
+- Must not contain |
+- Must not end with ||, |, ॥
+- Must not start with number
+- Must be short (≤ 5 words)
+- Previous verse must be completed (|| ... ||)
+  OR empty line before vibhaga
+
+How script extracts:
+- Script looks 1–2 lines above verse number
+- If valid heading found, it becomes vibhaga
+- Last vibhaga is carried forward until next author
+- Counter resets for each author
+
+Valid Example:
+ಕರುಣಿ ಕೈಲಾಸಕಧಿಪತಿ || 1 ||
+
+ಗಂಗಾಧರನ ಸ್ತುತಿ
+೧. ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
+
+
+-------------------------------------
+
+Column: tatvapada_sheershike
+Rule:
+Each verse must start with number:
+೧. or 1. or ೧)
+
+How script extracts:
+- Script removes verse number and stores rest as verse title
+
+Example:
+೧. ಪಾಲಿಸಯ್ಯ ಪಾರ್ವತೀಪತಿ
+
+
+-------------------------------------
+
+Column: tatvapada_sankhye
+Rule:
+Auto-increment per author inside one samputa
+
+How script extracts:
+- Counter resets when author changes
+- Increments for each verse
+- Each combination of samputa + author + verse number is unique
+
+
+-------------------------------------
+
+Column: tatvapada
+Rule:
+All lines until next verse number belong to this verse
+
+How script extracts:
+- Script reads lines until next numbered verse
+- Empty lines included
+- New author/verse signals end
+
+
+-------------------------------------
+
+Column: bhavanuvada (Optional)
+Rule:
+If present, must start with:
+ಭಾವಾನುವಾದ:
+
+How script extracts:
+- Script checks next lines after current verse
+- If line starts with ಭಾವಾನುವಾದ, it is captured
+- Else kept as "-"
+
+Example:
+೪. ಭಾವಾನುವಾದ:
+ಈ ಪದದ ಅರ್ಥ ...
+
+
+-------------------------------------
+
+Column: klishta_padagalu_artha
+Rule:
+Not yet implemented – leave blank
+
+
+-------------------------------------
+
+Column: tippani
+Rule:
+Not yet implemented – leave blank
